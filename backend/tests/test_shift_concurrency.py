@@ -3,7 +3,7 @@ import asyncio
 from httpx import AsyncClient, ASGITransport
 from uuid import uuid4
 from datetime import datetime, timedelta, timezone
-from sqlalchemy import select, func
+from sqlalchemy import select, func, delete
 from app.main import app
 from app.core.security import create_access_token
 from app.db.session import engine, AsyncSessionLocal
@@ -80,26 +80,33 @@ async def test_concurrent_shift_acceptance_overlap_prevention():
         b2_id = str(booking2.id)
         worker_id = worker.id
 
-    # Fire concurrent acceptance requests simultaneously
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
-        req1 = ac.post(f"/api/shift-bookings/{b1_id}/accept", headers=w_headers)
-        req2 = ac.post(f"/api/shift-bookings/{b2_id}/accept", headers=w_headers)
+    try:
+        # Fire concurrent acceptance requests simultaneously
+        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+            req1 = ac.post(f"/api/shift-bookings/{b1_id}/accept", headers=w_headers)
+            req2 = ac.post(f"/api/shift-bookings/{b2_id}/accept", headers=w_headers)
 
-        res1, res2 = await asyncio.gather(req1, req2)
+            res1, res2 = await asyncio.gather(req1, req2)
 
-        statuses = [res1.status_code, res2.status_code]
-        assert 200 in statuses, f"Expected one 200, got {statuses}: {res1.text}, {res2.text}"
-        assert 400 in statuses, f"Expected one 400 (overlap conflict), got {statuses}: {res1.text}, {res2.text}"
+            statuses = [res1.status_code, res2.status_code]
+            assert 200 in statuses, f"Expected one 200, got {statuses}: {res1.text}, {res2.text}"
+            assert 400 in statuses, f"Expected one 400 (overlap conflict), got {statuses}: {res1.text}, {res2.text}"
 
-    # Verify database state: only 1 confirmed shift exists in this overlapping window
-    async with AsyncSessionLocal() as db:
-        conf_res = await db.execute(
-            select(func.count(ShiftBooking.id))
-            .where(
-                ShiftBooking.worker_id == worker_id,
-                ShiftBooking.id.in_([uuid4() if False else booking1.id, booking2.id]),
-                ShiftBooking.status == BookingStatus.CONFIRMED
+        # Verify database state: only 1 confirmed shift exists in this overlapping window
+        async with AsyncSessionLocal() as db:
+            conf_res = await db.execute(
+                select(func.count(ShiftBooking.id))
+                .where(
+                    ShiftBooking.worker_id == worker_id,
+                    ShiftBooking.id.in_([uuid4() if False else booking1.id, booking2.id]),
+                    ShiftBooking.status == BookingStatus.CONFIRMED
+                )
             )
-        )
-        confirmed_count = conf_res.scalar_one()
-        assert confirmed_count == 1, f"Expected at most 1 confirmed shift, found {confirmed_count}"
+            confirmed_count = conf_res.scalar_one()
+            assert confirmed_count == 1, f"Expected at most 1 confirmed shift, found {confirmed_count}"
+    finally:
+        async with AsyncSessionLocal() as db:
+            await db.execute(
+                delete(ShiftBooking).where(ShiftBooking.id.in_([booking1.id, booking2.id]))
+            )
+            await db.commit()

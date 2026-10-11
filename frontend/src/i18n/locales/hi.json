@@ -175,7 +175,8 @@
     "applied": "आवेदन किया गया",
     "saveJob": "नौकरी सेव करें",
     "unsaveJob": "नौकरी अनसेव करें",
-    "findCandidates": "उम्मीदवार खोजें"
+    "findCandidates": "उम्मीदवार खोजें",
+    "confirmDelete": "\"{{title}}\" बंद/रद्द करें? इसे पूर्ववत नहीं किया जा सकता।"
   },
   "categories": {
     "Construction": "निर्माण",

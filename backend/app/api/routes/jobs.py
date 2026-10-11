@@ -11,7 +11,8 @@ from app.models.models import WorkerProfile, JobApplication
 from app.models.models import (
     User, Job, JobCategory, JobRequiredSkill, Skill,
     EmployerProfile, WorkerProfile, WorkerSkill,
-    JobStatus, WorkType, SalaryType, UserRole
+    JobStatus, WorkType, SalaryType, UserRole,
+    ShiftBooking, BookingStatus
 )
 from datetime import date
 from app.schemas.schemas import (
@@ -432,5 +433,17 @@ async def delete_job(
         raise HTTPException(status_code=404, detail="Job not found")
     if job.employer_id != employer_profile.id:
         raise HTTPException(status_code=403, detail="Not your job")
-    job.status = JobStatus.CANCELLED
-    await db.flush()
+    shift_res = await db.execute(
+        select(func.count(ShiftBooking.id)).where(
+            ShiftBooking.job_id == job_id,
+            ShiftBooking.status == BookingStatus.CONFIRMED,
+        )
+    )
+    confirmed_shifts = shift_res.scalar_one()
+
+    if confirmed_shifts > 0 and job.status != JobStatus.CANCELLED:
+        job.status = JobStatus.CANCELLED
+        await db.flush()
+    else:
+        await db.delete(job)
+        await db.flush()

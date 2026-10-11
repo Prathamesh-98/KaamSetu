@@ -92,6 +92,7 @@ async def test_shift_booking_flow_with_worker_availability():
         slot_end = base_date.replace(hour=18, minute=0, second=0, microsecond=0)
 
         avail_id = None
+        booking_id = None
         try:
             avail_res = await ac.post("/api/availability", json={
                 "start_time": slot_start.isoformat(),
@@ -166,6 +167,13 @@ async def test_shift_booking_flow_with_worker_availability():
             assert cancel_res.status_code == 200
             assert cancel_res.json()["status"] == "CANCELLED"
         finally:
+            if booking_id:
+                from sqlalchemy import delete
+                from app.models.models import ShiftBooking
+                from app.db.session import AsyncSessionLocal
+                async with AsyncSessionLocal() as db:
+                    await db.execute(delete(ShiftBooking).where(ShiftBooking.id == booking_id))
+                    await db.commit()
             # Cleanup availability
             if avail_id:
                 await ac.delete(f"/api/availability/{avail_id}", headers=w_headers)

@@ -175,7 +175,8 @@
     "applied": "अर्ज केला",
     "saveJob": "नोकरी जतन करा",
     "unsaveJob": "जतन केलेली नोकरी काढा",
-    "findCandidates": "उमेदवार शोधा"
+    "findCandidates": "उमेदवार शोधा",
+    "confirmDelete": "\"{{title}}\" बंद/रद्द करायचे का? हे पूर्ववत केले जाऊ शकत नाही."
   },
   "categories": {
     "Construction": "बांधकाम",

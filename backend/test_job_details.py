@@ -82,4 +82,5 @@ async def test():
         
         print("\nAll Job Details tests passed successfully!")
 
-asyncio.run(test())
+if __name__ == "__main__":
+    asyncio.run(test())

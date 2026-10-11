@@ -79,38 +79,48 @@ async def test_saved_workers_lifecycle_and_isolation():
         # 5. Employer 2 (create or use another employer if exists, or check isolation)
         # Check that Employer 2 does NOT see Employer 1's saved worker
         emp2_user_id = str(uuid4())
-        from app.models.models import User, EmployerProfile, UserRole
-        from app.db.session import AsyncSessionLocal
-        from app.core.security import hash_password
+        try:
+            from app.models.models import User, EmployerProfile, UserRole
+            from app.db.session import AsyncSessionLocal
+            from app.core.security import hash_password
 
-        async with AsyncSessionLocal() as session:
-            user2 = User(
-                id=emp2_user_id,
-                email=f"emp2_{uuid4().hex[:6]}@example.com",
-                phone=f"98765{uuid4().hex[:5]}",
-                password_hash=hash_password("TestPass123!"),
-                role=UserRole.EMPLOYER,
-                is_active=True
-            )
-            session.add(user2)
-            await session.flush()
-            prof2 = EmployerProfile(
-                user_id=user2.id,
-                full_name="Second Employer Corp"
-            )
-            session.add(prof2)
-            await session.commit()
+            async with AsyncSessionLocal() as session:
+                user2 = User(
+                    id=emp2_user_id,
+                    email=f"emp2_{uuid4().hex[:6]}@example.com",
+                    phone=f"98765{uuid4().hex[:5]}",
+                    password_hash=hash_password("TestPass123!"),
+                    role=UserRole.EMPLOYER,
+                    is_active=True
+                )
+                session.add(user2)
+                await session.flush()
+                prof2 = EmployerProfile(
+                    user_id=user2.id,
+                    full_name="Second Employer Corp"
+                )
+                session.add(prof2)
+                await session.commit()
 
-        emp2_token = create_access_token({"sub": str(user2.id)})
-        emp2_headers = {"Authorization": f"Bearer {emp2_token}"}
+            emp2_token = create_access_token({"sub": str(user2.id)})
+            emp2_headers = {"Authorization": f"Bearer {emp2_token}"}
 
-        emp2_list = await ac.get("/api/employers/saved-workers", headers=emp2_headers)
-        assert emp2_list.status_code == 200
-        assert not any(item["worker_id"] == worker_id for item in emp2_list.json())
+            emp2_list = await ac.get("/api/employers/saved-workers", headers=emp2_headers)
+            assert emp2_list.status_code == 200
+            assert not any(item["worker_id"] == worker_id for item in emp2_list.json())
 
-        # Employer 2 cannot delete Employer 1's saved worker
-        emp2_del = await ac.delete(f"/api/employers/saved-workers/{worker_id}", headers=emp2_headers)
-        assert emp2_del.status_code == 404
+            # Employer 2 cannot delete Employer 1's saved worker
+            emp2_del = await ac.delete(f"/api/employers/saved-workers/{worker_id}", headers=emp2_headers)
+            assert emp2_del.status_code == 404
+        finally:
+            if emp2_user_id:
+                from sqlalchemy import delete
+                from app.models.models import User, EmployerProfile
+                from app.db.session import AsyncSessionLocal
+                async with AsyncSessionLocal() as session:
+                    await session.execute(delete(EmployerProfile).where(EmployerProfile.user_id == emp2_user_id))
+                    await session.execute(delete(User).where(User.id == emp2_user_id))
+                    await session.commit()
 
         # 6. Employer 1 removes the worker
         del_res = await ac.delete(f"/api/employers/saved-workers/{worker_id}", headers=emp1_headers)

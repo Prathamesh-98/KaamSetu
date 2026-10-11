@@ -76,34 +76,42 @@ async def test_concurrent_application_acceptance_limit():
         app2_id = str(app2.id)
         job_id = test_job.id
 
-    # 6. Execute two simultaneous concurrent acceptance requests
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
-        req1 = ac.put(
-            f"/api/applications/{app1_id}/status",
-            json={"status": "ACCEPTED"},
-            headers=emp1_headers
-        )
-        req2 = ac.put(
-            f"/api/applications/{app2_id}/status",
-            json={"status": "ACCEPTED"},
-            headers=emp1_headers
-        )
-
-        res1, res2 = await asyncio.gather(req1, req2)
-
-        # One must succeed (200), one must be rejected with 400 (capacity full)
-        statuses = [res1.status_code, res2.status_code]
-        assert 200 in statuses, f"Expected one 200, got {statuses}: {res1.text}, {res2.text}"
-        assert 400 in statuses, f"Expected one 400 (capacity full), got {statuses}: {res1.text}, {res2.text}"
-
-    # 7. Verify database state: exactly 1 application is ACCEPTED
-    async with AsyncSessionLocal() as db:
-        count_res = await db.execute(
-            select(func.count(JobApplication.id))
-            .where(
-                JobApplication.job_id == job_id,
-                JobApplication.status == ApplicationStatus.ACCEPTED
+    try:
+        # 6. Execute two simultaneous concurrent acceptance requests
+        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+            req1 = ac.put(
+                f"/api/applications/{app1_id}/status",
+                json={"status": "ACCEPTED"},
+                headers=emp1_headers
             )
-        )
-        accepted_count = count_res.scalar_one()
-        assert accepted_count == 1, f"Expected exactly 1 accepted application, found {accepted_count}"
+            req2 = ac.put(
+                f"/api/applications/{app2_id}/status",
+                json={"status": "ACCEPTED"},
+                headers=emp1_headers
+            )
+
+            res1, res2 = await asyncio.gather(req1, req2)
+
+            # One must succeed (200), one must be rejected with 400 (capacity full)
+            statuses = [res1.status_code, res2.status_code]
+            assert 200 in statuses, f"Expected one 200, got {statuses}: {res1.text}, {res2.text}"
+            assert 400 in statuses, f"Expected one 400 (capacity full), got {statuses}: {res1.text}, {res2.text}"
+
+        # 7. Verify database state: exactly 1 application is ACCEPTED
+        async with AsyncSessionLocal() as db:
+            count_res = await db.execute(
+                select(func.count(JobApplication.id))
+                .where(
+                    JobApplication.job_id == job_id,
+                    JobApplication.status == ApplicationStatus.ACCEPTED
+                )
+            )
+            accepted_count = count_res.scalar_one()
+            assert accepted_count == 1, f"Expected exactly 1 accepted application, found {accepted_count}"
+    finally:
+        async with AsyncSessionLocal() as db:
+            del_job_res = await db.execute(select(Job).where(Job.id == job_id))
+            j = del_job_res.scalar_one_or_none()
+            if j:
+                await db.delete(j)
+                await db.commit()

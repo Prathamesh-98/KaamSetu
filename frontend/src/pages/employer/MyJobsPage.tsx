@@ -29,7 +29,7 @@ function JobCard({ job }: { job: JobListItem }) {
   })
 
   const handleDelete = () => {
-    if (window.confirm(t('jobs.confirmDelete', { defaultValue: 'Close/cancel "${title}"? This cannot be undone.', title: job.title }))) {
+    if (window.confirm(t('jobs.confirmDelete', { defaultValue: 'Close/cancel "{{title}}"? This cannot be undone.', title: job.title }))) {
       deleteMutation.mutate()
     }
   }

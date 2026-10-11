@@ -175,7 +175,8 @@
     "applied": "Applied",
     "saveJob": "Save Job",
     "unsaveJob": "Unsave Job",
-    "findCandidates": "Find Candidates"
+    "findCandidates": "Find Candidates",
+    "confirmDelete": "Close/cancel \"{{title}}\"? This cannot be undone."
   },
   "categories": {
     "Construction": "Construction",
