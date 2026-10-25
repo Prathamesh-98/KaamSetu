@@ -50,7 +50,7 @@ export default function LoginPage() {
         
         {/* Background Image with Overlay */}
         <div className="absolute inset-0 z-0 mix-blend-overlay opacity-30">
-           <img src="/images/mechanic.jpg.jpg" alt="Mechanic" className="w-full h-full object-cover object-[70%_30%]" />
+           <img src="/images/mechanic.webp" alt="Mechanic" className="w-full h-full object-cover object-[70%_30%]" />
         </div>
         <div className="absolute inset-0 z-0 bg-gradient-to-t from-[#0B1735] via-[#0B1735]/80 to-transparent" />
 

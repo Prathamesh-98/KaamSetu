@@ -5,7 +5,18 @@ import type {
   Application, Category, Skill, Conversation, Message, Notification,
   Rating, AdminStats, RegisterPayload, LoginPayload, WorkerProfilePayload,
   JobCreatePayload, JobFilters, PaginatedResponse, SavedJob, SavedWorker, JobMatchResult, CandidateMatch,
-  UnreadCountResponse
+  UnreadCountResponse, VerificationRecord, PhoneVerificationResponse,
+  UserVerificationStatusSummary, AdminVerificationReviewPayload, AdminQueueFilters,
+  WorkCompletionWithPayment, WorkCompletionCreatePayload, PaymentRecord, PaymentDisputePayload,
+  PaymentUpdatePayload, WorkHistoryListResponse, ShiftBooking,
+  AdminProfile, AdminProfileUpdatePayload, AdminChangePasswordPayload, AdminChangePasswordResponse,
+  AdminUserListResponse, AdminWorkerListItem, AdminWorkerListResponse,
+  AdminEmployerListItem, AdminEmployerListResponse,
+  AdminJobListItem, AdminJobListResponse,
+  AdminApplicationListItem, AdminApplicationListResponse,
+  AdminCompletedWorkItem, AdminCompletedWorkListResponse,
+  ForgotPasswordGenericResponse, RecoveryVerifyResponse,
+  ResetPasswordPayload, ResetPasswordResponse
 } from '../types';
 
 // ─── Auth ─────────────────────────────────────────────────────────────────────
@@ -16,6 +27,16 @@ export const authApi = {
     api.post<AuthToken>('/auth/login', data).then(r => r.data),
   me: () =>
     api.get<User>('/auth/me').then(r => r.data),
+  forgotPasswordEmail: (email: string) =>
+    api.post<ForgotPasswordGenericResponse>('/auth/forgot-password/email', { email }).then(r => r.data),
+  forgotPasswordPhone: (phone: string) =>
+    api.post<ForgotPasswordGenericResponse>('/auth/forgot-password/phone', { phone }).then(r => r.data),
+  verifyRecoveryEmail: (email: string, otp_code: string) =>
+    api.post<RecoveryVerifyResponse>('/auth/forgot-password/verify-email', { email, otp_code }).then(r => r.data),
+  verifyRecoveryPhone: (phone: string, otp_code: string) =>
+    api.post<RecoveryVerifyResponse>('/auth/forgot-password/verify-phone', { phone, otp_code }).then(r => r.data),
+  resetPassword: (payload: ResetPasswordPayload) =>
+    api.post<ResetPasswordResponse>('/auth/reset-password', payload).then(r => r.data),
 };
 
 // ─── Workers ──────────────────────────────────────────────────────────────────
@@ -154,12 +175,94 @@ export const notificationsApi = {
 
 // ─── Admin ────────────────────────────────────────────────────────────────────
 export const adminApi = {
+  getProfile: () =>
+    api.get<AdminProfile>('/admin/profile').then(r => r.data),
+  updateProfile: (payload: AdminProfileUpdatePayload) =>
+    api.put<AdminProfile>('/admin/profile', payload).then(r => r.data),
+  changePassword: (payload: AdminChangePasswordPayload) =>
+    api.post<AdminChangePasswordResponse>('/admin/change-password', payload).then(r => r.data),
   getStats: () =>
     api.get<AdminStats>('/admin/stats').then(r => r.data),
-  listUsers: (page = 1) =>
-    api.get<User[]>(`/admin/users?page=${page}`).then(r => r.data),
+  listUsers: (params: { search?: string; role?: string; is_active?: boolean; page?: number; per_page?: number } = {}) => {
+    const qs = new URLSearchParams();
+    if (params.search) qs.append('search', params.search);
+    if (params.role && params.role !== 'ALL') qs.append('role', params.role);
+    if (params.is_active !== undefined) qs.append('is_active', String(params.is_active));
+    if (params.page) qs.append('page', String(params.page));
+    if (params.per_page) qs.append('per_page', String(params.per_page));
+    const query = qs.toString();
+    return api.get<AdminUserListResponse>(`/admin/users${query ? '?' + query : ''}`).then(r => r.data);
+  },
   toggleUserStatus: (userId: string, isActive: boolean) =>
     api.put(`/admin/users/${userId}/status?is_active=${isActive}`).then(r => r.data),
+  listWorkers: (params: { search?: string; verified_only?: boolean; page?: number; per_page?: number } = {}) => {
+    const qs = new URLSearchParams();
+    if (params.search) qs.append('search', params.search);
+    if (params.verified_only) qs.append('verified_only', 'true');
+    if (params.page) qs.append('page', String(params.page));
+    if (params.per_page) qs.append('per_page', String(params.per_page));
+    const query = qs.toString();
+    return api.get<AdminWorkerListResponse>(`/admin/workers${query ? '?' + query : ''}`).then(r => r.data);
+  },
+  getWorker: (workerId: string) =>
+    api.get<AdminWorkerListItem>(`/admin/workers/${workerId}`).then(r => r.data),
+  listEmployers: (params: { search?: string; verified_only?: boolean; page?: number; per_page?: number } = {}) => {
+    const qs = new URLSearchParams();
+    if (params.search) qs.append('search', params.search);
+    if (params.verified_only) qs.append('verified_only', 'true');
+    if (params.page) qs.append('page', String(params.page));
+    if (params.per_page) qs.append('per_page', String(params.per_page));
+    const query = qs.toString();
+    return api.get<AdminEmployerListResponse>(`/admin/employers${query ? '?' + query : ''}`).then(r => r.data);
+  },
+  getEmployer: (employerId: string) =>
+    api.get<AdminEmployerListItem>(`/admin/employers/${employerId}`).then(r => r.data),
+  listJobs: (params: { search?: string; status?: string; page?: number; per_page?: number } = {}) => {
+    const qs = new URLSearchParams();
+    if (params.search) qs.append('search', params.search);
+    if (params.status && params.status !== 'ALL') qs.append('status', params.status);
+    if (params.page) qs.append('page', String(params.page));
+    if (params.per_page) qs.append('per_page', String(params.per_page));
+    const query = qs.toString();
+    return api.get<AdminJobListResponse>(`/admin/jobs${query ? '?' + query : ''}`).then(r => r.data);
+  },
+  updateJobStatus: (jobId: string, status: string, reason?: string) =>
+    api.put<AdminJobListItem>(`/admin/jobs/${jobId}/status`, { status, reason }).then(r => r.data),
+  listApplications: (params: { search?: string; status?: string; page?: number; per_page?: number } = {}) => {
+    const qs = new URLSearchParams();
+    if (params.search) qs.append('search', params.search);
+    if (params.status && params.status !== 'ALL') qs.append('status', params.status);
+    if (params.page) qs.append('page', String(params.page));
+    if (params.per_page) qs.append('per_page', String(params.per_page));
+    const query = qs.toString();
+    return api.get<AdminApplicationListResponse>(`/admin/applications${query ? '?' + query : ''}`).then(r => r.data);
+  },
+  listCompletedWork: (params: { payment_status?: string; disputed_only?: boolean; page?: number; per_page?: number } = {}) => {
+    const qs = new URLSearchParams();
+    if (params.payment_status && params.payment_status !== 'ALL') qs.append('payment_status', params.payment_status);
+    if (params.disputed_only) qs.append('disputed_only', 'true');
+    if (params.page) qs.append('page', String(params.page));
+    if (params.per_page) qs.append('per_page', String(params.per_page));
+    const query = qs.toString();
+    return api.get<AdminCompletedWorkListResponse>(`/admin/completed-work${query ? '?' + query : ''}`).then(r => r.data);
+  },
+  getVerificationQueue: (filters: AdminQueueFilters = {}) => {
+    const params = new URLSearchParams();
+    if (filters.status && filters.status !== 'ALL') params.append('status', filters.status);
+    if (filters.type && filters.type !== 'ALL') params.append('type', filters.type);
+    if (filters.page) params.append('page', String(filters.page));
+    if (filters.per_page) params.append('per_page', String(filters.per_page));
+    const qs = params.toString();
+    return api.get<VerificationRecord[]>(`/admin/verifications/queue${qs ? '?' + qs : ''}`).then(r => r.data);
+  },
+  getVerificationRecord: (recordId: string) =>
+    api.get<VerificationRecord>(`/admin/verifications/${recordId}`).then(r => r.data),
+  approveVerification: (recordId: string, payload?: AdminVerificationReviewPayload) =>
+    api.post<VerificationRecord>(`/admin/verifications/${recordId}/approve`, payload || { decision: 'APPROVE' }).then(r => r.data),
+  rejectVerification: (recordId: string, payload: AdminVerificationReviewPayload) =>
+    api.post<VerificationRecord>(`/admin/verifications/${recordId}/reject`, payload).then(r => r.data),
+  revokeVerification: (recordId: string, payload: AdminVerificationReviewPayload) =>
+    api.post<VerificationRecord>(`/admin/verifications/${recordId}/revoke`, payload).then(r => r.data),
 };
 
 // ─── Uploads ──────────────────────────────────────────────────────────────────
@@ -192,9 +295,82 @@ export const shiftsApi = {
   deleteAvailability: (id: string) => api.delete(`/availability/${id}`).then(res => res.data),
   
   // Shift Bookings
-  getMyBookings: () => api.get('/shift-bookings/me').then(res => res.data),
-  requestShift: (data: any) => api.post('/shift-bookings', data).then(res => res.data),
-  acceptShift: (id: string) => api.post(`/shift-bookings/${id}/accept`).then(res => res.data),
-  declineShift: (id: string) => api.post(`/shift-bookings/${id}/decline`).then(res => res.data),
-  cancelShift: (id: string) => api.post(`/shift-bookings/${id}/cancel`).then(res => res.data),
+  getMyBookings: () => api.get<ShiftBooking[]>('/shift-bookings/me').then(res => res.data),
+  requestShift: (data: any) => api.post<ShiftBooking>('/shift-bookings', data).then(res => res.data),
+  acceptShift: (id: string) => api.post<ShiftBooking>(`/shift-bookings/${id}/accept`).then(res => res.data),
+  declineShift: (id: string) => api.post<ShiftBooking>(`/shift-bookings/${id}/decline`).then(res => res.data),
+  cancelShift: (id: string) => api.post<ShiftBooking>(`/shift-bookings/${id}/cancel`).then(res => res.data),
+
+  // Work Completion & Payments (Feature 3)
+  completeShift: (bookingId: string, payload: WorkCompletionCreatePayload) =>
+    api.post<WorkCompletionWithPayment>(`/shift-bookings/${bookingId}/complete`, payload).then(res => res.data),
+  confirmPayment: (bookingId: string) =>
+    api.post<PaymentRecord>(`/shift-bookings/${bookingId}/payment/confirm`).then(res => res.data),
+  disputePayment: (bookingId: string, payload: PaymentDisputePayload) =>
+    api.post<PaymentRecord>(`/shift-bookings/${bookingId}/payment/dispute`, payload).then(res => res.data),
+  updatePayment: (bookingId: string, payload: PaymentUpdatePayload) =>
+    api.patch<PaymentRecord>(`/shift-bookings/${bookingId}/payment`, payload).then(res => res.data),
+  getShiftCompletion: (bookingId: string) =>
+    api.get<WorkCompletionWithPayment>(`/shift-bookings/${bookingId}/completion`).then(res => res.data),
+  getMyWorkHistory: (page: number = 1, perPage: number = 20) =>
+    api.get<WorkHistoryListResponse>(`/work-history/me?page=${page}&per_page=${perPage}`).then(res => res.data),
 }
+
+// ─── Trust & Verification ───────────────────────────────────────────────────
+export const verificationsApi = {
+  getMyStatus: () =>
+    api.get<UserVerificationStatusSummary>('/verifications/my-status').then(r => r.data),
+
+  getMyHistory: () =>
+    api.get<VerificationRecord[]>('/verifications/my-history').then(r => r.data),
+
+  requestPhoneOtp: (phone: string) =>
+    api.post<{ message: string; masked_phone?: string; retry_after?: number }>('/verifications/phone/request', { phone }).then(r => r.data),
+
+  verifyPhoneOtp: (phone: string, otpCode: string) =>
+    api.post<PhoneVerificationResponse>('/verifications/phone/verify', { phone, otp_code: otpCode }).then(r => r.data),
+
+  submitIdentity: (file: File, documentType: string, notes?: string) => {
+    const formData = new FormData();
+    formData.append('document', file);
+    formData.append('document_type', documentType);
+    if (notes) formData.append('notes', notes);
+    return api.post<VerificationRecord>('/verifications/identity', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    }).then(r => r.data);
+  },
+
+  submitSkillCertificate: (file: File, skillId: string, certificateTitle: string, issuingAuthority?: string, notes?: string) => {
+    const formData = new FormData();
+    formData.append('document', file);
+    formData.append('skill_id', skillId);
+    formData.append('certificate_title', certificateTitle);
+    if (issuingAuthority) formData.append('issuing_authority', issuingAuthority);
+    if (notes) formData.append('notes', notes);
+    return api.post<VerificationRecord>('/verifications/skill', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    }).then(r => r.data);
+  },
+
+  submitCompany: (file: File, organizationName?: string, organizationType?: string, taxId?: string, notes?: string) => {
+    const formData = new FormData();
+    formData.append('document', file);
+    if (organizationName) formData.append('organization_name', organizationName);
+    if (organizationType) formData.append('organization_type', organizationType);
+    if (taxId) formData.append('tax_id', taxId);
+    if (notes) formData.append('notes', notes);
+    return api.post<VerificationRecord>('/verifications/company', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    }).then(r => r.data);
+  },
+
+  getDocumentBlob: async (recordId: string): Promise<{ blob: Blob; contentType: string }> => {
+    const response = await api.get(`/verifications/${recordId}/document`, {
+      responseType: 'blob',
+    });
+    return {
+      blob: response.data,
+      contentType: (response.headers['content-type'] as string) || 'application/octet-stream',
+    };
+  },
+};

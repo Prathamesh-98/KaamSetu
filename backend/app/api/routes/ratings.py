@@ -75,22 +75,29 @@ async def create_rating(
     db.add(rating)
     await db.flush()
 
-    # Update aggregates
-    # Get current total and avg from db directly to avoid race conditions as much as possible, or just update the profile
+    # Update aggregates safely with a row-level lock to prevent concurrent lost updates
     if rater_role == RaterRole.WORKER:
         # Rated user is Employer
-        prof_query = select(EmployerProfile).where(EmployerProfile.user_id == rated_user_id)
+        prof_query = select(EmployerProfile).where(EmployerProfile.user_id == rated_user_id).with_for_update()
     else:
-        prof_query = select(WorkerProfile).where(WorkerProfile.user_id == rated_user_id)
+        # Rated user is Worker
+        prof_query = select(WorkerProfile).where(WorkerProfile.user_id == rated_user_id).with_for_update()
         
     result = await db.execute(prof_query)
     profile = result.scalar_one_or_none()
 
     if profile:
-        new_total = profile.total_ratings + 1
-        new_avg = ((profile.average_rating * profile.total_ratings) + payload.rating) / new_total
-        profile.total_ratings = new_total
-        profile.average_rating = new_avg
+        # Compute exact aggregates directly from Rating table for this rated_user
+        # The newly added rating has been flushed in this transaction and is included
+        stats_query = select(
+            func.count(Rating.id),
+            func.coalesce(func.avg(Rating.rating), 0.0)
+        ).where(Rating.rated_user == rated_user_id)
+        stats_res = await db.execute(stats_query)
+        total_count, avg_rating = stats_res.one()
+
+        profile.total_ratings = int(total_count)
+        profile.average_rating = round(float(avg_rating), 2)
 
     await db.commit()
     await db.refresh(rating)

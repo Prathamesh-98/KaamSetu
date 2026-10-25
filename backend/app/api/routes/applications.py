@@ -50,25 +50,40 @@ async def apply_to_job(
     if job.status != JobStatus.ACTIVE:
         raise HTTPException(status_code=400, detail="Job is not accepting applications")
 
-    # Check duplicate
+    # Check existing application (support reapplication from WITHDRAWN status)
     dup = await db.execute(
         select(JobApplication).where(
             JobApplication.job_id == job_id,
             JobApplication.worker_id == worker_profile.id,
         )
     )
-    if dup.scalar_one_or_none():
-        raise HTTPException(status_code=400, detail="Already applied to this job")
+    existing_app = dup.scalar_one_or_none()
+    if existing_app:
+        if existing_app.status == ApplicationStatus.WITHDRAWN:
+            # Reapplication: reactivate existing record to satisfy unique constraint uq_job_application
+            existing_app.status = ApplicationStatus.PENDING
+            existing_app.cover_note = payload.cover_note
+            application = existing_app
+        else:
+            raise HTTPException(status_code=400, detail="Already applied to this job")
+    else:
+        application = JobApplication(
+            job_id=job_id,
+            worker_id=worker_profile.id,
+            cover_note=payload.cover_note,
+        )
+        db.add(application)
 
-    application = JobApplication(
-        job_id=job_id,
-        worker_id=worker_profile.id,
-        cover_note=payload.cover_note,
+    await db.flush()
+
+    # Authoritative calculation of active applications (excluding WITHDRAWN)
+    count_res = await db.execute(
+        select(func.count(JobApplication.id)).where(
+            JobApplication.job_id == job_id,
+            JobApplication.status != ApplicationStatus.WITHDRAWN,
+        )
     )
-    db.add(application)
-
-    # Increment application count
-    job.applications_count += 1
+    job.applications_count = count_res.scalar_one()
     await db.flush()
 
     result = await db.execute(
@@ -222,3 +237,18 @@ async def withdraw_application(
 
     application.status = ApplicationStatus.WITHDRAWN
     await db.flush()
+
+    # Recompute authoritative active applications count on parent job
+    job_res = await db.execute(
+        select(Job).where(Job.id == application.job_id).with_for_update()
+    )
+    job = job_res.scalar_one_or_none()
+    if job:
+        count_res = await db.execute(
+            select(func.count(JobApplication.id)).where(
+                JobApplication.job_id == application.job_id,
+                JobApplication.status != ApplicationStatus.WITHDRAWN,
+            )
+        )
+        job.applications_count = count_res.scalar_one()
+        await db.flush()

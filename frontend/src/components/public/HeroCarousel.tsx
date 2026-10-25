@@ -5,14 +5,14 @@ import { Search, MapPin, Shield, Star, Briefcase } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const HERO_IMAGES = [
-  '/images/electrician.jpg.jpg',
-  '/images/brick-workers.jpg.jpg',
-  '/images/agricultural-workers.jpg.jpg',
-  '/images/carpenter.jpg.jpg',
-  '/images/mechanic.jpg.jpg',
-  '/images/plumber.jpg.jpg',
-  '/images/electrical-team.jpg.jpg',
-  '/images/textile-worker.jpg.jpg'
+  '/images/electrician.webp',
+  '/images/brick-workers.webp',
+  '/images/agricultural-workers.webp',
+  '/images/carpenter.webp',
+  '/images/mechanic.webp',
+  '/images/plumber.webp',
+  '/images/electrical-team.webp',
+  '/images/textile-worker.webp'
 ];
 
 export default function HeroCarousel() {

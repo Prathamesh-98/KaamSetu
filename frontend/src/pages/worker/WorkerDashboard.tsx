@@ -141,9 +141,12 @@ export default function WorkerDashboard() {
             {t('worker.welcomeSubtitle', 'Find your next opportunity on KaamSetu.')}
           </p>
         </div>
-        <div className="flex gap-3 relative z-10">
+        <div className="flex gap-3 relative z-10 flex-wrap">
           <Link to="/worker/jobs" className="btn btn-primary rounded-xl shadow-sm font-semibold">
             <Search className="w-4 h-4 mr-1.5" /> {t('nav.findJobs')}
+          </Link>
+          <Link to="/worker/shifts" className="btn btn-outline bg-white rounded-xl shadow-sm font-semibold">
+            <Clock className="w-4 h-4 mr-1.5 text-primary-600" /> {t('worker.shifts', 'My Shifts')}
           </Link>
           <Link to="/worker/profile" className="btn btn-outline bg-white rounded-xl shadow-sm font-semibold">
             <User className="w-4 h-4 mr-1.5" /> {t('nav.profile')}
@@ -244,6 +247,27 @@ export default function WorkerDashboard() {
 
         {/* RIGHT COLUMN */}
         <div className="space-y-8">
+
+          {/* Shifts & Work Completion */}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+            <div className="flex justify-between items-center mb-2">
+              <h3 className="font-bold text-[#182849] flex items-center gap-2 text-lg">
+                <Clock className="w-5 h-5 text-primary-600" />
+                {t('worker.shifts', 'My Shifts')}
+              </h3>
+            </div>
+            <p className="text-xs text-gray-500 mb-4 font-medium leading-relaxed">
+              {t('payments.noCompletedWorkDesc', 'When you complete shifts, track work hours and offline settlements here.')}
+            </p>
+            <div className="flex gap-2">
+              <Link to="/worker/shifts?tab=upcoming" className="flex-1 btn btn-sm btn-outline rounded-xl font-semibold text-xs text-center justify-center">
+                {t('worker.upcomingShiftsTab', 'Upcoming Shifts')}
+              </Link>
+              <Link to="/worker/shifts?tab=completed" className="flex-1 btn btn-sm btn-primary rounded-xl font-semibold text-xs text-center justify-center">
+                {t('worker.completedWorkTab', 'Completed Work')}
+              </Link>
+            </div>
+          </div>
           
           {/* Availability & Skills (Mini Profile) */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">

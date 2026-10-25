@@ -23,14 +23,14 @@ export default function LandingPage() {
 
   // ─── Data mapped with i18n ──────────────────────────────────────────────────
   const CATEGORIES = [
-    { image: '/images/brick-workers.jpg.jpg', name: t('categories.Construction'), count: t('landing.categories.findWorkers'), routeName: 'Construction' },
-    { image: '/images/electrician.jpg.jpg', name: t('categories.Electrical'), count: t('landing.categories.findWorkers'), routeName: 'Electrical' },
-    { image: '/images/plumber.jpg.jpg', name: t('categories.Plumbing'), count: t('landing.categories.findWorkers'), routeName: 'Plumbing' },
-    { image: '/images/mechanic.jpg.jpg', name: t('categories.Driving'), count: t('landing.categories.findWorkers'), routeName: 'Driving' },
-    { image: '/images/textile-worker.jpg.jpg', name: t('categories.Domestic Help'), count: t('landing.categories.findWorkers'), routeName: 'Domestic Help' },
-    { image: '/images/agricultural-workers.jpg.jpg', name: t('categories.Farming'), count: t('landing.categories.findWorkers'), routeName: 'Farming' },
-    { image: '/images/electrical-team.jpg.jpg', name: t('categories.IT & Tech'), count: t('landing.categories.findWorkers'), routeName: 'IT & Tech' },
-    { image: '/images/carpenter.jpg.jpg', name: t('categories.Painting'), count: t('landing.categories.findWorkers'), routeName: 'Painting' },
+    { image: '/images/brick-workers.webp', name: t('categories.Construction'), count: t('landing.categories.findWorkers'), routeName: 'Construction' },
+    { image: '/images/electrician.webp', name: t('categories.Electrical'), count: t('landing.categories.findWorkers'), routeName: 'Electrical' },
+    { image: '/images/plumber.webp', name: t('categories.Plumbing'), count: t('landing.categories.findWorkers'), routeName: 'Plumbing' },
+    { image: '/images/mechanic.webp', name: t('categories.Driving'), count: t('landing.categories.findWorkers'), routeName: 'Driving' },
+    { image: '/images/textile-worker.webp', name: t('categories.Domestic Help'), count: t('landing.categories.findWorkers'), routeName: 'Domestic Help' },
+    { image: '/images/agricultural-workers.webp', name: t('categories.Farming'), count: t('landing.categories.findWorkers'), routeName: 'Farming' },
+    { image: '/images/electrical-team.webp', name: t('categories.IT & Tech'), count: t('landing.categories.findWorkers'), routeName: 'IT & Tech' },
+    { image: '/images/carpenter.webp', name: t('categories.Painting'), count: t('landing.categories.findWorkers'), routeName: 'Painting' },
   ]
 
   const HOW_IT_WORKS_WORKER = [

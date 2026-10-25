@@ -3,13 +3,16 @@ KaamSetu — Pydantic Schemas
 Request/response schemas for all API endpoints.
 """
 from pydantic import BaseModel, EmailStr, Field, field_validator
-from typing import Optional, List
+from typing import Optional, List, Dict, Any, Literal
+import re
 from datetime import datetime, date, time
+from decimal import Decimal
 from uuid import UUID
 from app.models.models import (
     UserRole, AvailabilityStatus, SalaryType, WorkType,
     JobStatus, ApplicationStatus, ProficiencyLevel,
-    VerificationType, VerificationStatus, MessageType, RaterRole, BookingStatus
+    VerificationType, VerificationStatus, MessageType, RaterRole, BookingStatus,
+    PaymentMethod, PaymentStatus
 )
 
 
@@ -50,11 +53,73 @@ class TokenResponse(BaseModel):
     user: "UserBasic"
 
 
+# ─── Password Recovery Schemas ────────────────────────────────────────────────
+
+class ForgotPasswordEmailRequest(BaseModel):
+    email: EmailStr
+
+
+class ForgotPasswordPhoneRequest(BaseModel):
+    phone: str = Field(..., min_length=10, max_length=15)
+
+    @field_validator("phone")
+    @classmethod
+    def clean_phone(cls, v: str) -> str:
+        cleaned = re.sub(r"[\s\-\(\)]", "", v)
+        if not re.match(r"^\+?[0-9]{10,14}$", cleaned):
+            raise ValueError("Invalid phone number format. Must contain 10 to 14 digits.")
+        return cleaned
+
+
+class VerifyRecoveryEmailRequest(BaseModel):
+    email: EmailStr
+    otp_code: str = Field(..., min_length=4, max_length=8)
+
+
+class VerifyRecoveryPhoneRequest(BaseModel):
+    phone: str = Field(..., min_length=10, max_length=15)
+    otp_code: str = Field(..., min_length=4, max_length=8)
+
+    @field_validator("phone")
+    @classmethod
+    def clean_phone(cls, v: str) -> str:
+        return re.sub(r"[\s\-\(\)]", "", v)
+
+
+class RecoveryVerifyResponse(BaseModel):
+    message: str
+    reset_token: str
+    expires_in: int = 900
+
+
+class ResetPasswordRequest(BaseModel):
+    reset_token: str = Field(..., min_length=20)
+    new_password: str = Field(..., min_length=8, max_length=100)
+    confirm_password: str = Field(..., min_length=8, max_length=100)
+
+    @field_validator("new_password")
+    @classmethod
+    def validate_password_strength(cls, v: str) -> str:
+        if not any(c.isupper() for c in v):
+            raise ValueError("Password must contain at least one uppercase letter")
+        if not any(c.isdigit() for c in v):
+            raise ValueError("Password must contain at least one digit")
+        return v
+
+    @field_validator("confirm_password")
+    @classmethod
+    def passwords_must_match(cls, v: str, info) -> str:
+        if "new_password" in info.data and v != info.data["new_password"]:
+            raise ValueError("Passwords do not match")
+        return v
+
+
 # ─── Users ────────────────────────────────────────────────────────────────────
 
 class UserBasic(BaseModel):
     id: UUID
     email: str
+    phone: Optional[str] = None
     role: UserRole
     is_active: bool
     is_verified: bool
@@ -259,6 +324,9 @@ class JobUpdate(BaseModel):
     status: Optional[JobStatus] = None
     city: Optional[str] = Field(None, max_length=100)
     state: Optional[str] = Field(None, max_length=100)
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
+    address_detail: Optional[str] = None
     salary_min: Optional[float] = None
     salary_max: Optional[float] = None
     salary_type: Optional[SalaryType] = None
@@ -290,6 +358,7 @@ class JobResponse(BaseModel):
     state: str
     latitude: Optional[float]
     longitude: Optional[float]
+    address_detail: Optional[str] = None
     salary_min: Optional[float]
     salary_max: Optional[float]
     salary_type: SalaryType
@@ -319,6 +388,11 @@ class JobListResponse(BaseModel):
     status: JobStatus
     city: str
     state: str
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
+    address_detail: Optional[str] = None
+    distance_km: Optional[float] = None
+    estimated_travel_time: Optional[str] = None
     salary_min: Optional[float]
     salary_max: Optional[float]
     salary_type: SalaryType
@@ -625,3 +699,512 @@ class ShiftBookingResponse(ShiftBookingBase, TimestampMixin):
     class Config:
         from_attributes = True
 
+
+# ─── Trust & Verification Schemas ──────────────────────────────────────────────
+
+class PhoneOTPRequest(BaseModel):
+    phone: str = Field(..., min_length=10, max_length=15, description="Mobile number with optional country code")
+
+    @field_validator("phone")
+    @classmethod
+    def validate_phone(cls, v: str) -> str:
+        cleaned = re.sub(r"[\s\-\(\)]", "", v)
+        if not re.match(r"^\+?[0-9]{10,14}$", cleaned):
+            raise ValueError("Invalid phone number format. Must contain 10 to 14 digits.")
+        return cleaned
+
+
+class PhoneOTPVerify(BaseModel):
+    phone: str = Field(..., min_length=10, max_length=15)
+    otp_code: str = Field(..., min_length=4, max_length=8)
+
+    @field_validator("phone")
+    @classmethod
+    def validate_phone(cls, v: str) -> str:
+        return re.sub(r"[\s\-\(\)]", "", v)
+
+
+class PhoneVerificationResponse(BaseModel):
+    message: str
+    phone: str
+    is_phone_verified: bool
+    verified_at: Optional[datetime] = None
+
+
+class VerificationRecordResponse(BaseModel):
+    id: UUID
+    user_id: UUID
+    verification_type: str
+    status: str
+    document_type: Optional[str] = None
+    has_document: bool
+    rejection_reason: Optional[str] = None
+    expires_at: Optional[datetime] = None
+    verified_by: Optional[UUID] = None
+    verified_at: Optional[datetime] = None
+    created_at: datetime
+    metadata: Optional[Dict[str, Any]] = None
+
+    model_config = {"from_attributes": True}
+
+    @classmethod
+    def from_orm_record(cls, record: Any) -> "VerificationRecordResponse":
+        eff_status = getattr(record, "effective_status", record.status)
+        v_status = eff_status.value if hasattr(eff_status, "value") else str(eff_status)
+        v_type = record.verification_type.value if hasattr(record.verification_type, "value") else str(record.verification_type)
+        return cls(
+            id=record.id,
+            user_id=record.user_id,
+            verification_type=v_type,
+            status=v_status,
+            document_type=getattr(record, "document_type", None),
+            has_document=bool(record.document_url),
+            rejection_reason=getattr(record, "rejection_reason", None),
+            expires_at=getattr(record, "expires_at", None),
+            verified_by=record.verified_by,
+            verified_at=record.verified_at,
+            created_at=record.created_at,
+            metadata=record.metadata_dict if hasattr(record, "metadata_dict") else None,
+        )
+
+
+class IdentityVerificationSubmit(BaseModel):
+    document_type: str = Field(..., max_length=50, description="e.g. DRIVING_LICENSE, VOTER_ID, PASSPORT, TRADE_LICENSE")
+    notes: Optional[str] = Field(None, max_length=500)
+
+
+class SkillVerificationSubmit(BaseModel):
+    skill_id: UUID
+    certificate_title: str = Field(..., max_length=150)
+    issuing_authority: Optional[str] = Field(None, max_length=150)
+    notes: Optional[str] = Field(None, max_length=500)
+
+
+class CompanyVerificationSubmit(BaseModel):
+    organization_name: Optional[str] = Field(None, max_length=200)
+    organization_type: Optional[str] = Field(None, max_length=100)
+    tax_id: Optional[str] = Field(None, max_length=50, description="GSTIN, CIN, or Trade Registration Number")
+    notes: Optional[str] = Field(None, max_length=500)
+
+
+class AdminVerificationReviewRequest(BaseModel):
+    decision: Literal["APPROVE", "REJECT", "REVOKE"]
+    rejection_reason: Optional[str] = Field(None, max_length=500)
+    expires_at: Optional[datetime] = None
+    reviewer_notes: Optional[str] = Field(None, max_length=500)
+
+    @field_validator("rejection_reason")
+    @classmethod
+    def validate_rejection_reason(cls, v: Optional[str], info: Any) -> Optional[str]:
+        if info.data.get("decision") == "REJECT":
+            if not v or not v.strip():
+                raise ValueError("rejection_reason is required and cannot be empty when rejecting a verification submission.")
+        return v
+
+
+class UserVerificationStatusSummary(BaseModel):
+    phone_status: str
+    identity_status: str
+    company_status: Optional[str] = None
+    skills_status: List[Dict[str, Any]] = []
+    is_verified: bool
+    is_phone_verified: bool
+    is_identity_verified: bool
+    active_records: List[VerificationRecordResponse] = []
+    phone: Optional[str] = None
+
+
+# ─── Work Completion & Payment Schemas ──────────────────────────────────────────
+
+class WorkCompletionCreate(BaseModel):
+    actual_start_time: datetime
+    actual_end_time: datetime
+    hours_worked: Decimal = Field(..., gt=0, le=24)
+    completion_notes: Optional[str] = Field(None, max_length=1000)
+    agreed_amount: Optional[Decimal] = Field(None, ge=0)
+    amount_paid: Decimal = Field(..., ge=0)
+    payment_method: PaymentMethod
+    payment_date: datetime
+    payment_reference: Optional[str] = Field(None, max_length=100)
+    payment_notes: Optional[str] = Field(None, max_length=1000)
+
+    @field_validator('actual_end_time')
+    def end_time_must_be_after_start_time(cls, v, info):
+        if 'actual_start_time' in info.data:
+            st = info.data['actual_start_time']
+            v_cmp, st_cmp = v, st
+            if st_cmp.tzinfo is not None and v_cmp.tzinfo is None:
+                v_cmp = v_cmp.replace(tzinfo=st_cmp.tzinfo)
+            elif st_cmp.tzinfo is None and v_cmp.tzinfo is not None:
+                st_cmp = st_cmp.replace(tzinfo=v_cmp.tzinfo)
+            if v_cmp <= st_cmp:
+                raise ValueError('actual_end_time must be after actual_start_time')
+        return v
+
+
+class PaymentInstallmentCreate(BaseModel):
+    amount: Decimal = Field(..., gt=0, description="Amount of this payment installment")
+    payment_method: PaymentMethod
+    payment_date: datetime
+    payment_reference: Optional[str] = Field(None, max_length=100)
+    notes: Optional[str] = Field(None, max_length=1000)
+
+
+class PaymentInstallmentResponse(BaseModel):
+    id: UUID
+    payment_record_id: UUID
+    installment_number: int
+    amount: Decimal
+    payment_method: PaymentMethod
+    payment_date: datetime
+    payment_reference: Optional[str] = None
+    notes: Optional[str] = None
+    recorded_by: UUID
+    worker_confirmed_at: Optional[datetime] = None
+    is_confirmed: bool = False
+    created_at: datetime
+
+    model_config = {"from_attributes": True}
+
+
+class PaymentRecordResponse(BaseModel):
+    id: UUID
+    work_completion_id: UUID
+    shift_booking_id: UUID
+    agreed_amount: Decimal
+    amount_paid: Decimal
+    outstanding_balance: Decimal
+    currency: str = "INR"
+    payment_method: PaymentMethod
+    payment_status: PaymentStatus
+    payment_date: datetime
+    payment_reference: Optional[str] = None
+    notes: Optional[str] = None
+    employer_recorded_at: datetime
+    worker_confirmed_at: Optional[datetime] = None
+    dispute_reason: Optional[str] = None
+    disputed_at: Optional[datetime] = None
+    disputed_by: Optional[UUID] = None
+    dispute_history: Optional[List[Dict[str, Any]]] = []
+    installments: List[PaymentInstallmentResponse] = []
+    total_installments_count: int = 1
+    is_partial: bool = False
+    is_fully_paid: bool = False
+    disclaimer: str = "KaamSetu is an informational record of offline settlement. KaamSetu does not process, hold, or transfer funds."
+    created_at: datetime
+    updated_at: datetime
+
+    model_config = {"from_attributes": True}
+
+
+class WorkCompletionResponse(BaseModel):
+    id: UUID
+    shift_booking_id: UUID
+    actual_start_time: datetime
+    actual_end_time: datetime
+    hours_worked: Decimal
+    completion_notes: Optional[str] = None
+    completed_by: UUID
+    created_at: datetime
+    updated_at: datetime
+
+    model_config = {"from_attributes": True}
+
+
+class WorkCompletionWithPaymentResponse(BaseModel):
+    id: UUID
+    shift_booking_id: UUID
+    actual_start_time: datetime
+    actual_end_time: datetime
+    hours_worked: Decimal
+    completion_notes: Optional[str] = None
+    completed_by: UUID
+    payment_record: Optional[PaymentRecordResponse] = None
+    created_at: datetime
+    updated_at: datetime
+
+    model_config = {"from_attributes": True}
+
+
+class PaymentDisputeRequest(BaseModel):
+    dispute_reason: str = Field(..., min_length=5, max_length=1000)
+
+    @field_validator("dispute_reason")
+    @classmethod
+    def validate_dispute_reason(cls, v: str) -> str:
+        cleaned = v.strip()
+        if len(cleaned) < 5:
+            raise ValueError("Dispute reason must be at least 5 characters long.")
+        return cleaned
+
+
+class PaymentUpdateRequest(BaseModel):
+    amount_paid: Optional[Decimal] = Field(None, ge=0, description="Cumulative total amount paid")
+    installment_amount: Optional[Decimal] = Field(None, gt=0, description="Additional installment amount")
+    payment_method: Optional[PaymentMethod] = None
+    payment_date: Optional[datetime] = None
+    payment_reference: Optional[str] = Field(None, max_length=100)
+    notes: Optional[str] = Field(None, max_length=1000)
+    correction_note: Optional[str] = Field(None, max_length=500)
+
+
+class WorkHistoryItemResponse(BaseModel):
+    shift_booking: ShiftBookingResponse
+    work_completion: Optional[WorkCompletionResponse] = None
+    payment_record: Optional[PaymentRecordResponse] = None
+    job_title: Optional[str] = None
+    counterpart_name: Optional[str] = None
+    counterpart_id: Optional[UUID] = None
+    can_rate: bool = False
+    application_id: Optional[UUID] = None
+
+    model_config = {"from_attributes": True}
+
+
+class WorkHistoryListResponse(BaseModel):
+    items: List[WorkHistoryItemResponse]
+    total: int
+    page: int
+    per_page: int
+    total_pages: int
+
+
+# ─── Admin Profile & Account Management (Phase 2) ──────────────────────────────
+
+class AdminProfileResponse(BaseModel):
+    id: UUID
+    user_id: UUID
+    email: EmailStr
+    role: UserRole
+    full_name: str
+    phone: Optional[str] = None
+    department: Optional[str] = None
+    created_at: datetime
+    updated_at: datetime
+
+    model_config = {"from_attributes": True}
+
+
+class AdminProfileUpdate(BaseModel):
+    full_name: Optional[str] = Field(None, min_length=2, max_length=150)
+    phone: Optional[str] = Field(None, max_length=20)
+    department: Optional[str] = Field(None, max_length=100)
+
+    @field_validator("full_name")
+    @classmethod
+    def validate_full_name(cls, v: Optional[str]) -> Optional[str]:
+        if v is not None:
+            v = v.strip()
+            if len(v) < 2:
+                raise ValueError("Full name must be at least 2 characters long")
+        return v
+
+    @field_validator("phone")
+    @classmethod
+    def validate_phone(cls, v: Optional[str]) -> Optional[str]:
+        if v is not None:
+            v = v.strip()
+            if v and not re.match(r"^[\+0-9\s\-\(\)]+$", v):
+                raise ValueError("Phone number contains invalid characters")
+        return v
+
+
+class AdminChangePasswordRequest(BaseModel):
+    current_password: str = Field(..., min_length=1, max_length=100)
+    new_password: str = Field(..., min_length=8, max_length=100)
+
+    @field_validator("new_password")
+    @classmethod
+    def password_strength(cls, v: str) -> str:
+        if not any(c.isupper() for c in v):
+            raise ValueError("Password must contain at least one uppercase letter")
+        if not any(c.isdigit() for c in v):
+            raise ValueError("Password must contain at least one digit")
+        return v
+
+
+class AdminChangePasswordResponse(BaseModel):
+    message: str = "Password changed successfully"
+
+
+# ─── Admin Dashboard Management Schemas (Phase 3.3) ──────────────────────────
+
+class AdminUserResponse(BaseModel):
+    id: UUID
+    email: str
+    phone: Optional[str] = None
+    role: UserRole
+    is_active: bool
+    is_verified: bool
+    full_name: Optional[str] = None
+    created_at: datetime
+    updated_at: datetime
+
+    model_config = {"from_attributes": True}
+
+
+class AdminUserListResponse(BaseModel):
+    items: List[AdminUserResponse]
+    total: int
+    page: int
+    per_page: int
+    total_pages: int
+
+
+class AdminWorkerListItem(BaseModel):
+    id: UUID
+    user_id: UUID
+    full_name: str
+    phone: Optional[str] = None
+    email: Optional[str] = None
+    bio: Optional[str] = None
+    city: Optional[str] = None
+    state: Optional[str] = None
+    experience_years: Optional[int] = None
+    hourly_rate: Optional[float] = None
+    daily_rate: Optional[float] = None
+    is_verified: bool
+    is_identity_verified: bool
+    is_phone_verified: bool
+    is_active: bool
+    skills: List[str] = []
+    created_at: datetime
+
+    model_config = {"from_attributes": True}
+
+
+class AdminWorkerListResponse(BaseModel):
+    items: List[AdminWorkerListItem]
+    total: int
+    page: int
+    per_page: int
+    total_pages: int
+
+
+class AdminEmployerListItem(BaseModel):
+    id: UUID
+    user_id: UUID
+    full_name: str
+    organization_name: Optional[str] = None
+    organization_type: Optional[str] = None
+    email: Optional[str] = None
+    phone: Optional[str] = None
+    city: Optional[str] = None
+    state: Optional[str] = None
+    is_verified: bool
+    is_active: bool
+    active_jobs_count: int = 0
+    total_jobs_count: int = 0
+    created_at: datetime
+
+    model_config = {"from_attributes": True}
+
+
+class AdminEmployerListResponse(BaseModel):
+    items: List[AdminEmployerListItem]
+    total: int
+    page: int
+    per_page: int
+    total_pages: int
+
+
+class AdminJobListItem(BaseModel):
+    id: UUID
+    employer_id: UUID
+    employer_name: Optional[str] = None
+    organization_name: Optional[str] = None
+    title: str
+    category_name: Optional[str] = None
+    work_type: WorkType
+    status: JobStatus
+    city: Optional[str] = None
+    state: Optional[str] = None
+    salary_min: Optional[float] = None
+    salary_max: Optional[float] = None
+    salary_type: SalaryType
+    applications_count: int = 0
+    created_at: datetime
+
+    model_config = {"from_attributes": True}
+
+
+class AdminJobListResponse(BaseModel):
+    items: List[AdminJobListItem]
+    total: int
+    page: int
+    per_page: int
+    total_pages: int
+
+
+class AdminJobStatusUpdate(BaseModel):
+    status: JobStatus
+    reason: Optional[str] = None
+
+
+class AdminApplicationListItem(BaseModel):
+    id: UUID
+    job_id: UUID
+    job_title: str
+    employer_name: Optional[str] = None
+    worker_id: UUID
+    worker_name: str
+    worker_email: Optional[str] = None
+    worker_phone: Optional[str] = None
+    status: ApplicationStatus
+    proposed_rate: Optional[float] = None
+    cover_letter: Optional[str] = None
+    applied_at: datetime
+
+    model_config = {"from_attributes": True}
+
+
+class AdminApplicationListResponse(BaseModel):
+    items: List[AdminApplicationListItem]
+    total: int
+    page: int
+    per_page: int
+    total_pages: int
+
+
+class AdminPaymentInstallmentItem(BaseModel):
+    id: UUID
+    installment_number: int
+    amount: float
+    payment_method: PaymentMethod
+    payment_date: datetime
+    payment_reference: Optional[str] = None
+    notes: Optional[str] = None
+    is_confirmed: bool
+    worker_confirmed_at: Optional[datetime] = None
+
+    model_config = {"from_attributes": True}
+
+
+class AdminCompletedWorkItem(BaseModel):
+    completion_id: UUID
+    booking_id: UUID
+    job_title: Optional[str] = None
+    worker_name: str
+    employer_name: str
+    actual_start_time: datetime
+    actual_end_time: datetime
+    hours_worked: float
+    completion_notes: Optional[str] = None
+    agreed_amount: float
+    amount_paid: float
+    outstanding_balance: float
+    payment_status: PaymentStatus
+    dispute_reason: Optional[str] = None
+    disputed_at: Optional[datetime] = None
+    installments: List[AdminPaymentInstallmentItem] = []
+    completed_at: datetime
+
+    model_config = {"from_attributes": True}
+
+
+class AdminCompletedWorkListResponse(BaseModel):
+    items: List[AdminCompletedWorkItem]
+    total: int
+    page: int
+    per_page: int
+    total_pages: int

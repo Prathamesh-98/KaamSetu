@@ -53,9 +53,13 @@ build/
 .DS_Store
 Thumbs.db
 
-# Uploads & Media
+# Uploads, Media & Private Storage
 uploads/
 **/uploads/
+private_storage/
+**/private_storage/
+private_storage_staging/
+**/private_storage_staging/
 *.dump
 
 # Scratch & Temporary

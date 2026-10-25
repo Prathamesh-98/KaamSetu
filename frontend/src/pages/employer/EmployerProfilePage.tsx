@@ -6,7 +6,9 @@ import { useAuth } from '../../contexts/AuthContext'
 import { employerApi } from '../../api/services'
 import type { EmployerProfile } from '../../types'
 import ImageUploader from '../../components/ImageUploader'
-import { INDIAN_STATES } from '../../utils/constants'
+import { INDIAN_STATES } from '../../utils/constants';
+import { EmployerVerificationCenter } from '../../components/verification/EmployerVerificationCenter';
+import { CompanyVerifiedBadge } from '../../components/verification/TrustBadges';
 
 export default function EmployerProfilePage() {
   const { t } = useTranslation()
@@ -94,7 +96,7 @@ export default function EmployerProfilePage() {
         <div>
           <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
             {t('nav.profile', 'Profile')}
-            {profile && <BadgeCheck className="w-6 h-6 text-[#2455E8]" />}
+            {profile && <CompanyVerifiedBadge isVerified={profile.is_verified} />}
           </h1>
           <p className="text-gray-500 text-base mt-2">{t('employer.manageCompanyInfo', 'Manage your company information and settings')}</p>
         </div>
@@ -264,6 +266,12 @@ export default function EmployerProfilePage() {
           </div>
         </form>
       </div>
+
+      {profile && (
+        <div className="mt-8">
+          <EmployerVerificationCenter profile={profile} />
+        </div>
+      )}
     </div>
   )
 }

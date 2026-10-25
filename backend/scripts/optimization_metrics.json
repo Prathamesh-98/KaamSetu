@@ -1,0 +1,177 @@
+{
+  "total_orig_bytes": 29104457,
+  "total_webp_bytes": 3135562,
+  "savings_pct": 89.23,
+  "items": [
+    {
+      "name": "mechanic.jpg.jpg",
+      "base_name": "mechanic",
+      "type": "primary",
+      "orig_dim": "7360x4912",
+      "new_dim": "1920x1281",
+      "orig_size": 4902812,
+      "webp_size": 184638,
+      "savings_pct": 96.23
+    },
+    {
+      "name": "electrical-team.jpg.jpg",
+      "base_name": "electrical-team",
+      "type": "primary",
+      "orig_dim": "5381x4000",
+      "new_dim": "1920x1427",
+      "orig_size": 3851305,
+      "webp_size": 284798,
+      "savings_pct": 92.61
+    },
+    {
+      "name": "textile-worker.jpg.jpg",
+      "base_name": "textile-worker",
+      "type": "primary",
+      "orig_dim": "6000x4000",
+      "new_dim": "1920x1280",
+      "orig_size": 3545624,
+      "webp_size": 179168,
+      "savings_pct": 94.95
+    },
+    {
+      "name": "carpenter.jpg.jpg",
+      "base_name": "carpenter",
+      "type": "primary",
+      "orig_dim": "6000x4000",
+      "new_dim": "1920x1280",
+      "orig_size": 2989810,
+      "webp_size": 282638,
+      "savings_pct": 90.55
+    },
+    {
+      "name": "plumber.jpg.jpg",
+      "base_name": "plumber",
+      "type": "primary",
+      "orig_dim": "4992x3328",
+      "new_dim": "1920x1280",
+      "orig_size": 2459318,
+      "webp_size": 438246,
+      "savings_pct": 82.18
+    },
+    {
+      "name": "brick-workers.jpg.jpg",
+      "base_name": "brick-workers",
+      "type": "primary",
+      "orig_dim": "5760x3840",
+      "new_dim": "1920x1280",
+      "orig_size": 2000601,
+      "webp_size": 400726,
+      "savings_pct": 79.97
+    },
+    {
+      "name": "agricultural-workers.jpg.jpg",
+      "base_name": "agricultural-workers",
+      "type": "primary",
+      "orig_dim": "5472x3648",
+      "new_dim": "1920x1280",
+      "orig_size": 1785079,
+      "webp_size": 324948,
+      "savings_pct": 81.8
+    },
+    {
+      "name": "electrician.jpg.jpg",
+      "base_name": "electrician",
+      "type": "primary",
+      "orig_dim": "4032x3024",
+      "new_dim": "1920x1440",
+      "orig_size": 796809,
+      "webp_size": 154396,
+      "savings_pct": 80.62
+    },
+    {
+      "name": "workers/construction.jpg",
+      "base_name": "construction",
+      "type": "worker",
+      "orig_dim": "1024x1024",
+      "new_dim": "1024x1024",
+      "orig_size": 868762,
+      "webp_size": 139110,
+      "savings_pct": 83.99
+    },
+    {
+      "name": "workers/domestic.jpg",
+      "base_name": "domestic",
+      "type": "worker",
+      "orig_dim": "1024x1024",
+      "new_dim": "1024x1024",
+      "orig_size": 741248,
+      "webp_size": 99040,
+      "savings_pct": 86.64
+    },
+    {
+      "name": "workers/driving.jpg",
+      "base_name": "driving",
+      "type": "worker",
+      "orig_dim": "1024x1024",
+      "new_dim": "1024x1024",
+      "orig_size": 737148,
+      "webp_size": 95758,
+      "savings_pct": 87.01
+    },
+    {
+      "name": "workers/electrical.jpg",
+      "base_name": "electrical",
+      "type": "worker",
+      "orig_dim": "1024x1024",
+      "new_dim": "1024x1024",
+      "orig_size": 809810,
+      "webp_size": 114306,
+      "savings_pct": 85.88
+    },
+    {
+      "name": "workers/farming.jpg",
+      "base_name": "farming",
+      "type": "worker",
+      "orig_dim": "1024x1024",
+      "new_dim": "1024x1024",
+      "orig_size": 836342,
+      "webp_size": 138544,
+      "savings_pct": 83.43
+    },
+    {
+      "name": "workers/hero.jpg",
+      "base_name": "hero",
+      "type": "worker",
+      "orig_dim": "1024x1024",
+      "new_dim": "1024x1024",
+      "orig_size": 647109,
+      "webp_size": 57058,
+      "savings_pct": 91.18
+    },
+    {
+      "name": "workers/painting.jpg",
+      "base_name": "painting",
+      "type": "worker",
+      "orig_dim": "1024x1024",
+      "new_dim": "1024x1024",
+      "orig_size": 698679,
+      "webp_size": 79680,
+      "savings_pct": 88.6
+    },
+    {
+      "name": "workers/plumbing.jpg",
+      "base_name": "plumbing",
+      "type": "worker",
+      "orig_dim": "1024x1024",
+      "new_dim": "1024x1024",
+      "orig_size": 684889,
+      "webp_size": 67692,
+      "savings_pct": 90.12
+    },
+    {
+      "name": "workers/tech.jpg",
+      "base_name": "tech",
+      "type": "worker",
+      "orig_dim": "1024x1024",
+      "new_dim": "1024x1024",
+      "orig_size": 749112,
+      "webp_size": 94816,
+      "savings_pct": 87.34
+    }
+  ]
+}

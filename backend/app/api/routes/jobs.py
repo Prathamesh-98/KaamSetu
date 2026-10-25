@@ -1,7 +1,7 @@
 """KaamSetu — Jobs Routes"""
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func, and_, or_, delete
+from sqlalchemy import select, func, and_, or_, delete, case
 from sqlalchemy.orm import selectinload
 from typing import Optional, List
 from uuid import UUID
@@ -12,13 +12,19 @@ from app.models.models import (
     User, Job, JobCategory, JobRequiredSkill, Skill,
     EmployerProfile, WorkerProfile, WorkerSkill,
     JobStatus, WorkType, SalaryType, UserRole,
-    ShiftBooking, BookingStatus
+    ShiftBooking, BookingStatus, AvailabilityStatus
 )
 from datetime import date
 from app.schemas.schemas import (
     JobCreate, JobUpdate, JobResponse, JobListResponse, PaginatedJobListResponse, CategoryCreate, CategoryResponse, JobMatchResponse, PaginatedCandidateMatchResponse, CandidateMatchResponse
 )
 from app.services.matching_service import MatchingService
+from app.services.distance_service import (
+    haversine_distance_km,
+    estimate_travel_time,
+    calculate_bounding_box,
+    get_current_date_ist,
+)
 from app.services.notification_service import create_notification
 from app.api.dependencies import get_current_user, require_employer, get_employer_profile
 
@@ -106,10 +112,31 @@ async def list_jobs(
     status: Optional[JobStatus] = Query(None, description="Default: ACTIVE"),
     page: int = Query(1, ge=1),
     per_page: int = Query(20, ge=1, le=100),
+    worker_lat: Optional[float] = Query(None, ge=-90.0, le=90.0, description="Worker latitude (-90 to 90)"),
+    worker_lng: Optional[float] = Query(None, ge=-180.0, le=180.0, description="Worker longitude (-180 to 180)"),
+    radius_km: Optional[float] = Query(None, gt=0, le=100.0, description="Search radius in km (0 to 100)"),
+    same_day: Optional[bool] = Query(None, description="Filter same-day jobs starting today IST or urgent daily/hourly/local"),
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    """List jobs with filters and pagination."""
+    """List jobs with filters, distance calculation, and pagination."""
+    # Coordinate and radius validation
+    if radius_km is not None and (worker_lat is None or worker_lng is None):
+        raise HTTPException(
+            status_code=422,
+            detail="Both worker_lat and worker_lng are required when radius_km is provided.",
+        )
+    if (worker_lat is not None and worker_lng is None) or (worker_lat is None and worker_lng is not None):
+        raise HTTPException(
+            status_code=422,
+            detail="Both worker_lat and worker_lng must be provided together.",
+        )
+    if sort_by == "distance_asc" and (worker_lat is None or worker_lng is None):
+        raise HTTPException(
+            status_code=422,
+            detail="worker_lat and worker_lng are required when sorting by distance.",
+        )
+
     filters = [Job.status == (status or JobStatus.ACTIVE)]
 
     if keyword:
@@ -145,26 +172,68 @@ async def list_jobs(
     if start_date_from:
         filters.append(Job.start_date >= start_date_from)
 
+    # Same-day filter (Asia/Kolkata timezone)
+    if same_day:
+        today_ist = get_current_date_ist()
+        filters.append(
+            or_(
+                Job.start_date == today_ist,
+                and_(
+                    Job.is_urgent == True,
+                    Job.work_type.in_([WorkType.DAILY, WorkType.HOURLY, WorkType.LOCAL]),
+                    or_(Job.start_date.is_(None), Job.start_date <= today_ist),
+                ),
+            )
+        )
+
+    # Haversine distance expression (PostgreSQL & standard math functions)
+    haversine_expr = None
+    if worker_lat is not None and worker_lng is not None:
+        dlat = func.radians(Job.latitude - worker_lat)
+        dlon = func.radians(Job.longitude - worker_lng)
+        w_lat_rad = func.radians(worker_lat)
+        job_lat_rad = func.radians(Job.latitude)
+
+        a = (
+            func.pow(func.sin(dlat / 2.0), 2)
+            + func.cos(w_lat_rad) * func.cos(job_lat_rad) * func.pow(func.sin(dlon / 2.0), 2)
+        )
+        calculated_distance = 6371.0 * 2.0 * func.asin(func.sqrt(func.least(1.0, func.greatest(0.0, a))))
+        haversine_expr = case(
+            (or_(Job.latitude.is_(None), Job.longitude.is_(None)), None),
+            else_=calculated_distance
+        )
+
+    # Radius filter with bounding box prefiltering
+    if radius_km is not None:
+        min_lat, max_lat, min_lon, max_lon = calculate_bounding_box(worker_lat, worker_lng, radius_km)
+        filters.append(Job.latitude.isnot(None))
+        filters.append(Job.longitude.isnot(None))
+        filters.append(Job.latitude >= min_lat)
+        filters.append(Job.latitude <= max_lat)
+        filters.append(Job.longitude >= min_lon)
+        filters.append(Job.longitude <= max_lon)
+        filters.append(haversine_expr <= radius_km)
+
     # Calculate total count
     count_query = select(func.count()).select_from(Job).where(and_(*filters))
     total_result = await db.execute(count_query)
     total = total_result.scalar() or 0
 
     # Sorting
-    order_clauses = [Job.is_urgent.desc()]
-    if sort_by == "newest":
-        order_clauses.append(Job.created_at.desc())
+    if sort_by == "distance_asc" and haversine_expr is not None:
+        order_clauses = [haversine_expr.asc().nulls_last(), Job.is_urgent.desc(), Job.created_at.desc()]
+    elif sort_by == "newest":
+        order_clauses = [Job.is_urgent.desc(), Job.created_at.desc()]
     elif sort_by == "oldest":
-        order_clauses.append(Job.created_at.asc())
+        order_clauses = [Job.is_urgent.desc(), Job.created_at.asc()]
     elif sort_by == "salary_desc":
-        order_clauses.append(Job.salary_max.desc().nulls_last())
-        order_clauses.append(Job.salary_min.desc().nulls_last())
+        order_clauses = [Job.is_urgent.desc(), Job.salary_max.desc().nulls_last(), Job.salary_min.desc().nulls_last()]
     elif sort_by == "salary_asc":
-        order_clauses.append(Job.salary_min.asc().nulls_last())
-        order_clauses.append(Job.salary_max.asc().nulls_last())
+        order_clauses = [Job.is_urgent.desc(), Job.salary_min.asc().nulls_last(), Job.salary_max.asc().nulls_last()]
     else:
         # Default sort
-        order_clauses.append(Job.created_at.desc())
+        order_clauses = [Job.is_urgent.desc(), Job.created_at.desc()]
 
     offset = (page - 1) * per_page
     query = (
@@ -176,7 +245,19 @@ async def list_jobs(
         .limit(per_page)
     )
     result = await db.execute(query)
-    items = [JobListResponse.model_validate(j) for j in result.scalars().all()]
+    jobs_records = result.scalars().all()
+
+    items = []
+    for j in jobs_records:
+        item = JobListResponse.model_validate(j)
+        if worker_lat is not None and worker_lng is not None and j.latitude is not None and j.longitude is not None:
+            dist = haversine_distance_km(worker_lat, worker_lng, j.latitude, j.longitude)
+            item.distance_km = dist
+            item.estimated_travel_time = estimate_travel_time(dist)
+        else:
+            item.distance_km = None
+            item.estimated_travel_time = None
+        items.append(item)
     total_pages = (total + per_page - 1) // per_page
 
     return PaginatedJobListResponse(
@@ -331,19 +412,55 @@ async def get_job_candidates(
     if not job:
         raise HTTPException(status_code=404, detail="Job not found or not owned by employer")
 
-    # Fetch all active worker profiles with skills (we exclude the employer's own user_id just in case)
-    workers_result = await db.execute(
+    # Smart priority ordering for bounded candidate pool evaluation:
+    # Prioritize workers with matching required skills (weight 35%),
+    # workers in the same city/state (weight 20%), and available workers (weight 5%).
+    order_clauses = []
+    req_skill_ids = [rs.skill_id for rs in (job.required_skills or [])]
+    if req_skill_ids:
+        has_skill = WorkerProfile.skills.any(WorkerSkill.skill_id.in_(req_skill_ids))
+        order_clauses.append(case((has_skill, 0), else_=1))
+
+    if job.city:
+        loc_city = func.lower(WorkerProfile.city) == func.lower(job.city)
+        order_clauses.append(case((loc_city, 0), else_=1))
+
+    if job.state:
+        loc_state = func.lower(WorkerProfile.state) == func.lower(job.state)
+        order_clauses.append(case((loc_state, 0), else_=1))
+
+    is_available = WorkerProfile.availability_status == AvailabilityStatus.AVAILABLE
+    order_clauses.append(case((is_available, 0), else_=1))
+    order_clauses.append(WorkerProfile.average_rating.desc())
+    order_clauses.append(WorkerProfile.years_experience.desc())
+    order_clauses.append(WorkerProfile.created_at.desc())
+
+    # Fetch bounded candidate pool of active workers (excluding employer's own user_id)
+    CANDIDATE_POOL_LIMIT = 200
+    workers_query = (
         select(WorkerProfile)
-        .where(WorkerProfile.user_id != employer_profile.user_id)
+        .join(User, WorkerProfile.user_id == User.id)
+        .where(
+            WorkerProfile.user_id != employer_profile.user_id,
+            User.is_active == True,
+        )
         .options(selectinload(WorkerProfile.skills).selectinload(WorkerSkill.skill))
+        .order_by(*order_clauses)
+        .limit(CANDIDATE_POOL_LIMIT)
     )
+    workers_result = await db.execute(workers_query)
     workers = workers_result.scalars().all()
 
-    # Fetch existing applications for this job
-    applications_result = await db.execute(
-        select(JobApplication).where(JobApplication.job_id == job_id)
-    )
-    applications = {app.worker_id: app.status for app in applications_result.scalars().all()}
+    # Fetch existing applications for this job among candidates
+    applications = {}
+    if workers:
+        applications_result = await db.execute(
+            select(JobApplication).where(
+                JobApplication.job_id == job_id,
+                JobApplication.worker_id.in_([w.id for w in workers])
+            )
+        )
+        applications = {app.worker_id: app.status for app in applications_result.scalars().all()}
 
     # Calculate matches
     candidates = []
@@ -433,17 +550,26 @@ async def delete_job(
         raise HTTPException(status_code=404, detail="Job not found")
     if job.employer_id != employer_profile.id:
         raise HTTPException(status_code=403, detail="Not your job")
-    shift_res = await db.execute(
-        select(func.count(ShiftBooking.id)).where(
-            ShiftBooking.job_id == job_id,
-            ShiftBooking.status == BookingStatus.CONFIRMED,
-        )
+    # Check for any historical activity: applications or shift bookings
+    app_res = await db.execute(
+        select(func.count(JobApplication.id)).where(JobApplication.job_id == job_id)
     )
-    confirmed_shifts = shift_res.scalar_one()
+    apps_count = app_res.scalar_one()
 
-    if confirmed_shifts > 0 and job.status != JobStatus.CANCELLED:
-        job.status = JobStatus.CANCELLED
-        await db.flush()
+    shift_res = await db.execute(
+        select(func.count(ShiftBooking.id)).where(ShiftBooking.job_id == job_id)
+    )
+    shifts_count = shift_res.scalar_one()
+
+    has_historical_activity = (apps_count > 0) or (shifts_count > 0)
+
+    if has_historical_activity:
+        # Preserve historical records and audit trail via soft cancellation
+        if job.status != JobStatus.CANCELLED:
+            job.status = JobStatus.CANCELLED
+            await db.flush()
+        # If already CANCELLED, preserve records without deleting
     else:
+        # Truly empty job with zero applicants or shift history: safe to hard-delete
         await db.delete(job)
         await db.flush()

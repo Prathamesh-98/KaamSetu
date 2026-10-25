@@ -11,7 +11,9 @@ import { workerApi, skillsApi } from '../../api/services'
 import type { WorkerProfilePayload, SalaryType, AvailabilityStatus, Skill } from '../../types'
 import ImageUploader from '../../components/ImageUploader'
 import { INDIAN_STATES } from '../../utils/constants'
-import { useAuth } from '../../contexts/AuthContext'
+import { useAuth } from '../../contexts/AuthContext';
+import { WorkerVerificationCenter } from '../../components/verification/WorkerVerificationCenter';
+import { PhoneVerifiedBadge, IdentityVerifiedBadge } from '../../components/verification/TrustBadges';
 
 const AVAILABILITY_CONFIG: Record<AvailabilityStatus, { label: string; color: string }> = {
   AVAILABLE:   { label: 'Available',   color: 'text-emerald-700 bg-emerald-50 border-emerald-200' },
@@ -171,11 +173,8 @@ export default function WorkerProfilePage() {
                 <div className="flex flex-col md:flex-row md:items-center gap-3 mb-2 justify-center md:justify-start">
                   <h2 className="text-2xl font-bold text-[#182849]">{profile.full_name}</h2>
                   <div className="flex items-center gap-2 justify-center md:justify-start">
-                    {profile.is_identity_verified && (
-                      <span className="inline-flex items-center gap-1.5 text-xs text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-xl px-2.5 py-1 font-bold shadow-sm">
-                        <Shield className="w-3.5 h-3.5" /> {t('worker.verified', 'Verified')}
-                      </span>
-                    )}
+                    <IdentityVerifiedBadge isVerified={profile.is_identity_verified} />
+                    <PhoneVerifiedBadge isVerified={profile.is_phone_verified} />
                     <span className={`text-xs font-bold border rounded-xl px-2.5 py-1 shadow-sm ${avail.color}`}>
                       {t(`matching.availability.${avail.label.toLowerCase()}`, { defaultValue: avail.label })}
                     </span>
@@ -249,6 +248,9 @@ export default function WorkerProfilePage() {
 
             <WorkerSkillManager profile={profile} t={t} />
           </div>
+
+          {/* Trust and Verification Center */}
+          <WorkerVerificationCenter profile={profile} />
         </div>
       )}
     </div>

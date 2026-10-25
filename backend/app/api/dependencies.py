@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from app.db.session import get_db
 from app.core.security import decode_access_token
-from app.models.models import User, UserRole, WorkerProfile, EmployerProfile
+from app.models.models import User, UserRole, WorkerProfile, EmployerProfile, AdminProfile
 
 # Bearer token extractor
 security = HTTPBearer()
@@ -38,6 +38,24 @@ async def get_current_user(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Account is disabled",
         )
+
+    # Token revocation verification (token_version claim check)
+    # Stale or revoked tokens are rejected with 401 Unauthorized.
+    # Legacy tokens without a version claim default to version 1 for safe rollout compatibility.
+    token_ver = payload.get("token_version")
+    if token_ver is None:
+        token_ver = payload.get("ver")
+
+    user_ver = getattr(user, "token_version", 1) or 1
+    effective_token_ver = 1 if token_ver is None else token_ver
+
+    if effective_token_ver != user_ver:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Token has been revoked. Please log in again.",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
     return user
 
 
@@ -108,4 +126,27 @@ async def get_employer_profile(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Employer profile not found. Please create your profile first.",
         )
+    return profile
+
+
+async def get_admin_profile(
+    current_user: User = Depends(require_admin),
+    db: AsyncSession = Depends(get_db),
+) -> AdminProfile:
+    """Get or auto-initialize the AdminProfile for the authenticated admin user."""
+    result = await db.execute(
+        select(AdminProfile).where(AdminProfile.user_id == current_user.id)
+    )
+    profile = result.scalar_one_or_none()
+    if profile is None:
+        default_name = current_user.email.split("@")[0].capitalize() if current_user.email else "Administrator"
+        profile = AdminProfile(
+            user_id=current_user.id,
+            full_name=default_name,
+            phone=current_user.phone,
+            department="Operations",
+        )
+        db.add(profile)
+        await db.flush()
+        await db.refresh(profile)
     return profile

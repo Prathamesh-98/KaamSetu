@@ -89,9 +89,12 @@ export default function EmployerDashboard() {
             {user?.email} · {t('employer.manageWorkforce', 'Manage your workforce and hiring process effectively.')}
           </p>
         </div>
-        <div className="flex gap-4 relative z-10">
+        <div className="flex gap-4 relative z-10 flex-wrap">
           <Link to="/employer/post-job" className="inline-flex items-center justify-center px-5 py-2.5 bg-[#2455E8] hover:bg-[#1e46c7] text-white font-medium rounded-xl transition-colors shadow-sm">
             <Plus className="w-5 h-5 mr-2" /> {t('employer.postNew', 'Post a Job')}
+          </Link>
+          <Link to="/employer/shifts" className="inline-flex items-center justify-center px-5 py-2.5 bg-white hover:bg-gray-50 text-gray-700 font-medium rounded-xl border border-gray-200 transition-colors shadow-sm">
+            <Clock className="w-5 h-5 mr-2 text-primary-600" /> {t('employer.shifts', 'Shifts & Settlement')}
           </Link>
           <Link to="/employer/jobs" className="inline-flex items-center justify-center px-5 py-2.5 bg-white hover:bg-gray-50 text-gray-700 font-medium rounded-xl border border-gray-200 transition-colors shadow-sm">
             <Briefcase className="w-5 h-5 mr-2" /> {t('nav.myJobs', 'My Jobs')}
@@ -301,6 +304,12 @@ export default function EmployerDashboard() {
                   <Plus className="w-5 h-5" />
                 </div>
                 <div className="font-bold text-gray-900 text-base">{t('employer.postNew', 'Post a Job')}</div>
+              </Link>
+              <Link to="/employer/shifts" className="w-full flex items-center gap-4 p-4 rounded-xl hover:bg-gray-50 transition-colors border border-gray-100 hover:border-gray-200 group">
+                <div className="w-10 h-10 rounded-xl bg-purple-50 flex items-center justify-center text-purple-600 group-hover:bg-purple-600 group-hover:text-white transition-colors">
+                  <Clock className="w-5 h-5" />
+                </div>
+                <div className="font-bold text-gray-900 text-base">{t('employer.shifts', 'Shifts & Settlement')}</div>
               </Link>
               <Link to="/employer/jobs" className="w-full flex items-center gap-4 p-4 rounded-xl hover:bg-gray-50 transition-colors border border-gray-100 hover:border-gray-200 group">
                 <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600 group-hover:bg-emerald-500 group-hover:text-white transition-colors">

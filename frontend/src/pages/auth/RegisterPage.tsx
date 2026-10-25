@@ -78,7 +78,7 @@ export default function RegisterPage() {
         
         {/* Background Image with Overlay */}
         <div className="absolute inset-0 z-0 mix-blend-overlay opacity-30">
-           <img src="/images/brick-workers.jpg.jpg" alt="Workers" className="w-full h-full object-cover object-[60%_40%]" />
+           <img src="/images/brick-workers.webp" alt="Workers" className="w-full h-full object-cover object-[60%_40%]" />
         </div>
         <div className="absolute inset-0 z-0 bg-gradient-to-t from-[#0B1735] via-[#0B1735]/80 to-transparent" />
 

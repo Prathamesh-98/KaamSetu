@@ -1,0 +1,708 @@
+{
+  "total_unique_missing": 223,
+  "total_missing_references": 256,
+  "keys": {
+    "admin.passwordComplexityNote": [
+      "pages\\admin\\AdminProfilePage.tsx:140"
+    ],
+    "applications.accept": [
+      "pages\\employer\\JobApplicantsPage.tsx:252"
+    ],
+    "applications.actionFailed": [
+      "pages\\employer\\JobApplicantsPage.tsx:115"
+    ],
+    "applications.applied": [
+      "pages\\worker\\JobDetailsPage.tsx:149"
+    ],
+    "applications.browseJobs": [
+      "pages\\worker\\MyApplications.tsx:186"
+    ],
+    "applications.coverNote": [
+      "pages\\employer\\JobApplicantsPage.tsx:206"
+    ],
+    "applications.emptyDesc": [
+      "pages\\worker\\MyApplications.tsx:183"
+    ],
+    "applications.emptyTitle": [
+      "pages\\worker\\MyApplications.tsx:181"
+    ],
+    "applications.errorDesc": [
+      "pages\\worker\\MyApplications.tsx:172"
+    ],
+    "applications.errorTitle": [
+      "pages\\worker\\MyApplications.tsx:171"
+    ],
+    "applications.noFurtherActions": [
+      "pages\\employer\\JobApplicantsPage.tsx:294"
+    ],
+    "applications.processing": [
+      "pages\\employer\\JobApplicantsPage.tsx:234"
+    ],
+    "applications.reject": [
+      "pages\\employer\\JobApplicantsPage.tsx:241",
+      "pages\\employer\\JobApplicantsPage.tsx:259"
+    ],
+    "applications.shortlist": [
+      "pages\\employer\\JobApplicantsPage.tsx:234"
+    ],
+    "applications.statusPrefix": [
+      "pages\\worker\\JobDetailsPage.tsx:149"
+    ],
+    "applications.subtitle": [
+      "pages\\worker\\MyApplications.tsx:136"
+    ],
+    "applications.total": [
+      "pages\\worker\\MyApplications.tsx:142"
+    ],
+    "applications.updateStatusError": [
+      "pages\\employer\\JobApplicantsPage.tsx:119"
+    ],
+    "applications.viewJob": [
+      "pages\\worker\\MyApplications.tsx:79"
+    ],
+    "applications.withdraw": [
+      "pages\\worker\\MyApplications.tsx:110"
+    ],
+    "applications.withdrawing": [
+      "pages\\worker\\MyApplications.tsx:110"
+    ],
+    "availability.add": [
+      "pages\\worker\\MyAvailabilityPage.tsx:82"
+    ],
+    "availability.created": [
+      "pages\\worker\\MyAvailabilityPage.tsx:28"
+    ],
+    "availability.deleted": [
+      "pages\\worker\\MyAvailabilityPage.tsx:45"
+    ],
+    "availability.empty": [
+      "pages\\worker\\MyAvailabilityPage.tsx:123"
+    ],
+    "availability.end": [
+      "pages\\worker\\MyAvailabilityPage.tsx:95"
+    ],
+    "availability.error": [
+      "pages\\worker\\MyAvailabilityPage.tsx:33",
+      "pages\\worker\\MyAvailabilityPage.tsx:48"
+    ],
+    "availability.invalidRange": [
+      "pages\\worker\\MyAvailabilityPage.tsx:59"
+    ],
+    "availability.start": [
+      "pages\\worker\\MyAvailabilityPage.tsx:85"
+    ],
+    "availability.upcoming": [
+      "pages\\worker\\MyAvailabilityPage.tsx:117"
+    ],
+    "common.add": [
+      "pages\\employer\\SavedWorkersPage.tsx:402",
+      "pages\\worker\\MyAvailabilityPage.tsx:110"
+    ],
+    "common.cancel": [
+      "pages\\employer\\SavedWorkersPage.tsx:552",
+      "pages\\employer\\SavedWorkersPage.tsx:608",
+      "components\\shifts\\AddInstallmentModal.tsx:277",
+      "components\\shifts\\CompleteShiftModal.tsx:450",
+      "components\\shifts\\DisputeCorrectionModal.tsx:293",
+      "components\\shifts\\DisputePaymentModal.tsx:164",
+      "components\\verification\\AdminVerificationManager.tsx:539",
+      "components\\verification\\EmployerVerificationCenter.tsx:211",
+      "components\\verification\\WorkerVerificationCenter.tsx:975"
+    ],
+    "common.clear": [
+      "pages\\worker\\WorkerProfilePage.tsx:554"
+    ],
+    "common.edit": [
+      "pages\\employer\\SavedWorkersPage.tsx:402"
+    ],
+    "common.loading": [
+      "pages\\employer\\SavedWorkersPage.tsx:228",
+      "components\\layout\\NotificationDropdown.tsx:117"
+    ],
+    "common.locationUnknown": [
+      "pages\\employer\\JobApplicantsPage.tsx:185"
+    ],
+    "common.more": [
+      "pages\\employer\\JobApplicantsPage.tsx:219"
+    ],
+    "common.remove": [
+      "pages\\worker\\MyAvailabilityPage.tsx:142",
+      "pages\\worker\\WorkerProfilePage.tsx:614"
+    ],
+    "common.requesting": [
+      "pages\\employer\\SavedWorkersPage.tsx:563"
+    ],
+    "common.retry": [
+      "pages\\employer\\SavedWorkersPage.tsx:240"
+    ],
+    "common.save": [
+      "pages\\employer\\SavedWorkersPage.tsx:619"
+    ],
+    "common.saving": [
+      "pages\\employer\\SavedWorkersPage.tsx:619",
+      "pages\\worker\\MyAvailabilityPage.tsx:110",
+      "components\\shifts\\AddInstallmentModal.tsx:287",
+      "components\\shifts\\CompleteShiftModal.tsx:460",
+      "components\\shifts\\DisputeCorrectionModal.tsx:303"
+    ],
+    "common.submitting": [
+      "pages\\auth\\LoginPage.tsx:177",
+      "pages\\auth\\RegisterPage.tsx:281"
+    ],
+    "employer.actionCol": [
+      "pages\\employer\\EmployerDashboard.tsx:218"
+    ],
+    "employer.allCaughtUp": [
+      "pages\\employer\\EmployerDashboard.tsx:192"
+    ],
+    "employer.appliedFor": [
+      "pages\\employer\\EmployerDashboard.tsx:174"
+    ],
+    "employer.appsCol": [
+      "pages\\employer\\EmployerDashboard.tsx:217"
+    ],
+    "employer.bio": [
+      "pages\\employer\\EmployerProfilePage.tsx:246"
+    ],
+    "employer.bioPlaceholder": [
+      "pages\\employer\\EmployerProfilePage.tsx:249"
+    ],
+    "employer.city": [
+      "pages\\employer\\EmployerProfilePage.tsx:212"
+    ],
+    "employer.cityPlaceholder": [
+      "pages\\employer\\EmployerProfilePage.tsx:218"
+    ],
+    "employer.companyLogo": [
+      "pages\\employer\\EmployerProfilePage.tsx:148"
+    ],
+    "employer.companyProfile": [
+      "pages\\employer\\EmployerDashboard.tsx:116"
+    ],
+    "employer.completeProfileBtn": [
+      "pages\\employer\\EmployerDashboard.tsx:137"
+    ],
+    "employer.defaultName": [
+      "pages\\employer\\EmployerDashboard.tsx:86",
+      "pages\\worker\\WorkerShiftBookingsPage.tsx:354",
+      "pages\\worker\\WorkerShiftBookingsPage.tsx:414"
+    ],
+    "employer.fullName": [
+      "pages\\employer\\EmployerProfilePage.tsx:155"
+    ],
+    "employer.fullNamePlaceholder": [
+      "pages\\employer\\EmployerProfilePage.tsx:161"
+    ],
+    "employer.fullNameRequired": [
+      "pages\\employer\\EmployerProfilePage.tsx:71"
+    ],
+    "employer.jobPerformance": [
+      "pages\\employer\\EmployerDashboard.tsx:202"
+    ],
+    "employer.jobTitle": [
+      "pages\\employer\\EmployerDashboard.tsx:214"
+    ],
+    "employer.logoHint": [
+      "pages\\employer\\EmployerProfilePage.tsx:149"
+    ],
+    "employer.manageCompanyInfo": [
+      "pages\\employer\\EmployerProfilePage.tsx:101"
+    ],
+    "employer.manageJobs": [
+      "pages\\employer\\EmployerDashboard.tsx:205"
+    ],
+    "employer.manageWorkforce": [
+      "pages\\employer\\EmployerDashboard.tsx:89"
+    ],
+    "employer.needsAttention": [
+      "pages\\employer\\EmployerDashboard.tsx:163"
+    ],
+    "employer.noJobsPosted": [
+      "pages\\employer\\EmployerDashboard.tsx:255"
+    ],
+    "employer.noWorkersAccepted": [
+      "pages\\employer\\EmployerDashboard.tsx:293"
+    ],
+    "employer.orgName": [
+      "pages\\employer\\EmployerProfilePage.tsx:170",
+      "components\\verification\\EmployerVerificationCenter.tsx:227"
+    ],
+    "employer.orgNamePlaceholder": [
+      "pages\\employer\\EmployerProfilePage.tsx:176"
+    ],
+    "employer.orgType": [
+      "pages\\employer\\EmployerProfilePage.tsx:184",
+      "components\\verification\\EmployerVerificationCenter.tsx:242"
+    ],
+    "employer.orgTypePlaceholder": [
+      "pages\\employer\\EmployerProfilePage.tsx:190"
+    ],
+    "employer.profileComplete": [
+      "pages\\employer\\EmployerDashboard.tsx:121"
+    ],
+    "employer.profileIncomplete": [
+      "pages\\employer\\EmployerDashboard.tsx:122"
+    ],
+    "employer.profileSaveError": [
+      "pages\\employer\\EmployerProfilePage.tsx:63"
+    ],
+    "employer.profileSavedSuccess": [
+      "pages\\employer\\EmployerProfilePage.tsx:58"
+    ],
+    "employer.quickActions": [
+      "pages\\employer\\EmployerDashboard.tsx:300"
+    ],
+    "employer.recentlyAccepted": [
+      "pages\\employer\\EmployerDashboard.tsx:273"
+    ],
+    "employer.reviewBtn": [
+      "pages\\employer\\EmployerDashboard.tsx:184"
+    ],
+    "employer.saving": [
+      "pages\\employer\\EmployerProfilePage.tsx:262"
+    ],
+    "employer.selectState": [
+      "pages\\employer\\EmployerProfilePage.tsx:234"
+    ],
+    "employer.setupProfileWarning": [
+      "pages\\employer\\EmployerProfilePage.tsx:117"
+    ],
+    "employer.shiftsSubtitle": [
+      "pages\\employer\\EmployerShiftBookingsPage.tsx:104"
+    ],
+    "employer.state": [
+      "pages\\employer\\EmployerProfilePage.tsx:226"
+    ],
+    "employer.statusCol": [
+      "pages\\employer\\EmployerDashboard.tsx:215"
+    ],
+    "employer.totalJobs": [
+      "pages\\employer\\EmployerDashboard.tsx:145"
+    ],
+    "employer.viewAction": [
+      "pages\\employer\\EmployerDashboard.tsx:244"
+    ],
+    "employer.viewsCol": [
+      "pages\\employer\\EmployerDashboard.tsx:216"
+    ],
+    "employer.website": [
+      "pages\\employer\\EmployerProfilePage.tsx:198"
+    ],
+    "employer.yrsExp": [
+      "pages\\employer\\EmployerDashboard.tsx:180"
+    ],
+    "error_loading": [
+      "pages\\employer\\JobCandidatesPage.tsx:46"
+    ],
+    "jobs.aboutEmployer": [
+      "pages\\worker\\JobDetailsPage.tsx:259"
+    ],
+    "jobs.additionalReqs": [
+      "pages\\worker\\JobDetailsPage.tsx:196"
+    ],
+    "jobs.applicants": [
+      "pages\\employer\\MyJobsPage.tsx:81",
+      "pages\\worker\\JobDetailsPage.tsx:252"
+    ],
+    "jobs.appliedOn": [
+      "pages\\worker\\MyApplications.tsx:63"
+    ],
+    "jobs.applying": [
+      "pages\\worker\\JobDetailsPage.tsx:158"
+    ],
+    "jobs.backToJobs": [
+      "pages\\worker\\JobDetailsPage.tsx:117"
+    ],
+    "jobs.browseOther": [
+      "pages\\worker\\JobDetailsPage.tsx:98"
+    ],
+    "jobs.compensation": [
+      "pages\\worker\\JobDetailsPage.tsx:229"
+    ],
+    "jobs.days": [
+      "pages\\worker\\JobDetailsPage.tsx:248"
+    ],
+    "jobs.deleteJob": [
+      "pages\\employer\\MyJobsPage.tsx:111"
+    ],
+    "jobs.duration": [
+      "pages\\worker\\JobDetailsPage.tsx:247"
+    ],
+    "jobs.editJob": [
+      "pages\\employer\\MyJobsPage.tsx:103"
+    ],
+    "jobs.errorDesc": [
+      "pages\\employer\\JobApplicantsPage.tsx:92",
+      "pages\\employer\\MyJobsPage.tsx:200",
+      "pages\\worker\\SavedJobsPage.tsx:41"
+    ],
+    "jobs.errorTitle": [
+      "pages\\employer\\JobApplicantsPage.tsx:91",
+      "pages\\employer\\MyJobsPage.tsx:199",
+      "pages\\worker\\SavedJobsPage.tsx:40"
+    ],
+    "jobs.experience": [
+      "pages\\worker\\JobDetailsPage.tsx:238",
+      "pages\\worker\\JobDetailsPage.tsx:287"
+    ],
+    "jobs.findJobs": [
+      "pages\\worker\\SavedJobsPage.tsx:67"
+    ],
+    "jobs.jobApplicants": [
+      "pages\\employer\\JobApplicantsPage.tsx:106"
+    ],
+    "jobs.jobDescription": [
+      "pages\\worker\\JobDetailsPage.tsx:188"
+    ],
+    "jobs.jobOverview": [
+      "pages\\worker\\JobDetailsPage.tsx:235"
+    ],
+    "jobs.manageApplications": [
+      "pages\\employer\\JobApplicantsPage.tsx:107"
+    ],
+    "jobs.myJobsDesc": [
+      "pages\\employer\\MyJobsPage.tsx:138"
+    ],
+    "jobs.noApplicants": [
+      "pages\\employer\\JobApplicantsPage.tsx:129"
+    ],
+    "jobs.noApplicantsDesc": [
+      "pages\\employer\\JobApplicantsPage.tsx:131"
+    ],
+    "jobs.noJobsPosted": [
+      "pages\\employer\\MyJobsPage.tsx:210"
+    ],
+    "jobs.noJobsPostedDesc": [
+      "pages\\employer\\MyJobsPage.tsx:212"
+    ],
+    "jobs.noSavedJobs": [
+      "pages\\worker\\SavedJobsPage.tsx:62"
+    ],
+    "jobs.noSavedJobsDesc": [
+      "pages\\worker\\SavedJobsPage.tsx:64"
+    ],
+    "jobs.notAcceptingApplications": [
+      "pages\\worker\\SavedJobsPage.tsx:116"
+    ],
+    "jobs.notFoundDesc": [
+      "pages\\worker\\JobDetailsPage.tsx:97"
+    ],
+    "jobs.notFoundTitle": [
+      "pages\\worker\\JobDetailsPage.tsx:96"
+    ],
+    "jobs.notSpecified": [
+      "pages\\worker\\SavedJobsPage.tsx:104"
+    ],
+    "jobs.openings": [
+      "pages\\worker\\JobDetailsPage.tsx:242"
+    ],
+    "jobs.postFirstJob": [
+      "pages\\employer\\MyJobsPage.tsx:215"
+    ],
+    "jobs.posted": [
+      "pages\\worker\\JobDetailsPage.tsx:140"
+    ],
+    "jobs.required": [
+      "pages\\worker\\JobDetailsPage.tsx:218"
+    ],
+    "jobs.requiredSkills": [
+      "pages\\worker\\JobDetailsPage.tsx:205"
+    ],
+    "jobs.reviews": [
+      "pages\\worker\\JobDetailsPage.tsx:268"
+    ],
+    "jobs.salaryTypeDesc": [
+      "pages\\worker\\JobDetailsPage.tsx:231"
+    ],
+    "jobs.saved": [
+      "pages\\worker\\JobDetailsPage.tsx:172"
+    ],
+    "jobs.savedJobsDesc": [
+      "pages\\worker\\SavedJobsPage.tsx:54"
+    ],
+    "jobs.savedOn": [
+      "pages\\worker\\SavedJobsPage.tsx:110"
+    ],
+    "jobs.smartMatch": [
+      "pages\\worker\\JobDetailsPage.tsx:278"
+    ],
+    "jobs.totalApplicants": [
+      "pages\\employer\\MyJobsPage.tsx:166"
+    ],
+    "jobs.totalPostings": [
+      "pages\\employer\\MyJobsPage.tsx:152"
+    ],
+    "jobs.unsave": [
+      "pages\\worker\\SavedJobsPage.tsx:131"
+    ],
+    "jobs.updating": [
+      "pages\\worker\\JobDetailsPage.tsx:172"
+    ],
+    "jobs.viewApplicants": [
+      "pages\\employer\\MyJobsPage.tsx:94"
+    ],
+    "jobs.years": [
+      "pages\\worker\\JobDetailsPage.tsx:239"
+    ],
+    "nav.employerPortal": [
+      "layouts\\EmployerLayout.tsx:59"
+    ],
+    "nav.signOut": [
+      "layouts\\AdminLayout.tsx:122",
+      "layouts\\EmployerLayout.tsx:111",
+      "layouts\\WorkerLayout.tsx:115"
+    ],
+    "nav.workerPortal": [
+      "layouts\\WorkerLayout.tsx:63"
+    ],
+    "next": [
+      "pages\\employer\\JobCandidatesPage.tsx:75"
+    ],
+    "notifications.APPLICATION_STATUS_UPDATE.body": [
+      "components\\layout\\NotificationDropdown.tsx:70"
+    ],
+    "notifications.APPLICATION_STATUS_UPDATE.title": [
+      "components\\layout\\NotificationDropdown.tsx:70"
+    ],
+    "notifications.NEW_APPLICATION.body": [
+      "components\\layout\\NotificationDropdown.tsx:68"
+    ],
+    "notifications.NEW_APPLICATION.title": [
+      "components\\layout\\NotificationDropdown.tsx:68"
+    ],
+    "notifications.NEW_MATCHING_JOB.body": [
+      "components\\layout\\NotificationDropdown.tsx:66"
+    ],
+    "notifications.NEW_MATCHING_JOB.title": [
+      "components\\layout\\NotificationDropdown.tsx:66"
+    ],
+    "notifications.SHIFT_ACCEPTED.body": [
+      "components\\layout\\NotificationDropdown.tsx:74"
+    ],
+    "notifications.SHIFT_ACCEPTED.title": [
+      "components\\layout\\NotificationDropdown.tsx:74"
+    ],
+    "notifications.SHIFT_CANCELLED.body": [
+      "components\\layout\\NotificationDropdown.tsx:78"
+    ],
+    "notifications.SHIFT_CANCELLED.title": [
+      "components\\layout\\NotificationDropdown.tsx:78"
+    ],
+    "notifications.SHIFT_DECLINED.body": [
+      "components\\layout\\NotificationDropdown.tsx:76"
+    ],
+    "notifications.SHIFT_DECLINED.title": [
+      "components\\layout\\NotificationDropdown.tsx:76"
+    ],
+    "notifications.SHIFT_REQUESTED.body": [
+      "components\\layout\\NotificationDropdown.tsx:72"
+    ],
+    "notifications.SHIFT_REQUESTED.title": [
+      "components\\layout\\NotificationDropdown.tsx:72"
+    ],
+    "notifications.empty": [
+      "components\\layout\\NotificationDropdown.tsx:121"
+    ],
+    "notifications.markAllRead": [
+      "components\\layout\\NotificationDropdown.tsx:110"
+    ],
+    "notifications.title": [
+      "components\\layout\\NotificationDropdown.tsx:103"
+    ],
+    "of": [
+      "pages\\employer\\JobCandidatesPage.tsx:68"
+    ],
+    "page": [
+      "pages\\employer\\JobCandidatesPage.tsx:68"
+    ],
+    "pagination.showing": [
+      "pages\\employer\\EmployerShiftBookingsPage.tsx:394",
+      "pages\\worker\\WorkerShiftBookingsPage.tsx:438"
+    ],
+    "previous": [
+      "pages\\employer\\JobCandidatesPage.tsx:65"
+    ],
+    "savedWorkers.loadError": [
+      "pages\\employer\\SavedWorkersPage.tsx:235"
+    ],
+    "savedWorkers.submitShiftRequest": [
+      "pages\\employer\\SavedWorkersPage.tsx:566"
+    ],
+    "statuses.ACTIVE": [
+      "pages\\employer\\MyJobsPage.tsx:159"
+    ],
+    "worker.accept": [
+      "pages\\worker\\WorkerShiftBookingsPage.tsx:265"
+    ],
+    "worker.added": [
+      "pages\\worker\\WorkerProfilePage.tsx:583"
+    ],
+    "worker.appliedOn": [
+      "pages\\worker\\WorkerDashboard.tsx:337"
+    ],
+    "worker.atAGlance": [
+      "pages\\worker\\WorkerDashboard.tsx:274"
+    ],
+    "worker.cancel": [
+      "pages\\worker\\WorkerProfilePage.tsx:436",
+      "pages\\worker\\WorkerShiftBookingsPage.tsx:288"
+    ],
+    "worker.completeProfileBtn": [
+      "pages\\worker\\WorkerDashboard.tsx:189"
+    ],
+    "worker.createProfileBtn": [
+      "pages\\worker\\WorkerProfilePage.tsx:135"
+    ],
+    "worker.createProfileDesc": [
+      "pages\\worker\\WorkerProfilePage.tsx:132"
+    ],
+    "worker.createProfileSubtitle": [
+      "pages\\worker\\WorkerProfilePage.tsx:124"
+    ],
+    "worker.createProfileTitle": [
+      "pages\\worker\\WorkerProfilePage.tsx:264"
+    ],
+    "worker.decline": [
+      "pages\\worker\\WorkerShiftBookingsPage.tsx:273"
+    ],
+    "worker.defaultName": [
+      "pages\\employer\\EmployerShiftBookingsPage.tsx:315",
+      "pages\\employer\\EmployerShiftBookingsPage.tsx:370"
+    ],
+    "worker.editProfile": [
+      "pages\\worker\\WorkerProfilePage.tsx:155"
+    ],
+    "worker.editProfileTitle": [
+      "pages\\worker\\WorkerProfilePage.tsx:264"
+    ],
+    "worker.formBio": [
+      "pages\\worker\\WorkerProfilePage.tsx:302"
+    ],
+    "worker.formBioPlaceholder": [
+      "pages\\worker\\WorkerProfilePage.tsx:308"
+    ],
+    "worker.formCity": [
+      "pages\\worker\\WorkerProfilePage.tsx:313"
+    ],
+    "worker.formCityPlaceholder": [
+      "pages\\worker\\WorkerProfilePage.tsx:319"
+    ],
+    "worker.formFullName": [
+      "pages\\worker\\WorkerProfilePage.tsx:290"
+    ],
+    "worker.formFullNamePlaceholder": [
+      "pages\\worker\\WorkerProfilePage.tsx:296"
+    ],
+    "worker.formPreferredWorkTypes": [
+      "pages\\worker\\WorkerProfilePage.tsx:396"
+    ],
+    "worker.formSalaryHelp": [
+      "pages\\worker\\WorkerProfilePage.tsx:379"
+    ],
+    "worker.formSalaryPlaceholder": [
+      "pages\\worker\\WorkerProfilePage.tsx:377"
+    ],
+    "worker.formSalaryType": [
+      "pages\\worker\\WorkerProfilePage.tsx:383"
+    ],
+    "worker.formSelectState": [
+      "pages\\worker\\WorkerProfilePage.tsx:330"
+    ],
+    "worker.formState": [
+      "pages\\worker\\WorkerProfilePage.tsx:324"
+    ],
+    "worker.moreSkills": [
+      "pages\\worker\\WorkerDashboard.tsx:304"
+    ],
+    "worker.noApplications": [
+      "pages\\worker\\WorkerDashboard.tsx:344"
+    ],
+    "worker.noNewJobs": [
+      "pages\\worker\\WorkerDashboard.tsx:241"
+    ],
+    "worker.noProfileYet": [
+      "pages\\worker\\WorkerProfilePage.tsx:130"
+    ],
+    "worker.noSkillsAdded": [
+      "pages\\worker\\WorkerDashboard.tsx:309"
+    ],
+    "worker.noSkillsAddedYet": [
+      "pages\\worker\\WorkerProfilePage.tsx:628"
+    ],
+    "worker.optAvailable": [
+      "pages\\worker\\WorkerProfilePage.tsx:359"
+    ],
+    "worker.optBusy": [
+      "pages\\worker\\WorkerProfilePage.tsx:360"
+    ],
+    "worker.optUnavailable": [
+      "pages\\worker\\WorkerProfilePage.tsx:361"
+    ],
+    "worker.preferredWorkTypes": [
+      "pages\\worker\\WorkerProfilePage.tsx:236"
+    ],
+    "worker.profileCompleteMsg": [
+      "pages\\worker\\WorkerDashboard.tsx:173"
+    ],
+    "worker.profileIncompleteMsg": [
+      "pages\\worker\\WorkerDashboard.tsx:174"
+    ],
+    "worker.profileSaveError": [
+      "pages\\worker\\WorkerProfilePage.tsx:88"
+    ],
+    "worker.publicProfileSubtitle": [
+      "pages\\worker\\WorkerProfilePage.tsx:151"
+    ],
+    "worker.ratings": [
+      "pages\\worker\\WorkerProfilePage.tsx:194"
+    ],
+    "worker.saving": [
+      "pages\\worker\\WorkerProfilePage.tsx:428"
+    ],
+    "worker.searchAddSkills": [
+      "pages\\worker\\WorkerProfilePage.tsx:526"
+    ],
+    "worker.shiftLabel": [
+      "pages\\worker\\WorkerShiftBookingsPage.tsx:196"
+    ],
+    "worker.shiftsSubtitle": [
+      "pages\\worker\\WorkerShiftBookingsPage.tsx:133"
+    ],
+    "worker.skillAddError": [
+      "pages\\worker\\WorkerProfilePage.tsx:490"
+    ],
+    "worker.skillAdded": [
+      "pages\\worker\\WorkerProfilePage.tsx:487"
+    ],
+    "worker.skillRemoveError": [
+      "pages\\worker\\WorkerProfilePage.tsx:509"
+    ],
+    "worker.skillRemoved": [
+      "pages\\worker\\WorkerProfilePage.tsx:506"
+    ],
+    "worker.statsAccepted": [
+      "pages\\worker\\WorkerDashboard.tsx:205"
+    ],
+    "worker.statsApplications": [
+      "pages\\worker\\WorkerDashboard.tsx:197"
+    ],
+    "worker.statsShortlisted": [
+      "pages\\worker\\WorkerDashboard.tsx:201"
+    ],
+    "worker.statusAvailable": [
+      "pages\\worker\\WorkerDashboard.tsx:280"
+    ],
+    "worker.statusBusy": [
+      "pages\\worker\\WorkerDashboard.tsx:284"
+    ],
+    "worker.statusNotAvailable": [
+      "pages\\worker\\WorkerDashboard.tsx:288"
+    ],
+    "worker.welcomeSubtitle": [
+      "pages\\worker\\WorkerDashboard.tsx:141"
+    ],
+    "worker.workDetails": [
+      "pages\\worker\\WorkerProfilePage.tsx:212"
+    ]
+  }
+}

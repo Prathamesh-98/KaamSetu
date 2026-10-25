@@ -1,0 +1,2313 @@
+{
+  "nav.signOut": {
+    "default": "Sign Out",
+    "usages": [
+      {
+        "file": "layouts\\AdminLayout.tsx",
+        "line": 122,
+        "code": "<LogOut className=\"w-4 h-4\" /> {t('nav.signOut', { defaultValue: 'Sign Out' })}"
+      },
+      {
+        "file": "layouts\\EmployerLayout.tsx",
+        "line": 111,
+        "code": "{t('nav.signOut', 'Sign Out')}"
+      },
+      {
+        "file": "layouts\\WorkerLayout.tsx",
+        "line": 115,
+        "code": "{t('nav.signOut', 'Sign Out')}"
+      }
+    ]
+  },
+  "nav.employerPortal": {
+    "default": "Employer Portal",
+    "usages": [
+      {
+        "file": "layouts\\EmployerLayout.tsx",
+        "line": 59,
+        "code": "<div className=\"mt-1 text-[11px] text-gray-500 font-medium uppercase tracking-wider\">{t('nav.employerPortal', 'Employer Portal')}</div>"
+      }
+    ]
+  },
+  "nav.workerPortal": {
+    "default": "Worker Portal",
+    "usages": [
+      {
+        "file": "layouts\\WorkerLayout.tsx",
+        "line": 63,
+        "code": "<div className=\"mt-1 text-[11px] text-gray-500 font-medium uppercase tracking-wider\">{t('nav.workerPortal', 'Worker Portal')}</div>"
+      }
+    ]
+  },
+  "admin.passwordComplexityNote": {
+    "default": "Password must be at least 8 characters with 1 uppercase letter and 1 digit.",
+    "usages": [
+      {
+        "file": "pages\\admin\\AdminProfilePage.tsx",
+        "line": 140,
+        "code": "setPasswordErrorMsg(t('admin.passwordComplexityNote', 'Password must be at least 8 characters with 1 uppercase letter and 1 digit.'));"
+      }
+    ]
+  },
+  "common.submitting": {
+    "default": "Submitting...",
+    "usages": [
+      {
+        "file": "pages\\auth\\LoginPage.tsx",
+        "line": 177,
+        "code": "{isLoading ? t('common.submitting', 'Loading...') : t('auth.login', 'Log In')}"
+      },
+      {
+        "file": "pages\\auth\\RegisterPage.tsx",
+        "line": 281,
+        "code": "{isLoading ? t('common.submitting', 'Submitting...') : t('auth.register', 'Register')}"
+      }
+    ]
+  },
+  "employer.defaultName": {
+    "default": "Employer",
+    "usages": [
+      {
+        "file": "pages\\employer\\EmployerDashboard.tsx",
+        "line": 86,
+        "code": "{t('worker.welcome', 'Welcome')}, {profile?.organization_name || profile?.full_name || t('employer.defaultName', 'Employer')} \ud83d\udc4b"
+      },
+      {
+        "file": "pages\\worker\\WorkerShiftBookingsPage.tsx",
+        "line": 354,
+        "code": "{item.counterpart_name || t('employer.defaultName', 'Employer')}"
+      },
+      {
+        "file": "pages\\worker\\WorkerShiftBookingsPage.tsx",
+        "line": 414,
+        "code": "userName: item.counterpart_name || t('employer.defaultName', 'Employer'),"
+      }
+    ]
+  },
+  "employer.manageWorkforce": {
+    "default": "Manage your workforce and hiring process effectively.",
+    "usages": [
+      {
+        "file": "pages\\employer\\EmployerDashboard.tsx",
+        "line": 89,
+        "code": "{user?.email} \u00b7 {t('employer.manageWorkforce', 'Manage your workforce and hiring process effectively.')}"
+      }
+    ]
+  },
+  "employer.companyProfile": {
+    "default": "Company Profile",
+    "usages": [
+      {
+        "file": "pages\\employer\\EmployerDashboard.tsx",
+        "line": 116,
+        "code": "{t('employer.companyProfile', 'Company Profile')}"
+      }
+    ]
+  },
+  "employer.profileComplete": {
+    "default": "Your profile is fully complete. Great job!",
+    "usages": [
+      {
+        "file": "pages\\employer\\EmployerDashboard.tsx",
+        "line": 121,
+        "code": "? t('employer.profileComplete', 'Your profile is fully complete. Great job!')"
+      }
+    ]
+  },
+  "employer.profileIncomplete": {
+    "default": "Complete your profile to build trust with potential workers.",
+    "usages": [
+      {
+        "file": "pages\\employer\\EmployerDashboard.tsx",
+        "line": 122,
+        "code": ": t('employer.profileIncomplete', 'Complete your profile to build trust with potential workers.')}"
+      }
+    ]
+  },
+  "employer.completeProfileBtn": {
+    "default": "Complete Profile",
+    "usages": [
+      {
+        "file": "pages\\employer\\EmployerDashboard.tsx",
+        "line": 137,
+        "code": "{t('employer.completeProfileBtn', 'Complete Profile')}"
+      }
+    ]
+  },
+  "employer.totalJobs": {
+    "default": "Total Jobs",
+    "usages": [
+      {
+        "file": "pages\\employer\\EmployerDashboard.tsx",
+        "line": 145,
+        "code": "{ label: t('employer.totalJobs', 'Total Jobs'), value: jobs?.length || 0, color: 'text-indigo-600', bg: 'bg-indigo-50' },"
+      }
+    ]
+  },
+  "employer.needsAttention": {
+    "default": "Needs Attention",
+    "usages": [
+      {
+        "file": "pages\\employer\\EmployerDashboard.tsx",
+        "line": 163,
+        "code": "{t('employer.needsAttention', 'Needs Attention')}"
+      }
+    ]
+  },
+  "employer.appliedFor": {
+    "default": "applied for",
+    "usages": [
+      {
+        "file": "pages\\employer\\EmployerDashboard.tsx",
+        "line": 174,
+        "code": "<span className=\"text-gray-400 text-sm\">{t('employer.appliedFor', 'applied for')}</span>"
+      }
+    ]
+  },
+  "employer.yrsExp": {
+    "default": "yrs exp",
+    "usages": [
+      {
+        "file": "pages\\employer\\EmployerDashboard.tsx",
+        "line": 180,
+        "code": "{app.worker.years_experience !== null && ` \u00b7 ${app.worker.years_experience} ${t('employer.yrsExp', 'yrs exp')}`}"
+      }
+    ]
+  },
+  "employer.reviewBtn": {
+    "default": "Review",
+    "usages": [
+      {
+        "file": "pages\\employer\\EmployerDashboard.tsx",
+        "line": 184,
+        "code": "{t('employer.reviewBtn', 'Review')}"
+      }
+    ]
+  },
+  "employer.allCaughtUp": {
+    "default": "You\\",
+    "usages": [
+      {
+        "file": "pages\\employer\\EmployerDashboard.tsx",
+        "line": 192,
+        "code": "<p className=\"text-gray-500 text-base font-medium\">{t('employer.allCaughtUp', 'You\\'re all caught up! No pending applications.')}</p>"
+      }
+    ]
+  },
+  "employer.jobPerformance": {
+    "default": "Job Performance",
+    "usages": [
+      {
+        "file": "pages\\employer\\EmployerDashboard.tsx",
+        "line": 202,
+        "code": "{t('employer.jobPerformance', 'Job Performance')}"
+      }
+    ]
+  },
+  "employer.manageJobs": {
+    "default": "Manage Jobs",
+    "usages": [
+      {
+        "file": "pages\\employer\\EmployerDashboard.tsx",
+        "line": 205,
+        "code": "{t('employer.manageJobs', 'Manage Jobs')} <ChevronRight className=\"w-4 h-4 ml-1\" />"
+      }
+    ]
+  },
+  "employer.jobTitle": {
+    "default": "Job Title",
+    "usages": [
+      {
+        "file": "pages\\employer\\EmployerDashboard.tsx",
+        "line": 214,
+        "code": "<th className=\"px-5 py-4 font-semibold text-gray-600 rounded-tl-lg\">{t('employer.jobTitle', 'Job Title')}</th>"
+      }
+    ]
+  },
+  "employer.statusCol": {
+    "default": "Status",
+    "usages": [
+      {
+        "file": "pages\\employer\\EmployerDashboard.tsx",
+        "line": 215,
+        "code": "<th className=\"px-5 py-4 font-semibold text-gray-600 text-center\">{t('employer.statusCol', 'Status')}</th>"
+      }
+    ]
+  },
+  "employer.viewsCol": {
+    "default": "Views",
+    "usages": [
+      {
+        "file": "pages\\employer\\EmployerDashboard.tsx",
+        "line": 216,
+        "code": "<th className=\"px-5 py-4 font-semibold text-gray-600 text-center\">{t('employer.viewsCol', 'Views')}</th>"
+      }
+    ]
+  },
+  "employer.appsCol": {
+    "default": "Applications",
+    "usages": [
+      {
+        "file": "pages\\employer\\EmployerDashboard.tsx",
+        "line": 217,
+        "code": "<th className=\"px-5 py-4 font-semibold text-gray-600 text-center\">{t('employer.appsCol', 'Applications')}</th>"
+      }
+    ]
+  },
+  "employer.actionCol": {
+    "default": "Action",
+    "usages": [
+      {
+        "file": "pages\\employer\\EmployerDashboard.tsx",
+        "line": 218,
+        "code": "<th className=\"px-5 py-4 font-semibold text-gray-600 text-right rounded-tr-lg\">{t('employer.actionCol', 'Action')}</th>"
+      }
+    ]
+  },
+  "employer.viewAction": {
+    "default": "View",
+    "usages": [
+      {
+        "file": "pages\\employer\\EmployerDashboard.tsx",
+        "line": 244,
+        "code": "{t('employer.viewAction', 'View')} <ChevronRight className=\"w-4 h-4\" />"
+      }
+    ]
+  },
+  "employer.noJobsPosted": {
+    "default": "No jobs posted yet.",
+    "usages": [
+      {
+        "file": "pages\\employer\\EmployerDashboard.tsx",
+        "line": 255,
+        "code": "<p className=\"text-gray-500 text-base font-medium mb-4\">{t('employer.noJobsPosted', 'No jobs posted yet.')}</p>"
+      }
+    ]
+  },
+  "employer.recentlyAccepted": {
+    "default": "Recently Accepted",
+    "usages": [
+      {
+        "file": "pages\\employer\\EmployerDashboard.tsx",
+        "line": 273,
+        "code": "{t('employer.recentlyAccepted', 'Recently Accepted')}"
+      }
+    ]
+  },
+  "employer.noWorkersAccepted": {
+    "default": "No workers accepted yet.",
+    "usages": [
+      {
+        "file": "pages\\employer\\EmployerDashboard.tsx",
+        "line": 293,
+        "code": "<p className=\"text-gray-500 text-sm font-medium\">{t('employer.noWorkersAccepted', 'No workers accepted yet.')}</p>"
+      }
+    ]
+  },
+  "employer.quickActions": {
+    "default": "Quick Actions",
+    "usages": [
+      {
+        "file": "pages\\employer\\EmployerDashboard.tsx",
+        "line": 300,
+        "code": "<h3 className=\"font-bold text-gray-900 mb-5 text-lg\">{t('employer.quickActions', 'Quick Actions')}</h3>"
+      }
+    ]
+  },
+  "employer.profileSavedSuccess": {
+    "default": "Profile saved successfully!",
+    "usages": [
+      {
+        "file": "pages\\employer\\EmployerProfilePage.tsx",
+        "line": 58,
+        "code": "setSuccessMessage(t('employer.profileSavedSuccess', 'Profile saved successfully!'))"
+      }
+    ]
+  },
+  "employer.profileSaveError": {
+    "default": "Failed to save profile.",
+    "usages": [
+      {
+        "file": "pages\\employer\\EmployerProfilePage.tsx",
+        "line": 63,
+        "code": "setFormError(err.response?.data?.detail || err.message || t('employer.profileSaveError', 'Failed to save profile.'))"
+      }
+    ]
+  },
+  "employer.fullNameRequired": {
+    "default": "Full Name is required",
+    "usages": [
+      {
+        "file": "pages\\employer\\EmployerProfilePage.tsx",
+        "line": 71,
+        "code": "setFormError(t('employer.fullNameRequired', 'Full Name is required'))"
+      }
+    ]
+  },
+  "employer.manageCompanyInfo": {
+    "default": "Manage your company information and settings",
+    "usages": [
+      {
+        "file": "pages\\employer\\EmployerProfilePage.tsx",
+        "line": 101,
+        "code": "<p className=\"text-gray-500 text-base mt-2\">{t('employer.manageCompanyInfo', 'Manage your company information and settings')}</p>"
+      }
+    ]
+  },
+  "employer.setupProfileWarning": {
+    "default": "You haven\\",
+    "usages": [
+      {
+        "file": "pages\\employer\\EmployerProfilePage.tsx",
+        "line": 117,
+        "code": "<p className=\"text-base font-medium\">{t('employer.setupProfileWarning', 'You haven\\'t set up your profile yet. Please complete it to start posting jobs.')}</p>"
+      }
+    ]
+  },
+  "employer.companyLogo": {
+    "default": "Company Logo",
+    "usages": [
+      {
+        "file": "pages\\employer\\EmployerProfilePage.tsx",
+        "line": 148,
+        "code": "<h3 className=\"text-xl font-bold text-gray-900\">{t('employer.companyLogo', 'Company Logo')}</h3>"
+      }
+    ]
+  },
+  "employer.logoHint": {
+    "default": "Upload a clear, square logo. Max 5MB. JPEG or PNG format for best results.",
+    "usages": [
+      {
+        "file": "pages\\employer\\EmployerProfilePage.tsx",
+        "line": 149,
+        "code": "<p className=\"text-base text-gray-500 mt-2 max-w-md\">{t('employer.logoHint', 'Upload a clear, square logo. Max 5MB. JPEG or PNG format for best results.')}</p>"
+      }
+    ]
+  },
+  "employer.fullName": {
+    "default": "Full Name",
+    "usages": [
+      {
+        "file": "pages\\employer\\EmployerProfilePage.tsx",
+        "line": 155,
+        "code": "<label className=\"block text-sm font-bold text-gray-700\">{t('employer.fullName', 'Full Name')} <span className=\"text-red-500\">*</span></label>"
+      }
+    ]
+  },
+  "employer.fullNamePlaceholder": {
+    "default": "Your full name",
+    "usages": [
+      {
+        "file": "pages\\employer\\EmployerProfilePage.tsx",
+        "line": 161,
+        "code": "placeholder={t('employer.fullNamePlaceholder', 'Your full name')}"
+      }
+    ]
+  },
+  "employer.orgName": {
+    "default": "Registered Company Name *",
+    "usages": [
+      {
+        "file": "pages\\employer\\EmployerProfilePage.tsx",
+        "line": 170,
+        "code": "<label className=\"block text-sm font-bold text-gray-700\">{t('employer.orgName', 'Organization Name')}</label>"
+      },
+      {
+        "file": "components\\verification\\EmployerVerificationCenter.tsx",
+        "line": 227,
+        "code": "{t('employer.orgName', 'Registered Company Name *')}"
+      }
+    ]
+  },
+  "employer.orgNamePlaceholder": {
+    "default": "Company or Business Name",
+    "usages": [
+      {
+        "file": "pages\\employer\\EmployerProfilePage.tsx",
+        "line": 176,
+        "code": "placeholder={t('employer.orgNamePlaceholder', 'Company or Business Name')}"
+      }
+    ]
+  },
+  "employer.orgType": {
+    "default": "Business Legal Entity Type *",
+    "usages": [
+      {
+        "file": "pages\\employer\\EmployerProfilePage.tsx",
+        "line": 184,
+        "code": "<label className=\"block text-sm font-bold text-gray-700\">{t('employer.orgType', 'Organization Type')}</label>"
+      },
+      {
+        "file": "components\\verification\\EmployerVerificationCenter.tsx",
+        "line": 242,
+        "code": "{t('employer.orgType', 'Business Legal Entity Type *')}"
+      }
+    ]
+  },
+  "employer.orgTypePlaceholder": {
+    "default": "e.g. Construction Company, Individual",
+    "usages": [
+      {
+        "file": "pages\\employer\\EmployerProfilePage.tsx",
+        "line": 190,
+        "code": "placeholder={t('employer.orgTypePlaceholder', 'e.g. Construction Company, Individual')}"
+      }
+    ]
+  },
+  "employer.website": {
+    "default": "Website",
+    "usages": [
+      {
+        "file": "pages\\employer\\EmployerProfilePage.tsx",
+        "line": 198,
+        "code": "<label className=\"block text-sm font-bold text-gray-700\">{t('employer.website', 'Website')}</label>"
+      }
+    ]
+  },
+  "employer.city": {
+    "default": "City",
+    "usages": [
+      {
+        "file": "pages\\employer\\EmployerProfilePage.tsx",
+        "line": 212,
+        "code": "<label className=\"block text-sm font-bold text-gray-700\">{t('employer.city', 'City')}</label>"
+      }
+    ]
+  },
+  "employer.cityPlaceholder": {
+    "default": "City",
+    "usages": [
+      {
+        "file": "pages\\employer\\EmployerProfilePage.tsx",
+        "line": 218,
+        "code": "placeholder={t('employer.cityPlaceholder', 'City')}"
+      }
+    ]
+  },
+  "employer.state": {
+    "default": "State",
+    "usages": [
+      {
+        "file": "pages\\employer\\EmployerProfilePage.tsx",
+        "line": 226,
+        "code": "<label className=\"block text-sm font-bold text-gray-700\">{t('employer.state', 'State')}</label>"
+      }
+    ]
+  },
+  "employer.selectState": {
+    "default": "Select State",
+    "usages": [
+      {
+        "file": "pages\\employer\\EmployerProfilePage.tsx",
+        "line": 234,
+        "code": "<option value=\"\">{t('employer.selectState', 'Select State')}</option>"
+      }
+    ]
+  },
+  "employer.bio": {
+    "default": "Bio / Description",
+    "usages": [
+      {
+        "file": "pages\\employer\\EmployerProfilePage.tsx",
+        "line": 246,
+        "code": "<label className=\"block text-sm font-bold text-gray-700\">{t('employer.bio', 'Bio / Description')}</label>"
+      }
+    ]
+  },
+  "employer.bioPlaceholder": {
+    "default": "Tell workers about your business...",
+    "usages": [
+      {
+        "file": "pages\\employer\\EmployerProfilePage.tsx",
+        "line": 249,
+        "code": "placeholder={t('employer.bioPlaceholder', 'Tell workers about your business...')}"
+      }
+    ]
+  },
+  "employer.saving": {
+    "default": "Saving...",
+    "usages": [
+      {
+        "file": "pages\\employer\\EmployerProfilePage.tsx",
+        "line": 262,
+        "code": "{saveMutation.isPending ? t('employer.saving', 'Saving...') : ("
+      }
+    ]
+  },
+  "employer.shiftsSubtitle": {
+    "default": "Track active shift bookings, record work completions, and manage offline installment settlements",
+    "usages": [
+      {
+        "file": "pages\\employer\\EmployerShiftBookingsPage.tsx",
+        "line": 104,
+        "code": "{t('employer.shiftsSubtitle', 'Track active shift bookings, record work completions, and manage offline installment settlements')}"
+      }
+    ]
+  },
+  "worker.defaultName": {
+    "default": "Worker",
+    "usages": [
+      {
+        "file": "pages\\employer\\EmployerShiftBookingsPage.tsx",
+        "line": 315,
+        "code": "{item.counterpart_name || t('worker.defaultName', 'Worker')}"
+      },
+      {
+        "file": "pages\\employer\\EmployerShiftBookingsPage.tsx",
+        "line": 370,
+        "code": "userName: item.counterpart_name || t('worker.defaultName', 'Worker'),"
+      }
+    ]
+  },
+  "pagination.showing": {
+    "default": "Showing page {{page}} of {{total}}",
+    "usages": [
+      {
+        "file": "pages\\employer\\EmployerShiftBookingsPage.tsx",
+        "line": 394,
+        "code": "{t('pagination.showing', 'Showing page {{page}} of {{total}}', {"
+      },
+      {
+        "file": "pages\\worker\\WorkerShiftBookingsPage.tsx",
+        "line": 438,
+        "code": "{t('pagination.showing', 'Showing page {{page}} of {{total}}', {"
+      }
+    ]
+  },
+  "jobs.errorTitle": {
+    "default": "Failed to load saved jobs",
+    "usages": [
+      {
+        "file": "pages\\employer\\JobApplicantsPage.tsx",
+        "line": 91,
+        "code": "<h3 className=\"font-bold text-red-700\">{t('jobs.errorTitle', { defaultValue: 'Failed to load applicants' })}</h3>"
+      },
+      {
+        "file": "pages\\employer\\MyJobsPage.tsx",
+        "line": 199,
+        "code": "<h3 className=\"font-bold text-dark mb-2\">{t('jobs.errorTitle', { defaultValue: 'Failed to load jobs' })}</h3>"
+      },
+      {
+        "file": "pages\\worker\\SavedJobsPage.tsx",
+        "line": 40,
+        "code": "<h3 className=\"font-bold text-red-700\">{t('jobs.errorTitle', 'Failed to load saved jobs')}</h3>"
+      }
+    ]
+  },
+  "jobs.errorDesc": {
+    "default": "Please try refreshing the page.",
+    "usages": [
+      {
+        "file": "pages\\employer\\JobApplicantsPage.tsx",
+        "line": 92,
+        "code": "<p className=\"text-sm text-red-600 mt-1\">{t('jobs.errorDesc', { defaultValue: 'Please try refreshing the page.' })}</p>"
+      },
+      {
+        "file": "pages\\employer\\MyJobsPage.tsx",
+        "line": 200,
+        "code": "<p className=\"text-sm text-gray-500\">{t('jobs.errorDesc', { defaultValue: 'Please refresh the page and try again.' })}</p>"
+      },
+      {
+        "file": "pages\\worker\\SavedJobsPage.tsx",
+        "line": 41,
+        "code": "<p className=\"text-sm text-red-600 mt-1\">{t('jobs.errorDesc', 'Please try refreshing the page.')}</p>"
+      }
+    ]
+  },
+  "jobs.jobApplicants": {
+    "default": "Job Applicants",
+    "usages": [
+      {
+        "file": "pages\\employer\\JobApplicantsPage.tsx",
+        "line": 106,
+        "code": "<h1 className=\"text-2xl font-bold\" style={{ color: '#182849' }}>{t('jobs.jobApplicants', { defaultValue: 'Job Applicants' })}</h1>"
+      }
+    ]
+  },
+  "jobs.manageApplications": {
+    "default": "Manage applications for this job",
+    "usages": [
+      {
+        "file": "pages\\employer\\JobApplicantsPage.tsx",
+        "line": 107,
+        "code": "<p className=\"text-gray-500 text-sm mt-1\">{t('jobs.manageApplications', { defaultValue: 'Manage applications for this job' })}</p>"
+      }
+    ]
+  },
+  "applications.actionFailed": {
+    "default": "Action failed",
+    "usages": [
+      {
+        "file": "pages\\employer\\JobApplicantsPage.tsx",
+        "line": 115,
+        "code": "<p className=\"font-semibold text-sm\">{t('applications.actionFailed', { defaultValue: 'Action failed' })}</p>"
+      }
+    ]
+  },
+  "applications.updateStatusError": {
+    "default": "Unable to update applicant status. Please check job requirements or try again.",
+    "usages": [
+      {
+        "file": "pages\\employer\\JobApplicantsPage.tsx",
+        "line": 119,
+        "code": ": t('applications.updateStatusError', { defaultValue: 'Unable to update applicant status. Please check job requirements or try again.' })}"
+      }
+    ]
+  },
+  "jobs.noApplicants": {
+    "default": "No applicants yet",
+    "usages": [
+      {
+        "file": "pages\\employer\\JobApplicantsPage.tsx",
+        "line": 129,
+        "code": "<h3 className=\"text-xl font-semibold text-dark\">{t('jobs.noApplicants', { defaultValue: 'No applicants yet' })}</h3>"
+      }
+    ]
+  },
+  "jobs.noApplicantsDesc": {
+    "default": "When workers apply for this job, they will appear here for you to review and shortlist.",
+    "usages": [
+      {
+        "file": "pages\\employer\\JobApplicantsPage.tsx",
+        "line": 131,
+        "code": "{t('jobs.noApplicantsDesc', { defaultValue: 'When workers apply for this job, they will appear here for you to review and shortlist.' })}"
+      }
+    ]
+  },
+  "common.locationUnknown": {
+    "default": "Location unknown",
+    "usages": [
+      {
+        "file": "pages\\employer\\JobApplicantsPage.tsx",
+        "line": 185,
+        "code": "{app.worker?.city || t('common.locationUnknown', { defaultValue: 'Location unknown' })}"
+      }
+    ]
+  },
+  "applications.coverNote": {
+    "default": "Cover Note:",
+    "usages": [
+      {
+        "file": "pages\\employer\\JobApplicantsPage.tsx",
+        "line": 206,
+        "code": "<span className=\"font-semibold text-gray-700 mr-2\">{t('applications.coverNote', { defaultValue: 'Cover Note:' })}</span>"
+      }
+    ]
+  },
+  "common.more": {
+    "default": "more",
+    "usages": [
+      {
+        "file": "pages\\employer\\JobApplicantsPage.tsx",
+        "line": 219,
+        "code": "<span className=\"text-xs text-gray-400\">+{app.worker.skills.length - 5} {t('common.more', { defaultValue: 'more' })}</span>"
+      }
+    ]
+  },
+  "applications.processing": {
+    "default": "Processing...",
+    "usages": [
+      {
+        "file": "pages\\employer\\JobApplicantsPage.tsx",
+        "line": 234,
+        "code": "{isProcessing ? t('applications.processing', { defaultValue: 'Processing...' }) : t('applications.shortlist', { defaultValue: 'Shortlist' })}"
+      }
+    ]
+  },
+  "applications.shortlist": {
+    "default": "Shortlist",
+    "usages": [
+      {
+        "file": "pages\\employer\\JobApplicantsPage.tsx",
+        "line": 234,
+        "code": "{isProcessing ? t('applications.processing', { defaultValue: 'Processing...' }) : t('applications.shortlist', { defaultValue: 'Shortlist' })}"
+      }
+    ]
+  },
+  "applications.reject": {
+    "default": "Reject",
+    "usages": [
+      {
+        "file": "pages\\employer\\JobApplicantsPage.tsx",
+        "line": 241,
+        "code": "{t('applications.reject', { defaultValue: 'Reject' })}"
+      },
+      {
+        "file": "pages\\employer\\JobApplicantsPage.tsx",
+        "line": 259,
+        "code": "<XCircle className=\"w-4 h-4 mr-1.5\" /> {t('applications.reject', { defaultValue: 'Reject' })}"
+      }
+    ]
+  },
+  "applications.accept": {
+    "default": "Accept",
+    "usages": [
+      {
+        "file": "pages\\employer\\JobApplicantsPage.tsx",
+        "line": 252,
+        "code": "<CheckCircle className=\"w-4 h-4 mr-1.5\" /> {t('applications.accept', { defaultValue: 'Accept' })}"
+      }
+    ]
+  },
+  "applications.noFurtherActions": {
+    "default": "No further actions available",
+    "usages": [
+      {
+        "file": "pages\\employer\\JobApplicantsPage.tsx",
+        "line": 294,
+        "code": "{t('applications.noFurtherActions', { defaultValue: 'No further actions available' })}"
+      }
+    ]
+  },
+  "error_loading": {
+    "default": "Error loading",
+    "usages": [
+      {
+        "file": "pages\\employer\\JobCandidatesPage.tsx",
+        "line": 46,
+        "code": "<h3 className=\"font-semibold text-lg\">{t('error_loading', 'Error loading')}</h3>"
+      }
+    ]
+  },
+  "previous": {
+    "default": "Previous",
+    "usages": [
+      {
+        "file": "pages\\employer\\JobCandidatesPage.tsx",
+        "line": 65,
+        "code": "{t('previous', 'Previous')}"
+      }
+    ]
+  },
+  "page": {
+    "default": "Page",
+    "usages": [
+      {
+        "file": "pages\\employer\\JobCandidatesPage.tsx",
+        "line": 68,
+        "code": "{t('page', 'Page')} {page} {t('of', 'of')} {data.pages}"
+      }
+    ]
+  },
+  "of": {
+    "default": "of",
+    "usages": [
+      {
+        "file": "pages\\employer\\JobCandidatesPage.tsx",
+        "line": 68,
+        "code": "{t('page', 'Page')} {page} {t('of', 'of')} {data.pages}"
+      }
+    ]
+  },
+  "next": {
+    "default": "Next",
+    "usages": [
+      {
+        "file": "pages\\employer\\JobCandidatesPage.tsx",
+        "line": 75,
+        "code": "{t('next', 'Next')}"
+      }
+    ]
+  },
+  "jobs.applicants": {
+    "default": "Applicants",
+    "usages": [
+      {
+        "file": "pages\\employer\\MyJobsPage.tsx",
+        "line": 81,
+        "code": "<strong className=\"text-dark\">{job.applications_count}</strong> {t('jobs.applicants', { defaultValue: 'applicants' })}"
+      },
+      {
+        "file": "pages\\worker\\JobDetailsPage.tsx",
+        "line": 252,
+        "code": "<span className=\"text-gray-500 flex items-center gap-2\"><Users className=\"w-4 h-4\"/> {t('jobs.applicants', 'Applicants')}</span>"
+      }
+    ]
+  },
+  "jobs.viewApplicants": {
+    "default": "View Applicants",
+    "usages": [
+      {
+        "file": "pages\\employer\\MyJobsPage.tsx",
+        "line": 94,
+        "code": "<Users className=\"w-3 h-3\" /> {t('jobs.viewApplicants', { defaultValue: 'View Applicants' })} <ChevronRight className=\"w-3 h-3\" />"
+      }
+    ]
+  },
+  "jobs.editJob": {
+    "default": "Edit job",
+    "usages": [
+      {
+        "file": "pages\\employer\\MyJobsPage.tsx",
+        "line": 103,
+        "code": "title={t('jobs.editJob', { defaultValue: 'Edit job' })}"
+      }
+    ]
+  },
+  "jobs.deleteJob": {
+    "default": "Delete job",
+    "usages": [
+      {
+        "file": "pages\\employer\\MyJobsPage.tsx",
+        "line": 111,
+        "code": "title={t('jobs.deleteJob', { defaultValue: 'Delete job' })}"
+      }
+    ]
+  },
+  "jobs.myJobsDesc": {
+    "default": "Manage and track your job postings",
+    "usages": [
+      {
+        "file": "pages\\employer\\MyJobsPage.tsx",
+        "line": 138,
+        "code": "<p className=\"text-gray-500 mt-1\">{t('jobs.myJobsDesc', { defaultValue: 'Manage and track your job postings' })}</p>"
+      }
+    ]
+  },
+  "jobs.totalPostings": {
+    "default": "Total Postings",
+    "usages": [
+      {
+        "file": "pages\\employer\\MyJobsPage.tsx",
+        "line": 152,
+        "code": "<div className=\"text-xs text-gray-500\">{t('jobs.totalPostings', { defaultValue: 'Total Postings' })}</div>"
+      }
+    ]
+  },
+  "statuses.ACTIVE": {
+    "default": "Active",
+    "usages": [
+      {
+        "file": "pages\\employer\\MyJobsPage.tsx",
+        "line": 159,
+        "code": "<div className=\"text-xs text-gray-500\">{t('statuses.ACTIVE', { defaultValue: 'Active' })}</div>"
+      }
+    ]
+  },
+  "jobs.totalApplicants": {
+    "default": "Total Applicants",
+    "usages": [
+      {
+        "file": "pages\\employer\\MyJobsPage.tsx",
+        "line": 166,
+        "code": "<div className=\"text-xs text-gray-500\">{t('jobs.totalApplicants', { defaultValue: 'Total Applicants' })}</div>"
+      }
+    ]
+  },
+  "jobs.noJobsPosted": {
+    "default": "No jobs posted yet",
+    "usages": [
+      {
+        "file": "pages\\employer\\MyJobsPage.tsx",
+        "line": 210,
+        "code": "<h3 className=\"font-bold text-dark mb-2\">{t('jobs.noJobsPosted', { defaultValue: 'No jobs posted yet' })}</h3>"
+      }
+    ]
+  },
+  "jobs.noJobsPostedDesc": {
+    "default": "Post your first job to start receiving applications from skilled workers.",
+    "usages": [
+      {
+        "file": "pages\\employer\\MyJobsPage.tsx",
+        "line": 212,
+        "code": "{t('jobs.noJobsPostedDesc', { defaultValue: 'Post your first job to start receiving applications from skilled workers.' })}"
+      }
+    ]
+  },
+  "jobs.postFirstJob": {
+    "default": "Post Your First Job",
+    "usages": [
+      {
+        "file": "pages\\employer\\MyJobsPage.tsx",
+        "line": 215,
+        "code": "<Plus className=\"w-4 h-4\" /> {t('jobs.postFirstJob', { defaultValue: 'Post Your First Job' })}"
+      }
+    ]
+  },
+  "common.loading": {
+    "default": "Loading...",
+    "usages": [
+      {
+        "file": "pages\\employer\\SavedWorkersPage.tsx",
+        "line": 228,
+        "code": "<p className=\"text-gray-500 font-medium\">{t('common.loading', 'Loading saved workers...')}</p>"
+      },
+      {
+        "file": "components\\layout\\NotificationDropdown.tsx",
+        "line": 117,
+        "code": "<div className=\"p-4 text-center text-sm text-gray-500\">{t('common.loading', 'Loading...')}</div>"
+      }
+    ]
+  },
+  "savedWorkers.loadError": {
+    "default": "Could not load your saved workers. Please try again.",
+    "usages": [
+      {
+        "file": "pages\\employer\\SavedWorkersPage.tsx",
+        "line": 235,
+        "code": "<p className=\"mt-1\">{t('savedWorkers.loadError', 'Could not load your saved workers. Please try again.')}</p>"
+      }
+    ]
+  },
+  "common.retry": {
+    "default": "Retry",
+    "usages": [
+      {
+        "file": "pages\\employer\\SavedWorkersPage.tsx",
+        "line": 240,
+        "code": "{t('common.retry', 'Retry')}"
+      }
+    ]
+  },
+  "common.edit": {
+    "default": "Edit",
+    "usages": [
+      {
+        "file": "pages\\employer\\SavedWorkersPage.tsx",
+        "line": 402,
+        "code": "{item.notes ? t('common.edit', 'Edit') : t('common.add', 'Add note')}"
+      }
+    ]
+  },
+  "common.add": {
+    "default": "Add",
+    "usages": [
+      {
+        "file": "pages\\employer\\SavedWorkersPage.tsx",
+        "line": 402,
+        "code": "{item.notes ? t('common.edit', 'Edit') : t('common.add', 'Add note')}"
+      },
+      {
+        "file": "pages\\worker\\MyAvailabilityPage.tsx",
+        "line": 110,
+        "code": "{createMutation.isPending ? t('common.saving', 'Saving...') : t('common.add', 'Add')}"
+      }
+    ]
+  },
+  "common.cancel": {
+    "default": "Cancel",
+    "usages": [
+      {
+        "file": "pages\\employer\\SavedWorkersPage.tsx",
+        "line": 552,
+        "code": "{t('common.cancel', 'Cancel')}"
+      },
+      {
+        "file": "pages\\employer\\SavedWorkersPage.tsx",
+        "line": 608,
+        "code": "{t('common.cancel', 'Cancel')}"
+      },
+      {
+        "file": "components\\shifts\\AddInstallmentModal.tsx",
+        "line": 277,
+        "code": "{t('common.cancel', 'Cancel')}"
+      },
+      {
+        "file": "components\\shifts\\CompleteShiftModal.tsx",
+        "line": 450,
+        "code": "{t('common.cancel', 'Cancel')}"
+      },
+      {
+        "file": "components\\shifts\\DisputeCorrectionModal.tsx",
+        "line": 293,
+        "code": "{t('common.cancel', 'Cancel')}"
+      },
+      {
+        "file": "components\\shifts\\DisputePaymentModal.tsx",
+        "line": 164,
+        "code": "{t('common.cancel', 'Cancel')}"
+      },
+      {
+        "file": "components\\verification\\AdminVerificationManager.tsx",
+        "line": 539,
+        "code": "{t('common.cancel', 'Cancel')}"
+      },
+      {
+        "file": "components\\verification\\EmployerVerificationCenter.tsx",
+        "line": 211,
+        "code": "{t('common.cancel', 'Cancel')}"
+      },
+      {
+        "file": "components\\verification\\WorkerVerificationCenter.tsx",
+        "line": 975,
+        "code": "{t('common.cancel', 'Cancel')}"
+      }
+    ]
+  },
+  "common.requesting": {
+    "default": "Requesting...",
+    "usages": [
+      {
+        "file": "pages\\employer\\SavedWorkersPage.tsx",
+        "line": 563,
+        "code": "{t('common.requesting', 'Requesting...')}"
+      }
+    ]
+  },
+  "savedWorkers.submitShiftRequest": {
+    "default": "Send Shift Request",
+    "usages": [
+      {
+        "file": "pages\\employer\\SavedWorkersPage.tsx",
+        "line": 566,
+        "code": "t('savedWorkers.submitShiftRequest', 'Send Shift Request')"
+      }
+    ]
+  },
+  "common.saving": {
+    "default": "Updating...",
+    "usages": [
+      {
+        "file": "pages\\employer\\SavedWorkersPage.tsx",
+        "line": 619,
+        "code": "{updateNoteMutation.isPending ? t('common.saving', 'Saving...') : t('common.save', 'Save Note')}"
+      },
+      {
+        "file": "pages\\worker\\MyAvailabilityPage.tsx",
+        "line": 110,
+        "code": "{createMutation.isPending ? t('common.saving', 'Saving...') : t('common.add', 'Add')}"
+      },
+      {
+        "file": "components\\shifts\\AddInstallmentModal.tsx",
+        "line": 287,
+        "code": "? t('common.saving', 'Adding...')"
+      },
+      {
+        "file": "components\\shifts\\CompleteShiftModal.tsx",
+        "line": 460,
+        "code": "? t('common.saving', 'Recording...')"
+      },
+      {
+        "file": "components\\shifts\\DisputeCorrectionModal.tsx",
+        "line": 303,
+        "code": "? t('common.saving', 'Updating...')"
+      }
+    ]
+  },
+  "common.save": {
+    "default": "Save Note",
+    "usages": [
+      {
+        "file": "pages\\employer\\SavedWorkersPage.tsx",
+        "line": 619,
+        "code": "{updateNoteMutation.isPending ? t('common.saving', 'Saving...') : t('common.save', 'Save Note')}"
+      }
+    ]
+  },
+  "jobs.notFoundTitle": {
+    "default": "Job not found",
+    "usages": [
+      {
+        "file": "pages\\worker\\JobDetailsPage.tsx",
+        "line": 96,
+        "code": "<h3 className=\"font-bold text-dark mb-2\">{t('jobs.notFoundTitle', 'Job not found')}</h3>"
+      }
+    ]
+  },
+  "jobs.notFoundDesc": {
+    "default": "This job may have been removed or is no longer available.",
+    "usages": [
+      {
+        "file": "pages\\worker\\JobDetailsPage.tsx",
+        "line": 97,
+        "code": "<p className=\"text-sm text-gray-500 mb-6\">{t('jobs.notFoundDesc', 'This job may have been removed or is no longer available.')}</p>"
+      }
+    ]
+  },
+  "jobs.browseOther": {
+    "default": "Browse Other Jobs",
+    "usages": [
+      {
+        "file": "pages\\worker\\JobDetailsPage.tsx",
+        "line": 98,
+        "code": "<Link to=\"/worker/jobs\" className=\"btn btn-primary\">{t('jobs.browseOther', 'Browse Other Jobs')}</Link>"
+      }
+    ]
+  },
+  "jobs.backToJobs": {
+    "default": "Back to Jobs",
+    "usages": [
+      {
+        "file": "pages\\worker\\JobDetailsPage.tsx",
+        "line": 117,
+        "code": "<ArrowLeft className=\"w-4 h-4\" /> {t('jobs.backToJobs', 'Back to Jobs')}"
+      }
+    ]
+  },
+  "jobs.posted": {
+    "default": "Posted",
+    "usages": [
+      {
+        "file": "pages\\worker\\JobDetailsPage.tsx",
+        "line": 140,
+        "code": "<span className=\"flex items-center gap-1.5\"><Clock className=\"w-4 h-4 text-primary-500\" />{t('jobs.posted', 'Posted')} {new Date(job.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}</span>"
+      }
+    ]
+  },
+  "applications.statusPrefix": {
+    "default": "Status:",
+    "usages": [
+      {
+        "file": "pages\\worker\\JobDetailsPage.tsx",
+        "line": 149,
+        "code": "{existingApplication ? t('applications.statusPrefix', 'Status:') + ' ' + existingApplication.status : t('applications.applied', 'Applied!')}"
+      }
+    ]
+  },
+  "applications.applied": {
+    "default": "Applied!",
+    "usages": [
+      {
+        "file": "pages\\worker\\JobDetailsPage.tsx",
+        "line": 149,
+        "code": "{existingApplication ? t('applications.statusPrefix', 'Status:') + ' ' + existingApplication.status : t('applications.applied', 'Applied!')}"
+      }
+    ]
+  },
+  "jobs.applying": {
+    "default": "Applying...",
+    "usages": [
+      {
+        "file": "pages\\worker\\JobDetailsPage.tsx",
+        "line": 158,
+        "code": "{applyMutation.isPending ? t('jobs.applying', 'Applying...') : ("
+      }
+    ]
+  },
+  "jobs.updating": {
+    "default": "Updating...",
+    "usages": [
+      {
+        "file": "pages\\worker\\JobDetailsPage.tsx",
+        "line": 172,
+        "code": "{saveMutation.isPending || unsaveMutation.isPending ? t('jobs.updating', 'Updating...') : (isSaved ? t('jobs.saved', 'Saved') : t('jobs.saveJob', 'Save Job'))}"
+      }
+    ]
+  },
+  "jobs.saved": {
+    "default": "Saved",
+    "usages": [
+      {
+        "file": "pages\\worker\\JobDetailsPage.tsx",
+        "line": 172,
+        "code": "{saveMutation.isPending || unsaveMutation.isPending ? t('jobs.updating', 'Updating...') : (isSaved ? t('jobs.saved', 'Saved') : t('jobs.saveJob', 'Save Job'))}"
+      }
+    ]
+  },
+  "jobs.jobDescription": {
+    "default": "Job Description",
+    "usages": [
+      {
+        "file": "pages\\worker\\JobDetailsPage.tsx",
+        "line": 188,
+        "code": "<h2 className=\"text-lg font-bold text-dark mb-4\">{t('jobs.jobDescription', 'Job Description')}</h2>"
+      }
+    ]
+  },
+  "jobs.additionalReqs": {
+    "default": "Additional Requirements",
+    "usages": [
+      {
+        "file": "pages\\worker\\JobDetailsPage.tsx",
+        "line": 196,
+        "code": "<h2 className=\"text-lg font-bold text-dark mb-4\">{t('jobs.additionalReqs', 'Additional Requirements')}</h2>"
+      }
+    ]
+  },
+  "jobs.requiredSkills": {
+    "default": "Required Skills",
+    "usages": [
+      {
+        "file": "pages\\worker\\JobDetailsPage.tsx",
+        "line": 205,
+        "code": "<h2 className=\"text-lg font-bold text-dark mb-4\">{t('jobs.requiredSkills', 'Required Skills')}</h2>"
+      }
+    ]
+  },
+  "jobs.required": {
+    "default": "Required",
+    "usages": [
+      {
+        "file": "pages\\worker\\JobDetailsPage.tsx",
+        "line": 218,
+        "code": "{js.is_mandatory && <span className=\"text-xs opacity-70 ml-1\">({t('jobs.required', 'Required')})</span>}"
+      }
+    ]
+  },
+  "jobs.compensation": {
+    "default": "Compensation",
+    "usages": [
+      {
+        "file": "pages\\worker\\JobDetailsPage.tsx",
+        "line": 229,
+        "code": "<h3 className=\"font-bold text-dark mb-4 text-lg\">{t('jobs.compensation', 'Compensation')}</h3>"
+      }
+    ]
+  },
+  "jobs.salaryTypeDesc": {
+    "default": "Base pay depending on experience and performance.",
+    "usages": [
+      {
+        "file": "pages\\worker\\JobDetailsPage.tsx",
+        "line": 231,
+        "code": "<p className=\"text-sm text-gray-500\">{t('jobs.salaryTypeDesc', 'Base pay depending on experience and performance.')}</p>"
+      }
+    ]
+  },
+  "jobs.jobOverview": {
+    "default": "Job Overview",
+    "usages": [
+      {
+        "file": "pages\\worker\\JobDetailsPage.tsx",
+        "line": 235,
+        "code": "<h3 className=\"font-bold text-dark mb-4 text-lg\">{t('jobs.jobOverview', 'Job Overview')}</h3>"
+      }
+    ]
+  },
+  "jobs.experience": {
+    "default": "Experience",
+    "usages": [
+      {
+        "file": "pages\\worker\\JobDetailsPage.tsx",
+        "line": 238,
+        "code": "<span className=\"text-gray-500 flex items-center gap-2\"><Briefcase className=\"w-4 h-4\"/> {t('jobs.experience', 'Experience')}</span>"
+      },
+      {
+        "file": "pages\\worker\\JobDetailsPage.tsx",
+        "line": 287,
+        "code": "{ label: t('jobs.experience', 'Experience'), value: matchData.factors.experience },"
+      }
+    ]
+  },
+  "jobs.years": {
+    "default": "years",
+    "usages": [
+      {
+        "file": "pages\\worker\\JobDetailsPage.tsx",
+        "line": 239,
+        "code": "<span className=\"font-medium text-dark\">{job.experience_required}+ {t('jobs.years', 'years')}</span>"
+      }
+    ]
+  },
+  "jobs.openings": {
+    "default": "Openings",
+    "usages": [
+      {
+        "file": "pages\\worker\\JobDetailsPage.tsx",
+        "line": 242,
+        "code": "<span className=\"text-gray-500 flex items-center gap-2\"><Users className=\"w-4 h-4\"/> {t('jobs.openings', 'Openings')}</span>"
+      }
+    ]
+  },
+  "jobs.duration": {
+    "default": "Duration",
+    "usages": [
+      {
+        "file": "pages\\worker\\JobDetailsPage.tsx",
+        "line": 247,
+        "code": "<span className=\"text-gray-500 flex items-center gap-2\"><Calendar className=\"w-4 h-4\"/> {t('jobs.duration', 'Duration')}</span>"
+      }
+    ]
+  },
+  "jobs.days": {
+    "default": "days",
+    "usages": [
+      {
+        "file": "pages\\worker\\JobDetailsPage.tsx",
+        "line": 248,
+        "code": "<span className=\"font-medium text-dark\">{job.duration_days} {t('jobs.days', 'days')}</span>"
+      }
+    ]
+  },
+  "jobs.aboutEmployer": {
+    "default": "About Employer",
+    "usages": [
+      {
+        "file": "pages\\worker\\JobDetailsPage.tsx",
+        "line": 259,
+        "code": "<h3 className=\"font-bold text-dark mb-4 text-lg\">{t('jobs.aboutEmployer', 'About Employer')}</h3>"
+      }
+    ]
+  },
+  "jobs.reviews": {
+    "default": "reviews",
+    "usages": [
+      {
+        "file": "pages\\worker\\JobDetailsPage.tsx",
+        "line": 268,
+        "code": "<span className=\"text-xs text-gray-600\">({job.employer.total_ratings} {t('jobs.reviews', 'reviews')})</span>"
+      }
+    ]
+  },
+  "jobs.smartMatch": {
+    "default": "Smart Match",
+    "usages": [
+      {
+        "file": "pages\\worker\\JobDetailsPage.tsx",
+        "line": 278,
+        "code": "{t('jobs.smartMatch', 'Smart Match')}"
+      }
+    ]
+  },
+  "jobs.appliedOn": {
+    "default": "Applied on",
+    "usages": [
+      {
+        "file": "pages\\worker\\MyApplications.tsx",
+        "line": 63,
+        "code": "{t('jobs.appliedOn', 'Applied on')} {new Date(app.applied_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}"
+      }
+    ]
+  },
+  "applications.viewJob": {
+    "default": "View Job",
+    "usages": [
+      {
+        "file": "pages\\worker\\MyApplications.tsx",
+        "line": 79,
+        "code": "{t('applications.viewJob', 'View Job')}"
+      }
+    ]
+  },
+  "applications.withdrawing": {
+    "default": "Wait...",
+    "usages": [
+      {
+        "file": "pages\\worker\\MyApplications.tsx",
+        "line": 110,
+        "code": "{withdrawMutation.isPending ? t('applications.withdrawing', 'Wait...') : t('applications.withdraw', 'Withdraw')}"
+      }
+    ]
+  },
+  "applications.withdraw": {
+    "default": "Withdraw",
+    "usages": [
+      {
+        "file": "pages\\worker\\MyApplications.tsx",
+        "line": 110,
+        "code": "{withdrawMutation.isPending ? t('applications.withdrawing', 'Wait...') : t('applications.withdraw', 'Withdraw')}"
+      }
+    ]
+  },
+  "applications.subtitle": {
+    "default": "Track and manage all your job applications",
+    "usages": [
+      {
+        "file": "pages\\worker\\MyApplications.tsx",
+        "line": 136,
+        "code": "<p className=\"text-gray-500 mt-1\">{t('applications.subtitle', 'Track and manage all your job applications')}</p>"
+      }
+    ]
+  },
+  "applications.total": {
+    "default": "Total",
+    "usages": [
+      {
+        "file": "pages\\worker\\MyApplications.tsx",
+        "line": 142,
+        "code": "{applications.length} {t('applications.total', 'Total')}"
+      }
+    ]
+  },
+  "applications.errorTitle": {
+    "default": "Failed to load applications",
+    "usages": [
+      {
+        "file": "pages\\worker\\MyApplications.tsx",
+        "line": 171,
+        "code": "<h3 className=\"font-bold text-dark mb-2\">{t('applications.errorTitle', 'Failed to load applications')}</h3>"
+      }
+    ]
+  },
+  "applications.errorDesc": {
+    "default": "Please refresh the page and try again.",
+    "usages": [
+      {
+        "file": "pages\\worker\\MyApplications.tsx",
+        "line": 172,
+        "code": "<p className=\"text-sm text-gray-500\">{t('applications.errorDesc', 'Please refresh the page and try again.')}</p>"
+      }
+    ]
+  },
+  "applications.emptyTitle": {
+    "default": "No applications yet",
+    "usages": [
+      {
+        "file": "pages\\worker\\MyApplications.tsx",
+        "line": 181,
+        "code": "<h3 className=\"font-bold text-dark text-xl mb-2\">{t('applications.emptyTitle', 'No applications yet')}</h3>"
+      }
+    ]
+  },
+  "applications.emptyDesc": {
+    "default": "Browse available jobs and apply to start building your application history.",
+    "usages": [
+      {
+        "file": "pages\\worker\\MyApplications.tsx",
+        "line": 183,
+        "code": "{t('applications.emptyDesc', 'Browse available jobs and apply to start building your application history.')}"
+      }
+    ]
+  },
+  "applications.browseJobs": {
+    "default": "Browse Jobs",
+    "usages": [
+      {
+        "file": "pages\\worker\\MyApplications.tsx",
+        "line": 186,
+        "code": "{t('applications.browseJobs', 'Browse Jobs')}"
+      }
+    ]
+  },
+  "availability.created": {
+    "default": "Availability slot added",
+    "usages": [
+      {
+        "file": "pages\\worker\\MyAvailabilityPage.tsx",
+        "line": 28,
+        "code": "toast.success(t('availability.created', 'Availability slot added'));"
+      }
+    ]
+  },
+  "availability.error": {
+    "default": "Failed to remove availability",
+    "usages": [
+      {
+        "file": "pages\\worker\\MyAvailabilityPage.tsx",
+        "line": 33,
+        "code": "const msg = err?.response?.data?.detail || t('availability.error', 'Failed to add availability');"
+      },
+      {
+        "file": "pages\\worker\\MyAvailabilityPage.tsx",
+        "line": 48,
+        "code": "const msg = err?.response?.data?.detail || t('availability.error', 'Failed to remove availability');"
+      }
+    ]
+  },
+  "availability.deleted": {
+    "default": "Availability slot removed",
+    "usages": [
+      {
+        "file": "pages\\worker\\MyAvailabilityPage.tsx",
+        "line": 45,
+        "code": "toast.success(t('availability.deleted', 'Availability slot removed'));"
+      }
+    ]
+  },
+  "availability.invalidRange": {
+    "default": "End time must be after start time",
+    "usages": [
+      {
+        "file": "pages\\worker\\MyAvailabilityPage.tsx",
+        "line": 59,
+        "code": "toast.error(t('availability.invalidRange', 'End time must be after start time'));"
+      }
+    ]
+  },
+  "availability.add": {
+    "default": "Add Availability",
+    "usages": [
+      {
+        "file": "pages\\worker\\MyAvailabilityPage.tsx",
+        "line": 82,
+        "code": "<h2 className=\"text-lg font-semibold mb-4\">{t('availability.add', 'Add Availability')}</h2>"
+      }
+    ]
+  },
+  "availability.start": {
+    "default": "Start Time",
+    "usages": [
+      {
+        "file": "pages\\worker\\MyAvailabilityPage.tsx",
+        "line": 85,
+        "code": "<label className=\"block text-sm font-medium text-gray-700 mb-1\">{t('availability.start', 'Start Time')}</label>"
+      }
+    ]
+  },
+  "availability.end": {
+    "default": "End Time",
+    "usages": [
+      {
+        "file": "pages\\worker\\MyAvailabilityPage.tsx",
+        "line": 95,
+        "code": "<label className=\"block text-sm font-medium text-gray-700 mb-1\">{t('availability.end', 'End Time')}</label>"
+      }
+    ]
+  },
+  "availability.upcoming": {
+    "default": "Upcoming Availability",
+    "usages": [
+      {
+        "file": "pages\\worker\\MyAvailabilityPage.tsx",
+        "line": 117,
+        "code": "<h2 className=\"text-lg font-semibold\">{t('availability.upcoming', 'Upcoming Availability')}</h2>"
+      }
+    ]
+  },
+  "availability.empty": {
+    "default": "No availability slots added yet.",
+    "usages": [
+      {
+        "file": "pages\\worker\\MyAvailabilityPage.tsx",
+        "line": 123,
+        "code": "<p>{t('availability.empty', 'No availability slots added yet.')}</p>"
+      }
+    ]
+  },
+  "common.remove": {
+    "default": "Remove",
+    "usages": [
+      {
+        "file": "pages\\worker\\MyAvailabilityPage.tsx",
+        "line": 142,
+        "code": "title={t('common.remove', 'Remove')}"
+      },
+      {
+        "file": "pages\\worker\\WorkerProfilePage.tsx",
+        "line": 614,
+        "code": "title={t('common.remove', 'Remove')}"
+      }
+    ]
+  },
+  "jobs.savedJobsDesc": {
+    "default": "Jobs you",
+    "usages": [
+      {
+        "file": "pages\\worker\\SavedJobsPage.tsx",
+        "line": 54,
+        "code": "<p className=\"text-gray-500 mt-1\">{t('jobs.savedJobsDesc', \"Jobs you've bookmarked for later\")}</p>"
+      }
+    ]
+  },
+  "jobs.noSavedJobs": {
+    "default": "No saved jobs yet",
+    "usages": [
+      {
+        "file": "pages\\worker\\SavedJobsPage.tsx",
+        "line": 62,
+        "code": "<h3 className=\"text-xl font-bold text-dark mb-2\">{t('jobs.noSavedJobs', 'No saved jobs yet')}</h3>"
+      }
+    ]
+  },
+  "jobs.noSavedJobsDesc": {
+    "default": "Save jobs you",
+    "usages": [
+      {
+        "file": "pages\\worker\\SavedJobsPage.tsx",
+        "line": 64,
+        "code": "{t('jobs.noSavedJobsDesc', \"Save jobs you're interested in and find them here later when you're ready to apply.\")}"
+      }
+    ]
+  },
+  "jobs.findJobs": {
+    "default": "Find Jobs",
+    "usages": [
+      {
+        "file": "pages\\worker\\SavedJobsPage.tsx",
+        "line": 67,
+        "code": "{t('jobs.findJobs', 'Find Jobs')}"
+      }
+    ]
+  },
+  "jobs.notSpecified": {
+    "default": "Not specified",
+    "usages": [
+      {
+        "file": "pages\\worker\\SavedJobsPage.tsx",
+        "line": 104,
+        "code": "{job.salary_min ? `\u20b9${job.salary_min.toLocaleString()}` : t('jobs.notSpecified', 'Not specified')}"
+      }
+    ]
+  },
+  "jobs.savedOn": {
+    "default": "Saved",
+    "usages": [
+      {
+        "file": "pages\\worker\\SavedJobsPage.tsx",
+        "line": 110,
+        "code": "{t('jobs.savedOn', 'Saved')} {new Date(savedJob.saved_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}"
+      }
+    ]
+  },
+  "jobs.notAcceptingApplications": {
+    "default": "No longer accepting applications",
+    "usages": [
+      {
+        "file": "pages\\worker\\SavedJobsPage.tsx",
+        "line": 116,
+        "code": "{t('jobs.notAcceptingApplications', 'No longer accepting applications')}"
+      }
+    ]
+  },
+  "jobs.unsave": {
+    "default": "Unsave",
+    "usages": [
+      {
+        "file": "pages\\worker\\SavedJobsPage.tsx",
+        "line": 131,
+        "code": "title={t('jobs.unsave', 'Unsave')}"
+      }
+    ]
+  },
+  "worker.welcomeSubtitle": {
+    "default": "Find your next opportunity on KaamSetu.",
+    "usages": [
+      {
+        "file": "pages\\worker\\WorkerDashboard.tsx",
+        "line": 141,
+        "code": "{t('worker.welcomeSubtitle', 'Find your next opportunity on KaamSetu.')}"
+      }
+    ]
+  },
+  "worker.profileCompleteMsg": {
+    "default": "Your profile is looking great!",
+    "usages": [
+      {
+        "file": "pages\\worker\\WorkerDashboard.tsx",
+        "line": 173,
+        "code": "? t('worker.profileCompleteMsg', 'Your profile is looking great!')"
+      }
+    ]
+  },
+  "worker.profileIncompleteMsg": {
+    "default": "Complete your profile to improve your job opportunities.",
+    "usages": [
+      {
+        "file": "pages\\worker\\WorkerDashboard.tsx",
+        "line": 174,
+        "code": ": t('worker.profileIncompleteMsg', 'Complete your profile to improve your job opportunities.')}"
+      }
+    ]
+  },
+  "worker.completeProfileBtn": {
+    "default": "Complete Profile",
+    "usages": [
+      {
+        "file": "pages\\worker\\WorkerDashboard.tsx",
+        "line": 189,
+        "code": "{t('worker.completeProfileBtn', 'Complete Profile')}"
+      }
+    ]
+  },
+  "worker.statsApplications": {
+    "default": "Applications",
+    "usages": [
+      {
+        "file": "pages\\worker\\WorkerDashboard.tsx",
+        "line": 197,
+        "code": "<div className=\"text-gray-500 text-xs font-bold uppercase tracking-wider mb-2\">{t('worker.statsApplications', 'Applications')}</div>"
+      }
+    ]
+  },
+  "worker.statsShortlisted": {
+    "default": "Shortlisted",
+    "usages": [
+      {
+        "file": "pages\\worker\\WorkerDashboard.tsx",
+        "line": 201,
+        "code": "<div className=\"text-gray-500 text-xs font-bold uppercase tracking-wider mb-2\">{t('worker.statsShortlisted', 'Shortlisted')}</div>"
+      }
+    ]
+  },
+  "worker.statsAccepted": {
+    "default": "Accepted",
+    "usages": [
+      {
+        "file": "pages\\worker\\WorkerDashboard.tsx",
+        "line": 205,
+        "code": "<div className=\"text-gray-500 text-xs font-bold uppercase tracking-wider mb-2\">{t('worker.statsAccepted', 'Accepted')}</div>"
+      }
+    ]
+  },
+  "worker.noNewJobs": {
+    "default": "No new jobs available right now.",
+    "usages": [
+      {
+        "file": "pages\\worker\\WorkerDashboard.tsx",
+        "line": 241,
+        "code": "<p className=\"text-gray-500 font-medium\">{t('worker.noNewJobs', 'No new jobs available right now.')}</p>"
+      }
+    ]
+  },
+  "worker.atAGlance": {
+    "default": "At a Glance",
+    "usages": [
+      {
+        "file": "pages\\worker\\WorkerDashboard.tsx",
+        "line": 274,
+        "code": "<h3 className=\"font-bold text-[#182849] mb-5 text-lg\">{t('worker.atAGlance', 'At a Glance')}</h3>"
+      }
+    ]
+  },
+  "worker.statusAvailable": {
+    "default": "Available for work",
+    "usages": [
+      {
+        "file": "pages\\worker\\WorkerDashboard.tsx",
+        "line": 280,
+        "code": "<span className=\"w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-sm\" /> {t('worker.statusAvailable', 'Available for work')}"
+      }
+    ]
+  },
+  "worker.statusBusy": {
+    "default": "Currently Busy",
+    "usages": [
+      {
+        "file": "pages\\worker\\WorkerDashboard.tsx",
+        "line": 284,
+        "code": "<span className=\"w-2.5 h-2.5 rounded-full bg-blue-500 shadow-sm\" /> {t('worker.statusBusy', 'Currently Busy')}"
+      }
+    ]
+  },
+  "worker.statusNotAvailable": {
+    "default": "Not Available",
+    "usages": [
+      {
+        "file": "pages\\worker\\WorkerDashboard.tsx",
+        "line": 288,
+        "code": "<span className=\"w-2.5 h-2.5 rounded-full bg-gray-400 shadow-sm\" /> {t('worker.statusNotAvailable', 'Not Available')}"
+      }
+    ]
+  },
+  "worker.moreSkills": {
+    "default": "more",
+    "usages": [
+      {
+        "file": "pages\\worker\\WorkerDashboard.tsx",
+        "line": 304,
+        "code": "+{profile.skills.length - 5} {t('worker.moreSkills', 'more')}"
+      }
+    ]
+  },
+  "worker.noSkillsAdded": {
+    "default": "No skills added yet.",
+    "usages": [
+      {
+        "file": "pages\\worker\\WorkerDashboard.tsx",
+        "line": 309,
+        "code": "<p className=\"text-sm text-gray-500 italic font-medium\">{t('worker.noSkillsAdded', 'No skills added yet.')}</p>"
+      }
+    ]
+  },
+  "worker.appliedOn": {
+    "default": "Applied",
+    "usages": [
+      {
+        "file": "pages\\worker\\WorkerDashboard.tsx",
+        "line": 337,
+        "code": "{t('worker.appliedOn', 'Applied')} {new Date(app.applied_at).toLocaleDateString()}"
+      }
+    ]
+  },
+  "worker.noApplications": {
+    "default": "No applications yet.",
+    "usages": [
+      {
+        "file": "pages\\worker\\WorkerDashboard.tsx",
+        "line": 344,
+        "code": "<p className=\"text-gray-500 text-sm font-medium\">{t('worker.noApplications', 'No applications yet.')}</p>"
+      }
+    ]
+  },
+  "worker.profileSaveError": {
+    "default": "Failed to save profile.",
+    "usages": [
+      {
+        "file": "pages\\worker\\WorkerProfilePage.tsx",
+        "line": 88,
+        "code": "onError: (err: Error) => setFormError(err.message || t('worker.profileSaveError', 'Failed to save profile.')),"
+      }
+    ]
+  },
+  "worker.createProfileSubtitle": {
+    "default": "Create your worker profile to start applying for jobs",
+    "usages": [
+      {
+        "file": "pages\\worker\\WorkerProfilePage.tsx",
+        "line": 124,
+        "code": "<p className=\"text-gray-500 mt-2 font-medium\">{t('worker.createProfileSubtitle', 'Create your worker profile to start applying for jobs')}</p>"
+      }
+    ]
+  },
+  "worker.noProfileYet": {
+    "default": "No profile yet",
+    "usages": [
+      {
+        "file": "pages\\worker\\WorkerProfilePage.tsx",
+        "line": 130,
+        "code": "<h3 className=\"text-2xl font-bold text-[#182849] mb-3\">{t('worker.noProfileYet', 'No profile yet')}</h3>"
+      }
+    ]
+  },
+  "worker.createProfileDesc": {
+    "default": "Create your profile to get discovered by employers and apply to jobs.",
+    "usages": [
+      {
+        "file": "pages\\worker\\WorkerProfilePage.tsx",
+        "line": 132,
+        "code": "{t('worker.createProfileDesc', 'Create your profile to get discovered by employers and apply to jobs.')}"
+      }
+    ]
+  },
+  "worker.createProfileBtn": {
+    "default": "Create Profile",
+    "usages": [
+      {
+        "file": "pages\\worker\\WorkerProfilePage.tsx",
+        "line": 135,
+        "code": "<Plus className=\"w-5 h-5 mr-2\" /> {t('worker.createProfileBtn', 'Create Profile')}"
+      }
+    ]
+  },
+  "worker.publicProfileSubtitle": {
+    "default": "Your public worker profile",
+    "usages": [
+      {
+        "file": "pages\\worker\\WorkerProfilePage.tsx",
+        "line": 151,
+        "code": "<p className=\"text-gray-500 mt-2 font-medium\">{t('worker.publicProfileSubtitle', 'Your public worker profile')}</p>"
+      }
+    ]
+  },
+  "worker.editProfile": {
+    "default": "Edit Profile",
+    "usages": [
+      {
+        "file": "pages\\worker\\WorkerProfilePage.tsx",
+        "line": 155,
+        "code": "<Edit3 className=\"w-4 h-4\" /> {t('worker.editProfile', 'Edit Profile')}"
+      }
+    ]
+  },
+  "worker.ratings": {
+    "default": "ratings",
+    "usages": [
+      {
+        "file": "pages\\worker\\WorkerProfilePage.tsx",
+        "line": 194,
+        "code": "<span className=\"text-xs text-amber-600/70\">({profile.total_ratings} {t('worker.ratings', 'ratings')})</span>"
+      }
+    ]
+  },
+  "worker.workDetails": {
+    "default": "Work & Experience Details",
+    "usages": [
+      {
+        "file": "pages\\worker\\WorkerProfilePage.tsx",
+        "line": 212,
+        "code": "<Briefcase className=\"w-5 h-5 text-primary-500\" /> {t('worker.workDetails', 'Work & Experience Details')}"
+      }
+    ]
+  },
+  "worker.preferredWorkTypes": {
+    "default": "Preferred Work Types",
+    "usages": [
+      {
+        "file": "pages\\worker\\WorkerProfilePage.tsx",
+        "line": 236,
+        "code": "<p className=\"text-sm font-bold text-[#182849] mb-3\">{t('worker.preferredWorkTypes', 'Preferred Work Types')}</p>"
+      }
+    ]
+  },
+  "worker.editProfileTitle": {
+    "default": "Edit Profile",
+    "usages": [
+      {
+        "file": "pages\\worker\\WorkerProfilePage.tsx",
+        "line": 264,
+        "code": "<h2 className=\"font-bold text-[#182849] text-xl\">{profile ? t('worker.editProfileTitle', 'Edit Profile') : t('worker.createProfileTitle', 'Create Profile')}</h2>"
+      }
+    ]
+  },
+  "worker.createProfileTitle": {
+    "default": "Create Profile",
+    "usages": [
+      {
+        "file": "pages\\worker\\WorkerProfilePage.tsx",
+        "line": 264,
+        "code": "<h2 className=\"font-bold text-[#182849] text-xl\">{profile ? t('worker.editProfileTitle', 'Edit Profile') : t('worker.createProfileTitle', 'Create Profile')}</h2>"
+      }
+    ]
+  },
+  "worker.formFullName": {
+    "default": "Full Name *",
+    "usages": [
+      {
+        "file": "pages\\worker\\WorkerProfilePage.tsx",
+        "line": 290,
+        "code": "<label className=\"block text-sm font-bold text-[#182849] mb-2\">{t('worker.formFullName', 'Full Name *')}</label>"
+      }
+    ]
+  },
+  "worker.formFullNamePlaceholder": {
+    "default": "Your full name",
+    "usages": [
+      {
+        "file": "pages\\worker\\WorkerProfilePage.tsx",
+        "line": 296,
+        "code": "placeholder={t('worker.formFullNamePlaceholder', 'Your full name')}"
+      }
+    ]
+  },
+  "worker.formBio": {
+    "default": "Bio",
+    "usages": [
+      {
+        "file": "pages\\worker\\WorkerProfilePage.tsx",
+        "line": 302,
+        "code": "<label className=\"block text-sm font-bold text-[#182849] mb-2\">{t('worker.formBio', 'Bio')}</label>"
+      }
+    ]
+  },
+  "worker.formBioPlaceholder": {
+    "default": "Brief description of your experience and expertise...",
+    "usages": [
+      {
+        "file": "pages\\worker\\WorkerProfilePage.tsx",
+        "line": 308,
+        "code": "placeholder={t('worker.formBioPlaceholder', 'Brief description of your experience and expertise...')}"
+      }
+    ]
+  },
+  "worker.formCity": {
+    "default": "City",
+    "usages": [
+      {
+        "file": "pages\\worker\\WorkerProfilePage.tsx",
+        "line": 313,
+        "code": "<label className=\"block text-sm font-bold text-[#182849] mb-2\">{t('worker.formCity', 'City')}</label>"
+      }
+    ]
+  },
+  "worker.formCityPlaceholder": {
+    "default": "e.g. Delhi",
+    "usages": [
+      {
+        "file": "pages\\worker\\WorkerProfilePage.tsx",
+        "line": 319,
+        "code": "placeholder={t('worker.formCityPlaceholder', 'e.g. Delhi')}"
+      }
+    ]
+  },
+  "worker.formState": {
+    "default": "State",
+    "usages": [
+      {
+        "file": "pages\\worker\\WorkerProfilePage.tsx",
+        "line": 324,
+        "code": "<label className=\"block text-sm font-bold text-[#182849] mb-2\">{t('worker.formState', 'State')}</label>"
+      }
+    ]
+  },
+  "worker.formSelectState": {
+    "default": "Select State",
+    "usages": [
+      {
+        "file": "pages\\worker\\WorkerProfilePage.tsx",
+        "line": 330,
+        "code": "<option value=\"\">{t('worker.formSelectState', 'Select State')}</option>"
+      }
+    ]
+  },
+  "worker.optAvailable": {
+    "default": "Available",
+    "usages": [
+      {
+        "file": "pages\\worker\\WorkerProfilePage.tsx",
+        "line": 359,
+        "code": "<option value=\"AVAILABLE\">{t('worker.optAvailable', 'Available')}</option>"
+      }
+    ]
+  },
+  "worker.optBusy": {
+    "default": "Busy",
+    "usages": [
+      {
+        "file": "pages\\worker\\WorkerProfilePage.tsx",
+        "line": 360,
+        "code": "<option value=\"BUSY\">{t('worker.optBusy', 'Busy')}</option>"
+      }
+    ]
+  },
+  "worker.optUnavailable": {
+    "default": "Unavailable",
+    "usages": [
+      {
+        "file": "pages\\worker\\WorkerProfilePage.tsx",
+        "line": 361,
+        "code": "<option value=\"UNAVAILABLE\">{t('worker.optUnavailable', 'Unavailable')}</option>"
+      }
+    ]
+  },
+  "worker.formSalaryPlaceholder": {
+    "default": "e.g. 800",
+    "usages": [
+      {
+        "file": "pages\\worker\\WorkerProfilePage.tsx",
+        "line": 377,
+        "code": "placeholder={t('worker.formSalaryPlaceholder', 'e.g. 800')}"
+      }
+    ]
+  },
+  "worker.formSalaryHelp": {
+    "default": "Enter the minimum amount you expect.",
+    "usages": [
+      {
+        "file": "pages\\worker\\WorkerProfilePage.tsx",
+        "line": 379,
+        "code": "<p className=\"text-xs text-gray-500 mt-2 font-medium\">{t('worker.formSalaryHelp', 'Enter the minimum amount you expect.')}</p>"
+      }
+    ]
+  },
+  "worker.formSalaryType": {
+    "default": "Salary Type",
+    "usages": [
+      {
+        "file": "pages\\worker\\WorkerProfilePage.tsx",
+        "line": 383,
+        "code": "<label className=\"block text-sm font-bold text-[#182849] mb-2\">{t('worker.formSalaryType', 'Salary Type')}</label>"
+      }
+    ]
+  },
+  "worker.formPreferredWorkTypes": {
+    "default": "Preferred Work Types",
+    "usages": [
+      {
+        "file": "pages\\worker\\WorkerProfilePage.tsx",
+        "line": 396,
+        "code": "<label className=\"block text-sm font-bold text-[#182849] mb-3\">{t('worker.formPreferredWorkTypes', 'Preferred Work Types')}</label>"
+      }
+    ]
+  },
+  "worker.saving": {
+    "default": "Saving...",
+    "usages": [
+      {
+        "file": "pages\\worker\\WorkerProfilePage.tsx",
+        "line": 428,
+        "code": "{t('worker.saving', 'Saving...')}"
+      }
+    ]
+  },
+  "worker.cancel": {
+    "default": "Cancel Booking",
+    "usages": [
+      {
+        "file": "pages\\worker\\WorkerProfilePage.tsx",
+        "line": 436,
+        "code": "{t('worker.cancel', 'Cancel')}"
+      },
+      {
+        "file": "pages\\worker\\WorkerShiftBookingsPage.tsx",
+        "line": 288,
+        "code": "{t('worker.cancel', 'Cancel Booking')}"
+      }
+    ]
+  },
+  "worker.skillAdded": {
+    "default": "Skill added successfully",
+    "usages": [
+      {
+        "file": "pages\\worker\\WorkerProfilePage.tsx",
+        "line": 487,
+        "code": "toast.success(t('worker.skillAdded', 'Skill added successfully'))"
+      }
+    ]
+  },
+  "worker.skillAddError": {
+    "default": "Failed to add skill",
+    "usages": [
+      {
+        "file": "pages\\worker\\WorkerProfilePage.tsx",
+        "line": 490,
+        "code": "const msg = err?.response?.data?.detail || t('worker.skillAddError', 'Failed to add skill')"
+      }
+    ]
+  },
+  "worker.skillRemoved": {
+    "default": "Skill removed",
+    "usages": [
+      {
+        "file": "pages\\worker\\WorkerProfilePage.tsx",
+        "line": 506,
+        "code": "toast.success(t('worker.skillRemoved', 'Skill removed'))"
+      }
+    ]
+  },
+  "worker.skillRemoveError": {
+    "default": "Failed to remove skill",
+    "usages": [
+      {
+        "file": "pages\\worker\\WorkerProfilePage.tsx",
+        "line": 509,
+        "code": "const msg = err?.response?.data?.detail || t('worker.skillRemoveError', 'Failed to remove skill')"
+      }
+    ]
+  },
+  "worker.searchAddSkills": {
+    "default": "Search and add skills...",
+    "usages": [
+      {
+        "file": "pages\\worker\\WorkerProfilePage.tsx",
+        "line": 526,
+        "code": "placeholder={t('worker.searchAddSkills', 'Search and add skills...')}"
+      }
+    ]
+  },
+  "common.clear": {
+    "default": "Clear",
+    "usages": [
+      {
+        "file": "pages\\worker\\WorkerProfilePage.tsx",
+        "line": 554,
+        "code": "title={t('common.clear', 'Clear')}"
+      }
+    ]
+  },
+  "worker.added": {
+    "default": "Added",
+    "usages": [
+      {
+        "file": "pages\\worker\\WorkerProfilePage.tsx",
+        "line": 583,
+        "code": "{t('worker.added', 'Added')}"
+      }
+    ]
+  },
+  "worker.noSkillsAddedYet": {
+    "default": "No skills added yet.",
+    "usages": [
+      {
+        "file": "pages\\worker\\WorkerProfilePage.tsx",
+        "line": 628,
+        "code": "<p className=\"text-sm font-medium text-gray-500\">{t('worker.noSkillsAddedYet', 'No skills added yet.')}</p>"
+      }
+    ]
+  },
+  "worker.shiftsSubtitle": {
+    "default": "Manage upcoming bookings and verify completed work & offline payments",
+    "usages": [
+      {
+        "file": "pages\\worker\\WorkerShiftBookingsPage.tsx",
+        "line": 133,
+        "code": "{t('worker.shiftsSubtitle', 'Manage upcoming bookings and verify completed work & offline payments')}"
+      }
+    ]
+  },
+  "worker.shiftLabel": {
+    "default": "Shift Booking",
+    "usages": [
+      {
+        "file": "pages\\worker\\WorkerShiftBookingsPage.tsx",
+        "line": 196,
+        "code": "{booking.job?.title || t('worker.shiftLabel', 'Shift Booking')}"
+      }
+    ]
+  },
+  "worker.accept": {
+    "default": "Accept",
+    "usages": [
+      {
+        "file": "pages\\worker\\WorkerShiftBookingsPage.tsx",
+        "line": 265,
+        "code": "{t('worker.accept', 'Accept')}"
+      }
+    ]
+  },
+  "worker.decline": {
+    "default": "Decline",
+    "usages": [
+      {
+        "file": "pages\\worker\\WorkerShiftBookingsPage.tsx",
+        "line": 273,
+        "code": "{t('worker.decline', 'Decline')}"
+      }
+    ]
+  },
+  "notifications.title": {
+    "default": "Notifications",
+    "usages": [
+      {
+        "file": "components\\layout\\NotificationDropdown.tsx",
+        "line": 103,
+        "code": "<h3 className=\"font-semibold text-gray-800\">{t('notifications.title', 'Notifications')}</h3>"
+      }
+    ]
+  },
+  "notifications.markAllRead": {
+    "default": "Mark all read",
+    "usages": [
+      {
+        "file": "components\\layout\\NotificationDropdown.tsx",
+        "line": 110,
+        "code": "{t('notifications.markAllRead', 'Mark all read')}"
+      }
+    ]
+  },
+  "notifications.empty": {
+    "default": "No notifications yet",
+    "usages": [
+      {
+        "file": "components\\layout\\NotificationDropdown.tsx",
+        "line": 121,
+        "code": "{t('notifications.empty', 'No notifications yet')}"
+      }
+    ]
+  },
+  "notifications.SHIFT_CANCELLED.title": {
+    "default": null,
+    "usages": []
+  },
+  "notifications.SHIFT_DECLINED.body": {
+    "default": null,
+    "usages": []
+  },
+  "notifications.SHIFT_REQUESTED.body": {
+    "default": null,
+    "usages": []
+  },
+  "notifications.NEW_MATCHING_JOB.title": {
+    "default": null,
+    "usages": []
+  },
+  "notifications.SHIFT_CANCELLED.body": {
+    "default": null,
+    "usages": []
+  },
+  "notifications.NEW_APPLICATION.title": {
+    "default": null,
+    "usages": []
+  },
+  "notifications.APPLICATION_STATUS_UPDATE.body": {
+    "default": null,
+    "usages": []
+  },
+  "notifications.SHIFT_ACCEPTED.body": {
+    "default": null,
+    "usages": []
+  },
+  "notifications.SHIFT_REQUESTED.title": {
+    "default": null,
+    "usages": []
+  },
+  "notifications.SHIFT_ACCEPTED.title": {
+    "default": null,
+    "usages": []
+  },
+  "notifications.SHIFT_DECLINED.title": {
+    "default": null,
+    "usages": []
+  },
+  "notifications.NEW_MATCHING_JOB.body": {
+    "default": null,
+    "usages": []
+  },
+  "notifications.APPLICATION_STATUS_UPDATE.title": {
+    "default": null,
+    "usages": []
+  },
+  "notifications.NEW_APPLICATION.body": {
+    "default": null,
+    "usages": []
+  }
+}

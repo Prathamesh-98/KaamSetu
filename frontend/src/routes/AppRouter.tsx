@@ -14,6 +14,7 @@ import AdminLayout from '../layouts/AdminLayout';
 import LandingPage from '../pages/public/LandingPage';
 const LoginPage = lazy(() => import('../pages/auth/LoginPage'));
 const RegisterPage = lazy(() => import('../pages/auth/RegisterPage'));
+const ForgotPasswordPage = lazy(() => import('../pages/auth/ForgotPasswordPage'));
 const AboutPage = lazy(() => import('../pages/public/AboutPage'));
 const HowItWorksPage = lazy(() => import('../pages/public/HowItWorksPage'));
 
@@ -38,9 +39,18 @@ const EmployerShiftBookingsPage = lazy(() =>
   import('../pages/employer/EmployerShiftBookingsPage').then((m) => ({ default: m.EmployerShiftBookingsPage }))
 );
 const SavedWorkersPage = lazy(() => import('../pages/employer/SavedWorkersPage'));
+const EmployerWorkerDetailPage = lazy(() => import('../pages/employer/EmployerWorkerDetailPage'));
 
 // Admin pages
 const AdminDashboard = lazy(() => import('../pages/admin/AdminDashboard'));
+const AdminProfilePage = lazy(() => import('../pages/admin/AdminProfilePage'));
+const AdminUsersPage = lazy(() => import('../pages/admin/AdminUsersPage'));
+const AdminWorkersPage = lazy(() => import('../pages/admin/AdminWorkersPage'));
+const AdminEmployersPage = lazy(() => import('../pages/admin/AdminEmployersPage'));
+const AdminJobsPage = lazy(() => import('../pages/admin/AdminJobsPage'));
+const AdminApplicationsPage = lazy(() => import('../pages/admin/AdminApplicationsPage'));
+const AdminPaymentsPage = lazy(() => import('../pages/admin/AdminPaymentsPage'));
+const AdminVerificationsPage = lazy(() => import('../pages/admin/AdminVerificationsPage'));
 
 // Shared pages
 const MessagesPage = lazy(() => import('../pages/shared/MessagesPage'));
@@ -124,6 +134,7 @@ export default function AppRouter() {
                 </>
               }
             />
+            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
           </Route>
 
           {/* ── Worker ─────────────────────────────────────────────── */}
@@ -159,6 +170,7 @@ export default function AppRouter() {
             <Route path="/employer/jobs" element={<MyJobsPage />} />
             <Route path="/employer/jobs/:id/applicants" element={<JobApplicantsPage />} />
             <Route path="/employer/jobs/:id/candidates" element={<JobCandidatesPage />} />
+            <Route path="/employer/workers/:id" element={<EmployerWorkerDetailPage />} />
             <Route path="/employer/saved-workers" element={<SavedWorkersPage />} />
             <Route path="/employer/profile" element={<EmployerProfilePage />} />
             <Route path="/employer/shifts" element={<EmployerShiftBookingsPage />} />
@@ -174,6 +186,14 @@ export default function AppRouter() {
             }
           >
             <Route path="/admin/dashboard" element={<AdminDashboard />} />
+            <Route path="/admin/users" element={<AdminUsersPage />} />
+            <Route path="/admin/workers" element={<AdminWorkersPage />} />
+            <Route path="/admin/employers" element={<AdminEmployersPage />} />
+            <Route path="/admin/jobs" element={<AdminJobsPage />} />
+            <Route path="/admin/applications" element={<AdminApplicationsPage />} />
+            <Route path="/admin/verifications" element={<AdminVerificationsPage />} />
+            <Route path="/admin/payments" element={<AdminPaymentsPage />} />
+            <Route path="/admin/profile" element={<AdminProfilePage />} />
           </Route>
 
           {/* ── Fallback ───────────────────────────────────────────── */}

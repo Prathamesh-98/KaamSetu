@@ -7,6 +7,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'react-hot-toast';
 
 import { shiftsApi, employerApi } from '../api/services';
+import { WorkerProfileModal } from './jobs/WorkerProfileModal';
 
 interface Props {
   match: CandidateMatch;
@@ -18,6 +19,7 @@ export function CandidateMatchCard({ match, jobId }: Props) {
   const queryClient = useQueryClient();
   const [expanded, setExpanded] = useState(false);
   const [showModal, setShowModal] = useState(false);
+  const [showProfileModal, setShowProfileModal] = useState(false);
   const [startTime, setStartTime] = useState('');
   const [endTime, setEndTime] = useState('');
   const [requesting, setRequesting] = useState(false);
@@ -198,9 +200,13 @@ export function CandidateMatchCard({ match, jobId }: Props) {
               <Heart className={`w-4 h-4 ${isSaved ? 'fill-red-500 text-red-500' : ''}`} />
             )}
           </button>
-          <Link to={`/worker/${worker.id}`} className="btn-secondary py-1.5 px-3 text-sm">
+          <button
+            type="button"
+            onClick={() => setShowProfileModal(true)}
+            className="btn-secondary py-1.5 px-3 text-sm"
+          >
             {t('view_profile', 'View Profile')}
-          </Link>
+          </button>
           {jobId && (
             <button 
               onClick={() => setShowModal(true)}
@@ -235,6 +241,18 @@ export function CandidateMatchCard({ match, jobId }: Props) {
           </ul>
         </div>
       )}
+
+      {/* Worker Profile Detail Modal / Drawer */}
+      <WorkerProfileModal
+        worker={worker}
+        isOpen={showProfileModal}
+        onClose={() => setShowProfileModal(false)}
+        onRequestShift={jobId ? () => setShowModal(true) : undefined}
+        isSaved={isSaved}
+        onToggleSaved={handleToggleFavorite}
+        isSavingFavorite={togglingFavorite}
+        jobId={jobId}
+      />
 
       {showModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
