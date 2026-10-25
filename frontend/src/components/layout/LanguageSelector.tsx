@@ -1,7 +1,10 @@
+import { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 
 export default function LanguageSelector({ isTransparent = false }: { isTransparent?: boolean }) {
   const { i18n } = useTranslation();
+  const [isOpen, setIsOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const languages = [
     { code: 'en', label: 'English', icon: '🇬🇧' },
@@ -13,34 +16,78 @@ export default function LanguageSelector({ isTransparent = false }: { isTranspar
 
   const currentLang = languages.find(l => l.code === i18n.language) || languages[0];
 
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
+
+  const handleSelectLanguage = (code: string) => {
+    i18n.changeLanguage(code);
+    setIsOpen(false);
+  };
+
   return (
-    <div className="relative group">
-      <button 
-        className={`flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-lg transition-colors ${isTransparent ? 'text-white/90 hover:text-white hover:bg-white/10' : 'text-gray-700 hover:text-dark hover:bg-gray-50'}`}
+    <div className="relative" ref={containerRef}>
+      <button
+        type="button"
+        onClick={() => setIsOpen(prev => !prev)}
+        className={`flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
+          isTransparent ? 'text-white/90 hover:text-white hover:bg-white/10' : 'text-gray-700 hover:text-dark hover:bg-gray-50'
+        }`}
         aria-label="Select language"
+        aria-haspopup="listbox"
+        aria-expanded={isOpen}
       >
         <span className="text-base leading-none">{currentLang.icon}</span>
         <span>{currentLang.label}</span>
-        <svg className="w-4 h-4 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <svg
+          className={`w-4 h-4 opacity-50 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
         </svg>
       </button>
 
       {/* Dropdown Menu */}
-      <div className="absolute right-0 mt-1 w-40 bg-white rounded-xl shadow-lg border border-gray-100 py-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 transform origin-top-right">
-        {languages.map((lang) => (
-          <button
-            key={lang.code}
-            onClick={() => i18n.changeLanguage(lang.code)}
-            className={`w-full text-left px-4 py-2 text-sm flex items-center gap-2 hover:bg-primary-50 transition-colors ${
-              i18n.language === lang.code ? 'text-primary-600 font-semibold bg-primary-50/50' : 'text-gray-700'
-            }`}
-          >
-            <span className="text-base">{lang.icon}</span>
-            {lang.label}
-          </button>
-        ))}
-      </div>
+      {isOpen && (
+        <div
+          role="listbox"
+          aria-label="Languages"
+          className="absolute right-0 mt-1 w-40 bg-white rounded-xl shadow-lg border border-gray-100 py-2 z-50 transform origin-top-right animate-fade-in"
+        >
+          {languages.map((lang) => (
+            <button
+              key={lang.code}
+              type="button"
+              role="option"
+              aria-selected={i18n.language === lang.code}
+              onClick={() => handleSelectLanguage(lang.code)}
+              className={`w-full text-left px-4 py-2 text-sm flex items-center gap-2 hover:bg-primary-50 transition-colors ${
+                i18n.language === lang.code ? 'text-primary-600 font-semibold bg-primary-50/50' : 'text-gray-700'
+              }`}
+            >
+              <span className="text-base">{lang.icon}</span>
+              {lang.label}
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

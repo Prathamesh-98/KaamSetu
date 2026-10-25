@@ -1,4 +1,4 @@
-﻿import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Bell, Check, Trash2, X } from 'lucide-react';
 import { notificationsApi } from '../../api/services';
@@ -44,8 +44,17 @@ export default function NotificationDropdown({ isTransparent }: { isTransparent:
         setIsOpen(false);
       }
     };
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setIsOpen(false);
+      }
+    };
     document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
   }, []);
 
   const handleNotificationClick = (n: any) => {
@@ -58,7 +67,6 @@ export default function NotificationDropdown({ isTransparent }: { isTransparent:
     else if (n.type === 'NEW_APPLICATION' || n.type === 'APPLICATION_STATUS_UPDATE') navigate(n.reference_type === 'JOB_APPLICATION' ? '/worker/applications' : '/employer/applications'); // Naive routing, can be refined based on role
     else if (n.type.startsWith('SHIFT_')) navigate(n.reference_type === 'SHIFT_BOOKING' ? '/worker/shifts' : '/employer/shifts');
   };
-
 
   const getNotificationContent = (n: any) => {
     switch(n.type) {
@@ -86,7 +94,11 @@ export default function NotificationDropdown({ isTransparent }: { isTransparent:
   return (
     <div className="relative" ref={dropdownRef}>
       <button
+        type="button"
         onClick={() => setIsOpen(!isOpen)}
+        aria-label={t('notifications.title', 'Notifications')}
+        aria-haspopup="true"
+        aria-expanded={isOpen}
         className={`relative p-2 rounded-full transition-colors ${
           isTransparent ? 'text-white hover:bg-white/10' : 'text-gray-600 hover:bg-gray-100'
         }`}
@@ -98,11 +110,12 @@ export default function NotificationDropdown({ isTransparent }: { isTransparent:
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden z-50">
+        <div className="absolute right-0 mt-2 w-80 max-w-[calc(100vw-2rem)] bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden z-50">
           <div className="p-3 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
             <h3 className="font-semibold text-gray-800">{t('notifications.title', 'Notifications')}</h3>
             {unreadCount > 0 && (
               <button
+                type="button"
                 onClick={() => markAllRead.mutate()}
                 className="text-xs text-primary-600 hover:text-primary-700 font-medium flex items-center gap-1"
               >

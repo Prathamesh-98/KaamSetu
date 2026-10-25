@@ -94,7 +94,7 @@ export default function LoginPage() {
       </div>
 
       {/* Right Form Panel */}
-      <div className="w-full md:w-[55%] lg:w-[60%] flex items-center justify-center p-6 lg:p-12">
+      <div className="w-full md:w-[55%] lg:w-[60%] flex items-center justify-center p-4 sm:p-6 lg:p-12">
         <div className="w-full max-w-md">
           {/* Mobile Header (Hidden on Desktop) */}
           <div className="md:hidden text-center mb-8">
@@ -112,7 +112,7 @@ export default function LoginPage() {
             <h1 className="text-3xl font-bold text-dark mb-2">{t('auth.login', 'Log In')}</h1>
             <p className="text-gray-500 mb-8">{t('auth.loginSubtitle', 'Welcome back! Please enter your details.')}</p>
 
-            <div className="card p-8 shadow-sm border border-gray-100 bg-white rounded-2xl">
+            <div className="card p-6 sm:p-8 shadow-sm border border-gray-100 bg-white rounded-2xl">
               {error && (
                 <div className="alert-error mb-6 flex items-center gap-2">
                   <AlertCircle className="w-4 h-4 flex-shrink-0" />

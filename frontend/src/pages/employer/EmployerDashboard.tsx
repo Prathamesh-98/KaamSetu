@@ -148,7 +148,7 @@ export default function EmployerDashboard() {
               { label: t('enums.status.PENDING', 'Pending'), value: pendingApplicants.length, color: 'text-amber-600', bg: 'bg-amber-50' },
               { label: t('enums.status.ACCEPTED', 'Accepted'), value: acceptedApplicants.length, color: 'text-green-600', bg: 'bg-green-50' },
             ].map((stat, idx) => (
-              <div key={idx} className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm flex flex-col justify-center items-center text-center hover:shadow-md transition-shadow">
+              <div key={idx} className={`bg-white rounded-xl border border-gray-200 p-5 shadow-sm flex flex-col justify-center items-center text-center hover:shadow-md transition-shadow ${idx === 4 ? 'col-span-2 sm:col-span-1' : ''}`}>
                 <div className="text-gray-500 text-xs font-semibold uppercase tracking-wider mb-2">{stat.label}</div>
                 <div className={`text-3xl font-black ${stat.color}`}>{stat.value}</div>
               </div>

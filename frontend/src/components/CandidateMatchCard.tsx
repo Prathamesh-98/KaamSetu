@@ -181,8 +181,8 @@ export function CandidateMatchCard({ match, jobId }: Props) {
         </div>
       </div>
 
-      <div className="px-5 py-3 bg-gray-50 border-t border-gray-100 flex items-center justify-between">
-        <div className="flex items-center gap-3">
+      <div className="px-4 sm:px-5 py-3 bg-gray-50 border-t border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
           <button
             type="button"
             onClick={handleToggleFavorite}
@@ -218,7 +218,7 @@ export function CandidateMatchCard({ match, jobId }: Props) {
         </div>
         <button 
           onClick={() => setExpanded(!expanded)}
-          className="flex items-center gap-1 text-sm font-medium text-blue-600 hover:text-blue-700"
+          className="flex items-center gap-1 text-sm font-medium text-blue-600 hover:text-blue-700 self-start sm:self-auto"
         >
           {expanded ? (
             <><ChevronUp className="w-4 h-4" /> {t('hide_match_details', 'Hide Details')}</>

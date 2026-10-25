@@ -172,7 +172,7 @@ export default function WorkerProfilePage() {
               <div className="flex-1 w-full">
                 <div className="flex flex-col md:flex-row md:items-center gap-3 mb-2 justify-center md:justify-start">
                   <h2 className="text-2xl font-bold text-[#182849]">{profile.full_name}</h2>
-                  <div className="flex items-center gap-2 justify-center md:justify-start">
+                  <div className="flex flex-wrap items-center gap-2 justify-center md:justify-start">
                     <IdentityVerifiedBadge isVerified={profile.is_identity_verified} />
                     <PhoneVerifiedBadge isVerified={profile.is_phone_verified} />
                     <span className={`text-xs font-bold border rounded-xl px-2.5 py-1 shadow-sm ${avail.color}`}>

@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import {
   Search, MapPin, Briefcase, Clock, Zap, X, ChevronLeft, ChevronRight,
-  Bookmark, Navigation, List, Map as MapIcon, AlertCircle, Compass
+  Bookmark, Navigation, List, Map as MapIcon, AlertCircle, Compass, Filter
 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { jobsApi, categoriesApi, skillsApi, workerApi } from '../../api/services'
@@ -187,6 +187,7 @@ export default function FindJobs() {
   const [geoStatus, setGeoStatus] = useState<'idle' | 'locating' | 'denied' | 'error'>('idle')
   const [geoErrorMsg, setGeoErrorMsg] = useState<string | null>(null)
   const [selectedJobId, setSelectedJobId] = useState<string | null>(null)
+  const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false)
 
   const debouncedKeyword = useDebounce(keyword, 400)
   const debouncedCity = useDebounce(city, 400)
@@ -370,20 +371,56 @@ export default function FindJobs() {
         <p className="text-gray-500 mt-1">{t('jobs.discoverOpportunities', 'Discover opportunities matched to your skills and location')}</p>
       </div>
 
+      {/* Mobile Filter Toggle Button */}
+      <div className="md:hidden mb-4">
+        <button
+          type="button"
+          onClick={() => setMobileFiltersOpen((prev) => !prev)}
+          className="btn btn-outline w-full py-2.5 px-4 bg-white rounded-xl shadow-2xs font-semibold flex items-center justify-between"
+          aria-expanded={mobileFiltersOpen}
+        >
+          <div className="flex items-center gap-2">
+            <Filter className="w-4 h-4 text-primary-600" />
+            <span>{t('jobs.filters', 'Filters')}</span>
+            {activeFilterCount > 0 && (
+              <span className="bg-primary-600 text-white text-xs px-2 py-0.5 rounded-full font-bold">
+                {activeFilterCount}
+              </span>
+            )}
+          </div>
+          <span className="text-xs text-primary-600 font-medium">
+            {mobileFiltersOpen ? t('common.hide', 'Hide') : t('common.show', 'Show')}
+          </span>
+        </button>
+      </div>
+
       <div className="flex flex-col md:flex-row gap-6">
         {/* Left Sidebar Filters */}
-        <div className="w-full md:w-1/4 flex-shrink-0">
+        <div className={`w-full md:w-1/4 flex-shrink-0 ${mobileFiltersOpen ? 'block' : 'hidden md:block'}`}>
           <div className="card p-5 bg-white border border-gray-100 rounded-xl shadow-sm space-y-5">
             <div className="flex items-center justify-between pb-3 border-b border-gray-100">
-              <h2 className="font-bold text-lg text-dark">{t('jobs.filters', 'Filters')}</h2>
-              {activeFilterCount > 0 && (
+              <div className="flex items-center gap-2">
+                <Filter className="w-4 h-4 text-primary-600 md:hidden" />
+                <h2 className="font-bold text-lg text-dark">{t('jobs.filters', 'Filters')}</h2>
+              </div>
+              <div className="flex items-center gap-2">
+                {activeFilterCount > 0 && (
+                  <button
+                    onClick={handleClearFilters}
+                    className="text-sm font-medium text-primary-600 hover:text-primary-700 transition-colors"
+                  >
+                    {t('jobs.clearAll', 'Clear All')}
+                  </button>
+                )}
                 <button
-                  onClick={handleClearFilters}
-                  className="text-sm font-medium text-primary-600 hover:text-primary-700 transition-colors"
+                  type="button"
+                  onClick={() => setMobileFiltersOpen(false)}
+                  className="md:hidden p-1 text-gray-400 hover:text-gray-600 rounded-md"
+                  aria-label={t('common.close', 'Close')}
                 >
-                  {t('jobs.clearAll', 'Clear All')}
+                  <X className="w-5 h-5" />
                 </button>
-              )}
+              </div>
             </div>
 
             {/* Location & Radius Section */}

@@ -91,7 +91,7 @@ export default function HeroCarousel() {
             transition={{ duration: 0.6, delay: 0.1 }}
           >
             {/* Headline */}
-            <h1 className="text-5xl lg:text-7xl font-display font-black text-white leading-[1.1] mb-6">
+            <h1 className="text-3xl sm:text-5xl lg:text-7xl font-display font-black text-white leading-[1.1] mb-6 break-words">
               {t('landing.hero.headlineLine1')} <br/>
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#FF8A24] to-[#FFB067] relative">
                 {t('landing.hero.headlineLine2')}
@@ -103,7 +103,7 @@ export default function HeroCarousel() {
             </h1>
 
             {/* Description */}
-            <p className="text-lg text-blue-100/90 leading-relaxed mb-10 max-w-xl">
+            <p className="text-base sm:text-lg text-blue-100/90 leading-relaxed mb-8 sm:mb-10 max-w-xl">
               {t('landing.hero.description')}
             </p>
 
