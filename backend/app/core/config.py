@@ -4,7 +4,7 @@ Loads all settings from environment variables using pydantic-settings.
 """
 from pydantic_settings import BaseSettings
 from typing import Optional
-from pydantic import model_validator
+from pydantic import model_validator, field_validator
 import os
 
 
@@ -19,6 +19,18 @@ class Settings(BaseSettings):
 
     # Database
     DATABASE_URL: str = "postgresql+asyncpg://postgres:postgres@localhost:5432/kaamsetu"
+
+    @field_validator("DATABASE_URL", mode="before")
+    @classmethod
+    def assemble_db_url(cls, v: Optional[str]) -> Optional[str]:
+        if isinstance(v, str):
+            v_clean = v.strip()
+            if v_clean.startswith("postgres://"):
+                return v_clean.replace("postgres://", "postgresql+asyncpg://", 1)
+            elif v_clean.startswith("postgresql://") and not v_clean.startswith("postgresql+asyncpg://"):
+                return v_clean.replace("postgresql://", "postgresql+asyncpg://", 1)
+            return v_clean
+        return v
 
     # JWT
     JWT_SECRET_KEY: Optional[str] = None
