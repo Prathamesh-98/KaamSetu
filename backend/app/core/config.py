@@ -26,9 +26,12 @@ class Settings(BaseSettings):
         if isinstance(v, str):
             v_clean = v.strip()
             if v_clean.startswith("postgres://"):
-                return v_clean.replace("postgres://", "postgresql+asyncpg://", 1)
+                v_clean = v_clean.replace("postgres://", "postgresql+asyncpg://", 1)
             elif v_clean.startswith("postgresql://") and not v_clean.startswith("postgresql+asyncpg://"):
-                return v_clean.replace("postgresql://", "postgresql+asyncpg://", 1)
+                v_clean = v_clean.replace("postgresql://", "postgresql+asyncpg://", 1)
+            # asyncpg uses 'ssl=' instead of 'sslmode='
+            if "sslmode=" in v_clean:
+                v_clean = v_clean.replace("sslmode=", "ssl=")
             return v_clean
         return v
 
@@ -78,6 +81,9 @@ class Settings(BaseSettings):
     TWILIO_AUTH_TOKEN: Optional[str] = None
     TWILIO_FROM_NUMBER: Optional[str] = None
 
+    # Production Validation Policy
+    STRICT_CONFIG_VALIDATION: bool = True
+
     @model_validator(mode="after")
     def validate_production_settings(self):
         env = (self.ENVIRONMENT or "").strip().lower()
@@ -85,37 +91,38 @@ class Settings(BaseSettings):
         if env in ("production", "prod"):
             if not self.JWT_SECRET_KEY or self.JWT_SECRET_KEY == "change-this-secret-key-in-production":
                 raise ValueError("A strong JWT_SECRET_KEY environment variable is required in production.")
-            
-            if self.MOCK_OTP_MODE:
-                raise ValueError("MOCK_OTP_MODE must NEVER be enabled in production environment.")
-
-            email_prov = (self.EMAIL_PROVIDER or "").strip().lower()
-            if not email_prov or email_prov in ("console", "mock", "none"):
-                raise ValueError("A real EMAIL_PROVIDER ('resend' or 'smtp') is required in production; mock/console is forbidden.")
-            if email_prov == "resend":
-                if not self.RESEND_API_KEY or not self.RESEND_API_KEY.strip():
-                    raise ValueError("RESEND_API_KEY is required in production when EMAIL_PROVIDER is 'resend'.")
-            elif email_prov == "smtp":
-                if not self.SMTP_HOST or not self.SMTP_USER or not self.SMTP_PASSWORD:
-                    raise ValueError("SMTP_HOST, SMTP_USER, and SMTP_PASSWORD are required in production when EMAIL_PROVIDER is 'smtp'.")
-            else:
-                raise ValueError(f"Unsupported EMAIL_PROVIDER '{self.EMAIL_PROVIDER}' for production. Must be 'resend' or 'smtp'.")
-
-            sms_prov = (self.SMS_PROVIDER or "").strip().lower()
-            if not sms_prov or sms_prov in ("console", "mock", "none"):
-                raise ValueError("A real SMS_PROVIDER ('msg91' or 'twilio') is required in production; mock/console is forbidden.")
-            if sms_prov == "msg91":
-                if not self.MSG91_AUTH_KEY or not self.MSG91_TEMPLATE_ID:
-                    raise ValueError("MSG91_AUTH_KEY and MSG91_TEMPLATE_ID are required in production when SMS_PROVIDER is 'msg91'.")
-            elif sms_prov == "twilio":
-                if not self.TWILIO_ACCOUNT_SID or not self.TWILIO_AUTH_TOKEN or not self.TWILIO_FROM_NUMBER:
-                    raise ValueError("TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, and TWILIO_FROM_NUMBER are required in production when SMS_PROVIDER is 'twilio'.")
-            else:
-                raise ValueError(f"Unsupported SMS_PROVIDER '{self.SMS_PROVIDER}' for production. Must be 'msg91' or 'twilio'.")
 
             if self.DEBUG:
                 # Force DEBUG to False in production
                 self.DEBUG = False
+
+            if self.STRICT_CONFIG_VALIDATION:
+                if self.MOCK_OTP_MODE:
+                    raise ValueError("MOCK_OTP_MODE must NEVER be enabled in production environment.")
+
+                email_prov = (self.EMAIL_PROVIDER or "").strip().lower()
+                if not email_prov or email_prov in ("console", "mock", "none"):
+                    raise ValueError("A real EMAIL_PROVIDER ('resend' or 'smtp') is required in production; mock/console is forbidden.")
+                if email_prov == "resend":
+                    if not self.RESEND_API_KEY or not self.RESEND_API_KEY.strip():
+                        raise ValueError("RESEND_API_KEY is required in production when EMAIL_PROVIDER is 'resend'.")
+                elif email_prov == "smtp":
+                    if not self.SMTP_HOST or not self.SMTP_USER or not self.SMTP_PASSWORD:
+                        raise ValueError("SMTP_HOST, SMTP_USER, and SMTP_PASSWORD are required in production when EMAIL_PROVIDER is 'smtp'.")
+                else:
+                    raise ValueError(f"Unsupported EMAIL_PROVIDER '{self.EMAIL_PROVIDER}' for production. Must be 'resend' or 'smtp'.")
+
+                sms_prov = (self.SMS_PROVIDER or "").strip().lower()
+                if not sms_prov or sms_prov in ("console", "mock", "none"):
+                    raise ValueError("A real SMS_PROVIDER ('msg91' or 'twilio') is required in production; mock/console is forbidden.")
+                if sms_prov == "msg91":
+                    if not self.MSG91_AUTH_KEY or not self.MSG91_TEMPLATE_ID:
+                        raise ValueError("MSG91_AUTH_KEY and MSG91_TEMPLATE_ID are required in production when SMS_PROVIDER is 'msg91'.")
+                elif sms_prov == "twilio":
+                    if not self.TWILIO_ACCOUNT_SID or not self.TWILIO_AUTH_TOKEN or not self.TWILIO_FROM_NUMBER:
+                        raise ValueError("TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, and TWILIO_FROM_NUMBER are required in production when SMS_PROVIDER is 'twilio'.")
+                else:
+                    raise ValueError(f"Unsupported SMS_PROVIDER '{self.SMS_PROVIDER}' for production. Must be 'msg91' or 'twilio'.")
                 
         # Fallback for development if not provided
         if not self.JWT_SECRET_KEY:

@@ -23,9 +23,15 @@ app = FastAPI(
 )
 
 # 🌐 CORS Configuration
-allowed_origins = [settings.FRONTEND_URL]
-if settings.ENVIRONMENT == "development":
-    allowed_origins.extend([
+cors_origins = set()
+if settings.FRONTEND_URL:
+    for orig in settings.FRONTEND_URL.split(","):
+        cleaned = orig.strip().rstrip("/")
+        if cleaned:
+            cors_origins.add(cleaned)
+
+if settings.ENVIRONMENT in ("development", "staging", "dev"):
+    cors_origins.update([
         "http://localhost:5173",
         "http://127.0.0.1:5173",
         "http://localhost:3000",
@@ -34,7 +40,8 @@ if settings.ENVIRONMENT == "development":
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=allowed_origins,
+    allow_origins=list(cors_origins) if cors_origins else ["*"],
+    allow_origin_regex=r"^https?://.*\.onrender\.com$",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

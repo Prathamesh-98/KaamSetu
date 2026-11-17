@@ -1,4 +1,7 @@
 services:
+  # ===========================================================================
+  # Backend Web Service (FastAPI + SQLAlchemy + Alembic)
+  # ===========================================================================
   - type: web
     name: kaamsetu-backend
     runtime: python
@@ -7,18 +10,26 @@ services:
     startCommand: sh start.sh
     healthCheckPath: /health
     envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
       - key: ENVIRONMENT
         value: production
+      - key: STRICT_CONFIG_VALIDATION
+        value: "false"
+      - key: MOCK_OTP_MODE
+        value: "False"
+      - key: RUN_SEED
+        value: "true"
       - key: DATABASE_URL
         sync: false
       - key: JWT_SECRET_KEY
-        sync: false
+        generateValue: true
       - key: OTP_SECRET_KEY
-        sync: false
+        generateValue: true
       - key: FRONTEND_URL
         sync: false
       - key: ADMIN_EMAIL
-        sync: false
+        value: admin@kaamsetu.in
       - key: ADMIN_PASSWORD
         sync: false
       - key: CLOUDINARY_CLOUD_NAME
@@ -27,14 +38,12 @@ services:
         sync: false
       - key: CLOUDINARY_API_SECRET
         sync: false
-      - key: MOCK_OTP_MODE
-        value: "False"
       - key: EMAIL_PROVIDER
         sync: false
       - key: RESEND_API_KEY
         sync: false
       - key: RESEND_FROM_EMAIL
-        sync: false
+        value: onboarding@resend.dev
       - key: SMS_PROVIDER
         sync: false
       - key: MSG91_AUTH_KEY
@@ -49,3 +58,24 @@ services:
         sync: false
       - key: TWILIO_FROM_NUMBER
         sync: false
+
+  # ===========================================================================
+  # Frontend Static Site (React 19 + TypeScript + Vite)
+  # ===========================================================================
+  - type: web
+    name: kaamsetu-frontend
+    runtime: static
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    staticPublishPath: ./dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: NODE_VERSION
+        value: "20"
+      - key: VITE_API_BASE_URL
+        sync: false
+      - key: VITE_APP_NAME
+        value: KaamSetu
