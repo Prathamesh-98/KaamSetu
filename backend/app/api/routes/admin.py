@@ -148,10 +148,14 @@ async def get_platform_stats(
     _: User = Depends(require_admin),
     db: AsyncSession = Depends(get_db),
 ):
-    """Get platform-wide statistics."""
+    """Get platform-wide statistics. Counts all registered workers and employers regardless of profile completion."""
     total_users = (await db.execute(select(func.count(User.id)))).scalar_one()
-    total_workers = (await db.execute(select(func.count(WorkerProfile.id)))).scalar_one()
-    total_employers = (await db.execute(select(func.count(EmployerProfile.id)))).scalar_one()
+    total_workers = (await db.execute(
+        select(func.count(User.id)).where(User.role == UserRole.WORKER)
+    )).scalar_one()
+    total_employers = (await db.execute(
+        select(func.count(User.id)).where(User.role == UserRole.EMPLOYER)
+    )).scalar_one()
     total_jobs = (await db.execute(select(func.count(Job.id)))).scalar_one()
     active_jobs = (await db.execute(
         select(func.count(Job.id)).where(Job.status == JobStatus.ACTIVE)
@@ -160,6 +164,9 @@ async def get_platform_stats(
         select(func.count(Job.id)).where(Job.status == JobStatus.COMPLETED)
     )).scalar_one()
     total_applications = (await db.execute(select(func.count(JobApplication.id)))).scalar_one()
+    pending_verifications = (await db.execute(
+        select(func.count(VerificationRecord.id)).where(VerificationRecord.status == VerificationStatus.PENDING)
+    )).scalar_one()
 
     return AdminStats(
         total_users=total_users,
@@ -169,6 +176,7 @@ async def get_platform_stats(
         total_jobs=total_jobs,
         total_applications=total_applications,
         completed_jobs=completed_jobs,
+        pending_verifications=pending_verifications,
     )
 
 
@@ -317,23 +325,29 @@ async def toggle_user_status(
 
 @router.get("/workers", response_model=AdminWorkerListResponse)
 async def list_all_workers(
-    search: Optional[str] = Query(None, description="Search by worker name, city, or bio"),
+    search: Optional[str] = Query(None, description="Search by worker name, city, email, phone, or bio"),
     verified_only: Optional[bool] = Query(None, description="Filter verified workers"),
     page: int = Query(1, ge=1),
     per_page: int = Query(20, ge=1, le=100),
     _: User = Depends(require_admin),
     db: AsyncSession = Depends(get_db),
 ):
-    """Admin: Searchable, paginated listing of worker profiles with skills and verification status."""
+    """Admin: Searchable, paginated listing of worker profiles with skills and verification status.
+    Guarantees every registered WORKER appears, even with an incomplete profile.
+    """
     stmt = (
-        select(WorkerProfile)
-        .join(User, WorkerProfile.user_id == User.id)
+        select(User)
+        .outerjoin(WorkerProfile, User.id == WorkerProfile.user_id)
+        .where(User.role == UserRole.WORKER)
         .options(
-            selectinload(WorkerProfile.skills).selectinload(WorkerSkill.skill),
-            selectinload(WorkerProfile.user),
+            selectinload(User.worker_profile).selectinload(WorkerProfile.skills).selectinload(WorkerSkill.skill),
         )
     )
-    count_stmt = select(func.count(WorkerProfile.id)).join(User, WorkerProfile.user_id == User.id)
+    count_stmt = (
+        select(func.count(User.id))
+        .outerjoin(WorkerProfile, User.id == WorkerProfile.user_id)
+        .where(User.role == UserRole.WORKER)
+    )
     conditions = []
 
     if search and search.strip():
@@ -348,7 +362,12 @@ async def list_all_workers(
         )
 
     if verified_only is True:
-        conditions.append(WorkerProfile.is_identity_verified == True)
+        conditions.append(
+            or_(
+                User.is_verified == True,
+                WorkerProfile.is_identity_verified == True,
+            )
+        )
 
     if conditions:
         stmt = stmt.where(and_(*conditions))
@@ -357,31 +376,37 @@ async def list_all_workers(
     total = (await db.execute(count_stmt)).scalar_one()
     total_pages = max(1, math.ceil(total / per_page))
 
-    stmt = stmt.order_by(WorkerProfile.created_at.desc()).offset((page - 1) * per_page).limit(per_page)
-    workers = (await db.execute(stmt)).scalars().all()
+    stmt = stmt.order_by(User.created_at.desc()).offset((page - 1) * per_page).limit(per_page)
+    users = (await db.execute(stmt)).scalars().all()
 
-    items = [
-        AdminWorkerListItem(
-            id=w.id,
-            user_id=w.user_id,
-            full_name=w.full_name,
-            phone=w.user.phone if w.user else None,
-            email=w.user.email if w.user else None,
-            bio=w.bio,
-            city=w.city,
-            state=w.state,
-            experience_years=w.years_experience,
-            hourly_rate=float(w.expected_salary) if (w.expected_salary is not None and w.salary_type == SalaryType.HOURLY) else None,
-            daily_rate=float(w.expected_salary) if (w.expected_salary is not None and w.salary_type == SalaryType.DAILY) else None,
-            is_verified=w.is_identity_verified,
-            is_identity_verified=w.is_identity_verified,
-            is_phone_verified=w.is_phone_verified,
-            is_active=w.user.is_active if w.user else True,
-            skills=[ws.skill.name for ws in w.skills if ws.skill],
-            created_at=w.created_at,
+    items = []
+    for u in users:
+        w = u.worker_profile
+        fallback_name = (
+            w.full_name if (w and w.full_name and w.full_name.strip())
+            else (u.email.split('@')[0] if u.email else "Registered Worker")
         )
-        for w in workers
-    ]
+        items.append(
+            AdminWorkerListItem(
+                id=w.id if w else u.id,
+                user_id=u.id,
+                full_name=fallback_name,
+                phone=u.phone,
+                email=u.email,
+                bio=w.bio if w else None,
+                city=w.city if w else None,
+                state=w.state if w else None,
+                experience_years=w.years_experience if w else None,
+                hourly_rate=float(w.expected_salary) if (w and w.expected_salary is not None and w.salary_type == SalaryType.HOURLY) else None,
+                daily_rate=float(w.expected_salary) if (w and w.expected_salary is not None and w.salary_type == SalaryType.DAILY) else None,
+                is_verified=u.is_verified or (w.is_identity_verified if w else False),
+                is_identity_verified=w.is_identity_verified if w else False,
+                is_phone_verified=w.is_phone_verified if w else False,
+                is_active=u.is_active,
+                skills=[ws.skill.name for ws in w.skills if ws.skill] if (w and w.skills) else [],
+                created_at=w.created_at if w else u.created_at,
+            )
+        )
 
     return AdminWorkerListResponse(
         items=items,
@@ -398,7 +423,8 @@ async def get_worker_detail(
     _: User = Depends(require_admin),
     db: AsyncSession = Depends(get_db),
 ):
-    """Admin: Get detailed worker profile by ID."""
+    """Admin: Get detailed worker profile by ID (WorkerProfile.id or User.id)."""
+    # 1. Try finding by WorkerProfile.id
     stmt = (
         select(WorkerProfile)
         .where(WorkerProfile.id == worker_id)
@@ -408,27 +434,62 @@ async def get_worker_detail(
         )
     )
     worker = (await db.execute(stmt)).scalar_one_or_none()
-    if not worker:
+    if worker:
+        return AdminWorkerListItem(
+            id=worker.id,
+            user_id=worker.user_id,
+            full_name=worker.full_name or "Registered Worker",
+            phone=worker.user.phone if worker.user else None,
+            email=worker.user.email if worker.user else None,
+            bio=worker.bio,
+            city=worker.city,
+            state=worker.state,
+            experience_years=worker.years_experience,
+            hourly_rate=float(worker.expected_salary) if (worker.expected_salary is not None and worker.salary_type == SalaryType.HOURLY) else None,
+            daily_rate=float(worker.expected_salary) if (worker.expected_salary is not None and worker.salary_type == SalaryType.DAILY) else None,
+            is_verified=(worker.user.is_verified if worker.user else False) or worker.is_identity_verified,
+            is_identity_verified=worker.is_identity_verified,
+            is_phone_verified=worker.is_phone_verified,
+            is_active=worker.user.is_active if worker.user else True,
+            skills=[ws.skill.name for ws in worker.skills if ws.skill],
+            created_at=worker.created_at,
+        )
+
+    # 2. Fallback to User.id for registered workers without a profile yet
+    u_stmt = (
+        select(User)
+        .where(and_(User.id == worker_id, User.role == UserRole.WORKER))
+        .options(
+            selectinload(User.worker_profile).selectinload(WorkerProfile.skills).selectinload(WorkerSkill.skill),
+        )
+    )
+    user = (await db.execute(u_stmt)).scalar_one_or_none()
+    if not user:
         raise HTTPException(status_code=404, detail="Worker profile not found")
 
+    w = user.worker_profile
+    fallback_name = (
+        w.full_name if (w and w.full_name and w.full_name.strip())
+        else (user.email.split('@')[0] if user.email else "Registered Worker")
+    )
     return AdminWorkerListItem(
-        id=worker.id,
-        user_id=worker.user_id,
-        full_name=worker.full_name,
-        phone=worker.user.phone if worker.user else None,
-        email=worker.user.email if worker.user else None,
-        bio=worker.bio,
-        city=worker.city,
-        state=worker.state,
-        experience_years=worker.years_experience,
-        hourly_rate=float(worker.expected_salary) if (worker.expected_salary is not None and worker.salary_type == SalaryType.HOURLY) else None,
-        daily_rate=float(worker.expected_salary) if (worker.expected_salary is not None and worker.salary_type == SalaryType.DAILY) else None,
-        is_verified=(worker.user.is_verified if worker.user else False) or worker.is_identity_verified,
-        is_identity_verified=worker.is_identity_verified,
-        is_phone_verified=worker.is_phone_verified,
-        is_active=worker.user.is_active if worker.user else True,
-        skills=[ws.skill.name for ws in worker.skills if ws.skill],
-        created_at=worker.created_at,
+        id=w.id if w else user.id,
+        user_id=user.id,
+        full_name=fallback_name,
+        phone=user.phone,
+        email=user.email,
+        bio=w.bio if w else None,
+        city=w.city if w else None,
+        state=w.state if w else None,
+        experience_years=w.years_experience if w else None,
+        hourly_rate=float(w.expected_salary) if (w and w.expected_salary is not None and w.salary_type == SalaryType.HOURLY) else None,
+        daily_rate=float(w.expected_salary) if (w and w.expected_salary is not None and w.salary_type == SalaryType.DAILY) else None,
+        is_verified=user.is_verified or (w.is_identity_verified if w else False),
+        is_identity_verified=w.is_identity_verified if w else False,
+        is_phone_verified=w.is_phone_verified if w else False,
+        is_active=user.is_active,
+        skills=[ws.skill.name for ws in w.skills if ws.skill] if (w and w.skills) else [],
+        created_at=w.created_at if w else user.created_at,
     )
 
 
@@ -436,20 +497,27 @@ async def get_worker_detail(
 
 @router.get("/employers", response_model=AdminEmployerListResponse)
 async def list_all_employers(
-    search: Optional[str] = Query(None, description="Search by name, organization, or city"),
+    search: Optional[str] = Query(None, description="Search by name, organization, email, phone, or city"),
     verified_only: Optional[bool] = Query(None, description="Filter verified employers"),
     page: int = Query(1, ge=1),
     per_page: int = Query(20, ge=1, le=100),
     _: User = Depends(require_admin),
     db: AsyncSession = Depends(get_db),
 ):
-    """Admin: Searchable, paginated listing of employers with active job counts."""
+    """Admin: Searchable, paginated listing of employers with active job counts.
+    Guarantees every registered EMPLOYER appears, even with an incomplete profile.
+    """
     stmt = (
-        select(EmployerProfile)
-        .join(User, EmployerProfile.user_id == User.id)
-        .options(selectinload(EmployerProfile.user))
+        select(User)
+        .outerjoin(EmployerProfile, User.id == EmployerProfile.user_id)
+        .where(User.role == UserRole.EMPLOYER)
+        .options(selectinload(User.employer_profile))
     )
-    count_stmt = select(func.count(EmployerProfile.id)).join(User, EmployerProfile.user_id == User.id)
+    count_stmt = (
+        select(func.count(User.id))
+        .outerjoin(EmployerProfile, User.id == EmployerProfile.user_id)
+        .where(User.role == UserRole.EMPLOYER)
+    )
     conditions = []
 
     if search and search.strip():
@@ -465,7 +533,12 @@ async def list_all_employers(
         )
 
     if verified_only is True:
-        conditions.append(EmployerProfile.is_verified == True)
+        conditions.append(
+            or_(
+                User.is_verified == True,
+                EmployerProfile.is_verified == True,
+            )
+        )
 
     if conditions:
         stmt = stmt.where(and_(*conditions))
@@ -474,15 +547,14 @@ async def list_all_employers(
     total = (await db.execute(count_stmt)).scalar_one()
     total_pages = max(1, math.ceil(total / per_page))
 
-    stmt = stmt.order_by(EmployerProfile.created_at.desc()).offset((page - 1) * per_page).limit(per_page)
-    employers = (await db.execute(stmt)).scalars().all()
+    stmt = stmt.order_by(User.created_at.desc()).offset((page - 1) * per_page).limit(per_page)
+    users = (await db.execute(stmt)).scalars().all()
 
-    # Pre-fetch job counts
-    emp_ids = [e.id for e in employers]
+    # Pre-fetch job counts for existing employer profiles
+    emp_ids = [u.employer_profile.id for u in users if u.employer_profile]
     active_counts = {}
     total_counts = {}
     if emp_ids:
-        # Total jobs
         tot_res = await db.execute(
             select(Job.employer_id, func.count(Job.id))
             .where(Job.employer_id.in_(emp_ids))
@@ -491,7 +563,6 @@ async def list_all_employers(
         for eid, cnt in tot_res.all():
             total_counts[eid] = cnt
 
-        # Active jobs
         act_res = await db.execute(
             select(Job.employer_id, func.count(Job.id))
             .where(and_(Job.employer_id.in_(emp_ids), Job.status == JobStatus.ACTIVE))
@@ -500,25 +571,33 @@ async def list_all_employers(
         for eid, cnt in act_res.all():
             active_counts[eid] = cnt
 
-    items = [
-        AdminEmployerListItem(
-            id=e.id,
-            user_id=e.user_id,
-            full_name=e.full_name,
-            organization_name=e.organization_name,
-            organization_type=e.organization_type,
-            email=e.user.email if e.user else None,
-            phone=e.user.phone if e.user else None,
-            city=e.city,
-            state=e.state,
-            is_verified=e.is_verified,
-            is_active=e.user.is_active if e.user else True,
-            active_jobs_count=active_counts.get(e.id, 0),
-            total_jobs_count=total_counts.get(e.id, 0),
-            created_at=e.created_at,
+    items = []
+    for u in users:
+        e = u.employer_profile
+        fallback_name = (
+            e.full_name if (e and e.full_name and e.full_name.strip())
+            else (e.organization_name if (e and e.organization_name and e.organization_name.strip())
+            else (u.email.split('@')[0] if u.email else "Registered Employer"))
         )
-        for e in employers
-    ]
+        emp_id = e.id if e else u.id
+        items.append(
+            AdminEmployerListItem(
+                id=emp_id,
+                user_id=u.id,
+                full_name=fallback_name,
+                organization_name=e.organization_name if e else None,
+                organization_type=e.organization_type if e else None,
+                email=u.email,
+                phone=u.phone,
+                city=e.city if e else None,
+                state=e.state if e else None,
+                is_verified=u.is_verified or (e.is_verified if e else False),
+                is_active=u.is_active,
+                active_jobs_count=active_counts.get(e.id, 0) if e else 0,
+                total_jobs_count=total_counts.get(e.id, 0) if e else 0,
+                created_at=e.created_at if e else u.created_at,
+            )
+        )
 
     return AdminEmployerListResponse(
         items=items,
@@ -535,39 +614,72 @@ async def get_employer_detail(
     _: User = Depends(require_admin),
     db: AsyncSession = Depends(get_db),
 ):
-    """Admin: Get detailed employer profile by ID."""
+    """Admin: Get detailed employer profile by ID (EmployerProfile.id or User.id)."""
+    # 1. Try finding by EmployerProfile.id
     stmt = (
         select(EmployerProfile)
         .where(EmployerProfile.id == employer_id)
         .options(selectinload(EmployerProfile.user))
     )
     employer = (await db.execute(stmt)).scalar_one_or_none()
-    if not employer:
+    if employer:
+        active_cnt = (await db.execute(
+            select(func.count(Job.id)).where(and_(Job.employer_id == employer.id, Job.status == JobStatus.ACTIVE))
+        )).scalar_one()
+
+        total_cnt = (await db.execute(
+            select(func.count(Job.id)).where(Job.employer_id == employer.id)
+        )).scalar_one()
+
+        return AdminEmployerListItem(
+            id=employer.id,
+            user_id=employer.user_id,
+            full_name=employer.full_name or employer.organization_name or "Registered Employer",
+            organization_name=employer.organization_name,
+            organization_type=employer.organization_type,
+            email=employer.user.email if employer.user else None,
+            phone=employer.user.phone if employer.user else None,
+            city=employer.city,
+            state=employer.state,
+            is_verified=employer.is_verified,
+            is_active=employer.user.is_active if employer.user else True,
+            active_jobs_count=active_cnt,
+            total_jobs_count=total_cnt,
+            created_at=employer.created_at,
+        )
+
+    # 2. Fallback to User.id for registered employers without a profile yet
+    u_stmt = (
+        select(User)
+        .where(and_(User.id == employer_id, User.role == UserRole.EMPLOYER))
+        .options(selectinload(User.employer_profile))
+    )
+    user = (await db.execute(u_stmt)).scalar_one_or_none()
+    if not user:
         raise HTTPException(status_code=404, detail="Employer profile not found")
 
-    active_cnt = (await db.execute(
-        select(func.count(Job.id)).where(and_(Job.employer_id == employer.id, Job.status == JobStatus.ACTIVE))
-    )).scalar_one()
-
-    total_cnt = (await db.execute(
-        select(func.count(Job.id)).where(Job.employer_id == employer.id)
-    )).scalar_one()
-
+    e = user.employer_profile
+    emp_id = e.id if e else user.id
+    fallback_name = (
+        e.full_name if (e and e.full_name and e.full_name.strip())
+        else (e.organization_name if (e and e.organization_name and e.organization_name.strip())
+        else (user.email.split('@')[0] if user.email else "Registered Employer"))
+    )
     return AdminEmployerListItem(
-        id=employer.id,
-        user_id=employer.user_id,
-        full_name=employer.full_name,
-        organization_name=employer.organization_name,
-        organization_type=employer.organization_type,
-        email=employer.user.email if employer.user else None,
-        phone=employer.user.phone if employer.user else None,
-        city=employer.city,
-        state=employer.state,
-        is_verified=employer.is_verified,
-        is_active=employer.user.is_active if employer.user else True,
-        active_jobs_count=active_cnt,
-        total_jobs_count=total_cnt,
-        created_at=employer.created_at,
+        id=emp_id,
+        user_id=user.id,
+        full_name=fallback_name,
+        organization_name=e.organization_name if e else None,
+        organization_type=e.organization_type if e else None,
+        email=user.email,
+        phone=user.phone,
+        city=e.city if e else None,
+        state=e.state if e else None,
+        is_verified=user.is_verified or (e.is_verified if e else False),
+        is_active=user.is_active,
+        active_jobs_count=0,
+        total_jobs_count=0,
+        created_at=e.created_at if e else user.created_at,
     )
 
 
@@ -585,13 +697,13 @@ async def list_all_jobs(
     """Admin: Searchable, paginated listing of all platform jobs across all lifecycle statuses."""
     stmt = (
         select(Job)
-        .join(EmployerProfile, Job.employer_id == EmployerProfile.id)
+        .outerjoin(EmployerProfile, Job.employer_id == EmployerProfile.id)
         .options(
             selectinload(Job.employer),
             selectinload(Job.category),
         )
     )
-    count_stmt = select(func.count(Job.id)).join(EmployerProfile, Job.employer_id == EmployerProfile.id)
+    count_stmt = select(func.count(Job.id)).outerjoin(EmployerProfile, Job.employer_id == EmployerProfile.id)
     conditions = []
 
     if search and search.strip():
@@ -951,8 +1063,16 @@ async def get_verification_queue(
     """
     Admin: Review verification submissions across the platform.
     Defaults to all submissions or filtered by status and verification type.
+    Includes user and role details for administrative review.
     """
-    stmt = select(VerificationRecord)
+    stmt = (
+        select(VerificationRecord)
+        .options(
+            selectinload(VerificationRecord.user).selectinload(User.worker_profile),
+            selectinload(VerificationRecord.user).selectinload(User.employer_profile),
+            selectinload(VerificationRecord.user).selectinload(User.admin_profile),
+        )
+    )
 
     conditions = []
     if status_filter and status_filter.upper() != "ALL":
