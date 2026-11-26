@@ -1,3 +1,4 @@
+import { authStorage } from '../authStorage';
 // KaamSetu — Auth Context
 import React, { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
@@ -26,8 +27,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Initialize from localStorage on app start
   useEffect(() => {
-    const storedToken = localStorage.getItem(TOKEN_KEY);
-    const storedUser = localStorage.getItem(USER_KEY);
+    const storedToken = authStorage.getItem(TOKEN_KEY);
+    const storedUser = authStorage.getItem(USER_KEY);
 
     if (storedToken && storedUser) {
       try {
@@ -36,11 +37,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // Verify token is still valid
         authApi.me().then(freshUser => {
           setUser(freshUser);
-          localStorage.setItem(USER_KEY, JSON.stringify(freshUser));
+          authStorage.setItem(USER_KEY, JSON.stringify(freshUser));
         }).catch(() => {
           // Token expired or invalid — clear everything
-          localStorage.removeItem(TOKEN_KEY);
-          localStorage.removeItem(USER_KEY);
+          authStorage.removeItem(TOKEN_KEY);
+          authStorage.removeItem(USER_KEY);
           setToken(null);
           setUser(null);
           queryClient.clear();
@@ -58,15 +59,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = (tokenData: AuthToken) => {
     setToken(tokenData.access_token);
     setUser(tokenData.user);
-    localStorage.setItem(TOKEN_KEY, tokenData.access_token);
-    localStorage.setItem(USER_KEY, JSON.stringify(tokenData.user));
+    authStorage.setItem(TOKEN_KEY, tokenData.access_token);
+    authStorage.setItem(USER_KEY, JSON.stringify(tokenData.user));
   };
 
   const logout = () => {
     setToken(null);
     setUser(null);
-    localStorage.removeItem(TOKEN_KEY);
-    localStorage.removeItem(USER_KEY);
+    authStorage.removeItem(TOKEN_KEY);
+    authStorage.removeItem(USER_KEY);
     queryClient.clear();
   };
 
@@ -74,7 +75,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const freshUser = await authApi.me();
       setUser(freshUser);
-      localStorage.setItem(USER_KEY, JSON.stringify(freshUser));
+      authStorage.setItem(USER_KEY, JSON.stringify(freshUser));
     } catch {
       logout();
     }

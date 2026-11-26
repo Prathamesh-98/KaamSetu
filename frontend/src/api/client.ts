@@ -1,3 +1,4 @@
+import { authStorage } from '../authStorage';
 // KaamSetu — Axios API Client
 import axios, { AxiosError, type InternalAxiosRequestConfig } from 'axios';
 
@@ -14,7 +15,7 @@ export const api = axios.create({
 // ─── Request Interceptor: Attach JWT ─────────────────────────────────────────
 api.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
-    const token = localStorage.getItem('kaamsetu_token');
+    const token = authStorage.getItem('kaamsetu_token');
     if (token && config.headers) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -30,8 +31,8 @@ api.interceptors.response.use(
     if (error.response?.status === 401) {
       // Don't redirect if the failed request was the login/register attempt itself
       if (error.config?.url && !error.config.url.includes('/auth/login') && !error.config.url.includes('/auth/register')) {
-        localStorage.removeItem('kaamsetu_token');
-        localStorage.removeItem('kaamsetu_user');
+        authStorage.removeItem('kaamsetu_token');
+        authStorage.removeItem('kaamsetu_user');
         window.location.href = '/login';
       }
     }

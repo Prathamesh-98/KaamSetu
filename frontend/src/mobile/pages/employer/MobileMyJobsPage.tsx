@@ -1,0 +1,117 @@
+import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
+import { Briefcase, Users, Plus, ChevronRight, MapPin, Eye } from 'lucide-react';
+import { jobsApi } from '../../../api/services';
+import type { JobListItem } from '../../../types';
+
+export const MobileMyJobsPage: React.FC = () => {
+  const { t } = useTranslation();
+  const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState<'ACTIVE' | 'CLOSED'>('ACTIVE');
+
+  const { data: jobs, isLoading } = useQuery({
+    queryKey: ['employer-jobs'],
+    queryFn: () => jobsApi.myJobs(),
+  });
+
+  const jobList = Array.isArray(jobs) ? jobs : [];
+  const filteredJobs = jobList.filter((j: JobListItem) =>
+    activeTab === 'ACTIVE' ? j.status === 'ACTIVE' : j.status !== 'ACTIVE'
+  );
+
+  return (
+    <div className="p-4 space-y-3">
+      <div className="flex items-center justify-between">
+        <h1 className="text-lg font-bold text-slate-900">Manage Job Postings</h1>
+        <button
+          type="button"
+          onClick={() => navigate('/employer/post-job')}
+          className="inline-flex items-center gap-1 rounded-xl bg-indigo-900 px-3 py-1.5 text-xs font-bold text-white shadow"
+        >
+          <Plus className="h-4 w-4" />
+          <span>New Job</span>
+        </button>
+      </div>
+
+      {/* Tabs */}
+      <div className="flex rounded-2xl bg-slate-100 p-1">
+        <button
+          type="button"
+          onClick={() => setActiveTab('ACTIVE')}
+          className={`flex-1 rounded-xl py-2 text-xs font-bold transition-colors ${
+            activeTab === 'ACTIVE'
+              ? 'bg-white text-indigo-900 shadow-sm'
+              : 'text-slate-600 hover:text-slate-900'
+          }`}
+        >
+          Active Listings
+        </button>
+        <button
+          type="button"
+          onClick={() => setActiveTab('CLOSED')}
+          className={`flex-1 rounded-xl py-2 text-xs font-bold transition-colors ${
+            activeTab === 'CLOSED'
+              ? 'bg-white text-indigo-900 shadow-sm'
+              : 'text-slate-600 hover:text-slate-900'
+          }`}
+        >
+          Closed / Drafts
+        </button>
+      </div>
+
+      {isLoading ? (
+        <div className="space-y-3">
+          {[1, 2, 3].map((n) => (
+            <div key={n} className="h-28 rounded-2xl mobile-skeleton" />
+          ))}
+        </div>
+      ) : filteredJobs.length > 0 ? (
+        <div className="space-y-3">
+          {filteredJobs.map((job: JobListItem) => (
+            <div
+              key={job.id}
+              onClick={() => navigate(`/employer/jobs/${job.id}/applicants`)}
+              className="mobile-card p-4 active:scale-[0.99] cursor-pointer"
+            >
+              <div className="flex items-start justify-between">
+                <div>
+                  <h3 className="font-bold text-sm text-slate-900">{job.title}</h3>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    {job.city || 'India'} · {job.applications_count || 0} applicants
+                  </p>
+                </div>
+                <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                  job.status === 'ACTIVE' ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-600'
+                }`}>
+                  {job.status}
+                </span>
+              </div>
+
+              <div className="mt-3 flex items-center justify-between border-t border-slate-100 pt-2.5 text-xs">
+                <span className="font-extrabold text-indigo-900">
+                  ₹{job.salary_min || 0} - ₹{job.salary_max || 0}
+                </span>
+
+                <div className="flex items-center gap-1.5 text-indigo-900 font-bold text-xs">
+                  <Users className="h-4 w-4 text-amber-600" />
+                  <span>Review Applicants</span>
+                  <ChevronRight className="h-4 w-4 text-slate-400" />
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="rounded-2xl bg-white p-8 text-center border border-slate-100 shadow-sm">
+          <Briefcase className="h-10 w-10 text-slate-300 mx-auto mb-2" />
+          <h3 className="font-bold text-slate-800 text-sm">No {activeTab.toLowerCase()} jobs found</h3>
+          <p className="text-xs text-slate-500 mt-1">Post your job vacancies to reach skilled local workers.</p>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default MobileMyJobsPage;
