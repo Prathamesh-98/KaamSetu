@@ -28,7 +28,7 @@ export const MobileMyJobsPage: React.FC = () => {
       {/* Header with touch targets and proper truncation */}
       <div className="flex items-center justify-between gap-3">
         <h1 className="flex-1 min-w-0 truncate text-lg font-extrabold text-slate-900 tracking-tight">
-          Manage Job Postings
+          {t('employer.manageJobs', 'Manage Job Postings')}
         </h1>
         <button
           type="button"
@@ -36,7 +36,7 @@ export const MobileMyJobsPage: React.FC = () => {
           className="flex-shrink-0 min-h-[44px] min-w-[44px] inline-flex items-center justify-center gap-1.5 rounded-xl bg-indigo-900 px-3.5 py-2 text-xs font-bold text-white shadow-sm active:scale-95 transition-transform"
         >
           <Plus className="h-4 w-4 stroke-[2.5]" />
-          <span>New Job</span>
+          <span>{t('employer.postNew', 'New Job')}</span>
         </button>
       </div>
 
@@ -51,7 +51,7 @@ export const MobileMyJobsPage: React.FC = () => {
               : 'text-slate-600 hover:text-slate-900'
           }`}
         >
-          Active Listings
+          {t('employer.activeListings', 'Active Listings')}
         </button>
         <button
           type="button"
@@ -62,7 +62,7 @@ export const MobileMyJobsPage: React.FC = () => {
               : 'text-slate-600 hover:text-slate-900'
           }`}
         >
-          Closed / Drafts
+          {t('employer.closedDrafts', 'Closed / Drafts')}
         </button>
       </div>
 
@@ -75,15 +75,15 @@ export const MobileMyJobsPage: React.FC = () => {
       ) : isError ? (
         <div className="rounded-2xl bg-white p-6 text-center border border-red-100 shadow-sm">
           <AlertCircle className="h-8 w-8 text-red-500 mx-auto mb-2" />
-          <h3 className="font-bold text-slate-800 text-sm">Failed to load jobs</h3>
-          <p className="text-xs text-slate-500 mt-1 mb-3">Please check your connection and try again.</p>
+          <h3 className="font-bold text-slate-800 text-sm">{t('common.failedLoad', 'Failed to load jobs')}</h3>
+          <p className="text-xs text-slate-500 mt-1 mb-3">{t('common.checkConnection', 'Please check your connection and try again.')}</p>
           <button
             type="button"
             onClick={() => refetch()}
             className="inline-flex items-center gap-1.5 rounded-xl bg-indigo-900 px-4 py-2 text-xs font-bold text-white shadow-sm active:scale-95"
           >
             <RefreshCw className="h-3.5 w-3.5" />
-            <span>Retry</span>
+            <span>{t('common.retry', 'Retry')}</span>
           </button>
         </div>
       ) : filteredJobs.length > 0 ? (
@@ -115,7 +115,7 @@ export const MobileMyJobsPage: React.FC = () => {
 
                 <div className="flex items-center gap-1.5 text-indigo-900 font-bold text-xs">
                   <Users className="h-4 w-4 text-amber-600" />
-                  <span>Review Applicants</span>
+                  <span>{t('employer.reviewApplicants', 'Review Applicants')}</span>
                   <ChevronRight className="h-4 w-4 text-slate-400" />
                 </div>
               </div>
@@ -140,7 +140,7 @@ export const MobileMyJobsPage: React.FC = () => {
               className="inline-flex items-center gap-1.5 rounded-xl bg-indigo-900 px-4 py-2 text-xs font-bold text-white shadow-sm active:scale-95"
             >
               <Plus className="h-4 w-4" />
-              <span>Post a New Job</span>
+              <span>{t('employer.postNew', 'Post a New Job')}</span>
             </button>
           )}
         </div>

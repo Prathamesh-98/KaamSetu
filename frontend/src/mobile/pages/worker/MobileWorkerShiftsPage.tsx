@@ -131,8 +131,8 @@ export const MobileWorkerShiftsPage: React.FC = () => {
         ) : (
           <div className="rounded-2xl bg-white p-8 text-center border border-slate-100 shadow-sm">
             <Calendar className="h-10 w-10 text-slate-300 mx-auto mb-2" />
-            <h3 className="font-bold text-slate-800 text-sm">No Active Shifts</h3>
-            <p className="text-xs text-slate-500 mt-1">When an employer books you for a shift, it will appear here.</p>
+            <h3 className="font-bold text-slate-800 text-sm">{t('worker.noActiveShifts', 'No Active Shifts')}</h3>
+            <p className="text-xs text-slate-500 mt-1">{t('worker.noActiveShiftsDesc', 'When an employer books you for a shift, it will appear here.')}</p>
           </div>
         )
       ) : (
@@ -160,8 +160,8 @@ export const MobileWorkerShiftsPage: React.FC = () => {
         ) : (
           <div className="rounded-2xl bg-white p-8 text-center border border-slate-100 shadow-sm">
             <Clock className="h-10 w-10 text-slate-300 mx-auto mb-2" />
-            <h3 className="font-bold text-slate-800 text-sm">No Completed Shifts Yet</h3>
-            <p className="text-xs text-slate-500 mt-1">Your verified earnings history will be tracked here.</p>
+            <h3 className="font-bold text-slate-800 text-sm">{t('worker.noCompletedShifts', 'No Completed Shifts Yet')}</h3>
+            <p className="text-xs text-slate-500 mt-1">{t('worker.noCompletedShiftsDesc', 'Your verified earnings history will be tracked here.')}</p>
           </div>
         )
       )}

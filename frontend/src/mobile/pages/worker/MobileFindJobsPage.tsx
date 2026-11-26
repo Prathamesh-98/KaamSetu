@@ -179,7 +179,7 @@ export const MobileFindJobsPage: React.FC = () => {
         <div className="rounded-2xl bg-white p-8 text-center border border-slate-100 shadow-sm mt-4">
           <Briefcase className="h-10 w-10 text-slate-300 mx-auto mb-2" />
           <h3 className="font-bold text-slate-800 text-sm">{t('jobs.noJobsFound', 'No jobs found')}</h3>
-          <p className="text-xs text-slate-500 mt-1">Try resetting filters or searching for different keywords</p>
+          <p className="text-xs text-slate-500 mt-1">{t('jobs.tryResetting', 'Try resetting filters or searching for different keywords')}</p>
           <button
             type="button"
             onClick={() => { setQuery(''); setSelectedCategory(''); setOnlyUrgent(false); }}
@@ -217,14 +217,14 @@ export const MobileFindJobsPage: React.FC = () => {
             <div className="flex-1 overflow-y-auto p-4 space-y-4 text-xs">
               <div className="grid grid-cols-2 gap-3 bg-slate-50 p-3 rounded-2xl">
                 <div>
-                  <span className="text-slate-400 block text-[10px] uppercase font-semibold">Compensation</span>
+                  <span className="text-slate-400 block text-[10px] uppercase font-semibold">{t('jobs.compensation', 'Compensation')}</span>
                   <span className="font-extrabold text-sm text-indigo-900">
                     ₹{selectedJob.salary_min || 0} - ₹{selectedJob.salary_max || 0}
                   </span>
                   <span className="text-[10px] text-slate-500 block">/{selectedJob.salary_type ? selectedJob.salary_type.toLowerCase() : 'day'}</span>
                 </div>
                 <div>
-                  <span className="text-slate-400 block text-[10px] uppercase font-semibold">Location</span>
+                  <span className="text-slate-400 block text-[10px] uppercase font-semibold">{t('jobs.location', 'Location')}</span>
                   <span className="font-bold text-slate-800 text-xs flex items-center gap-1 mt-0.5">
                     <MapPin className="h-3.5 w-3.5 text-amber-600 flex-shrink-0" />
                     <span className="truncate">{selectedJob.city || 'India'}</span>
@@ -233,13 +233,13 @@ export const MobileFindJobsPage: React.FC = () => {
               </div>
 
               <div>
-                <h4 className="font-bold text-slate-900 text-xs mb-1">Job Description</h4>
+                <h4 className="font-bold text-slate-900 text-xs mb-1">{t('jobs.description', 'Job Description')}</h4>
                 <p className="text-slate-600 leading-relaxed whitespace-pre-wrap">{selectedJob.description}</p>
               </div>
 
               {selectedJob.required_skills && selectedJob.required_skills.length > 0 && (
                 <div>
-                  <h4 className="font-bold text-slate-900 text-xs mb-1.5">Required Skills</h4>
+                  <h4 className="font-bold text-slate-900 text-xs mb-1.5">{t('jobs.requiredSkills', 'Required Skills')}</h4>
                   <div className="flex flex-wrap gap-1.5">
                     {selectedJob.required_skills.map((jobSkill: any, idx: number) => (
                       <span key={idx} className="rounded-lg bg-slate-100 px-2.5 py-1 text-[11px] font-medium text-slate-700">
@@ -254,8 +254,8 @@ export const MobileFindJobsPage: React.FC = () => {
               {applySuccess ? (
                 <div className="rounded-2xl bg-emerald-50 p-4 text-center border border-emerald-200">
                   <CheckCircle className="h-8 w-8 text-emerald-600 mx-auto mb-1.5" />
-                  <h4 className="font-bold text-emerald-900 text-sm">Application Submitted!</h4>
-                  <p className="text-[11px] text-emerald-700 mt-0.5">The employer will review your profile and contact you.</p>
+                  <h4 className="font-bold text-emerald-900 text-sm">{t('jobs.appSubmitted', 'Application Submitted!')}</h4>
+                  <p className="text-[11px] text-emerald-700 mt-0.5">{t('jobs.appSubmittedDesc', 'The employer will review your profile and contact you.')}</p>
                 </div>
               ) : (
                 <div className="space-y-2 pt-2 border-t">
@@ -306,12 +306,12 @@ export const MobileFindJobsPage: React.FC = () => {
                     {isApplying ? (
                       <>
                         <span className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                        <span>Submitting...</span>
+                        <span>{t('common.submitting', 'Submitting...')}</span>
                       </>
                     ) : (
                       <>
                         <Send className="h-3.5 w-3.5" />
-                        <span>Apply For This Job</span>
+                        <span>{t('jobs.applyNow', 'Apply For This Job')}</span>
                       </>
                     )}
                   </button>

@@ -121,8 +121,8 @@ export const MobileNotificationsPage: React.FC = () => {
         ) : (
           <div className="rounded-2xl bg-white p-8 text-center border border-slate-100 shadow-sm mt-4">
             <Bell className="h-10 w-10 text-slate-300 mx-auto mb-2" />
-            <h3 className="font-bold text-slate-800 text-sm">No Notifications</h3>
-            <p className="text-xs text-slate-500 mt-1">Updates on jobs, applications, and shift settlements will appear here.</p>
+            <h3 className="font-bold text-slate-800 text-sm">{t('notifications.noNotifications', 'No Notifications')}</h3>
+            <p className="text-xs text-slate-500 mt-1">{t('notifications.noNotificationsDesc', 'Updates on jobs, applications, and shift settlements will appear here.')}</p>
           </div>
         )}
       </div>

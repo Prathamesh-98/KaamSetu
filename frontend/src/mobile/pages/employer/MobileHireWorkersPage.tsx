@@ -76,8 +76,8 @@ export const MobileHireWorkersPage: React.FC = () => {
     <div className="p-4 space-y-3">
       {/* Header */}
       <div>
-        <h1 className="text-lg font-bold text-slate-900">Discover Skilled Workers</h1>
-        <p className="text-xs text-slate-500">Hire verified tradespeople for shifts or projects</p>
+        <h1 className="text-lg font-bold text-slate-900">{t('employer.discoverWorkers', 'Discover Skilled Workers')}</h1>
+        <p className="text-xs text-slate-500">{t('employer.hireTradespeople', 'Hire verified tradespeople for shifts or projects')}</p>
       </div>
 
       {/* Search */}
@@ -161,8 +161,8 @@ export const MobileHireWorkersPage: React.FC = () => {
       ) : (
         <div className="rounded-2xl bg-white p-8 text-center border border-slate-100 shadow-sm mt-4">
           <User className="h-10 w-10 text-slate-300 mx-auto mb-2" />
-          <h3 className="font-bold text-slate-800 text-sm">No Workers Found</h3>
-          <p className="text-xs text-slate-500 mt-1">Try searching for other trade categories or locations.</p>
+          <h3 className="font-bold text-slate-800 text-sm">{t('employer.noWorkersFound', 'No Workers Found')}</h3>
+          <p className="text-xs text-slate-500 mt-1">{t('employer.trySearchingOther', 'Try searching for other trade categories or locations.')}</p>
         </div>
       )}
 
@@ -195,14 +195,14 @@ export const MobileHireWorkersPage: React.FC = () => {
               {bookingSuccess ? (
                 <div className="rounded-2xl bg-emerald-50 p-6 text-center border border-emerald-200 my-2">
                   <CheckCircle2 className="h-10 w-10 text-emerald-600 mx-auto mb-2" />
-                  <h4 className="font-bold text-emerald-900 text-base">Shift Booking Requested!</h4>
-                  <p className="text-xs text-emerald-700 mt-1">The worker will receive your shift request notification.</p>
+                  <h4 className="font-bold text-emerald-900 text-base">{t('employer.shiftBookingRequested', 'Shift Booking Requested!')}</h4>
+                  <p className="text-xs text-emerald-700 mt-1">{t('employer.shiftBookingRequestedDesc', 'The worker will receive your shift request notification.')}</p>
                 </div>
               ) : (
                 <form id="hire-worker-form" onSubmit={handleRequestBooking} className="space-y-3.5 py-1">
                   <div className="bg-slate-50 p-3 rounded-2xl space-y-1">
-                    <div className="font-semibold text-slate-700">Worker Bio</div>
-                    <p className="text-slate-600">{selectedWorker.bio || 'Verified tradesperson registered on KaamSetu.'}</p>
+                    <div className="font-semibold text-slate-700">{t('worker.bio', 'Worker Bio')}</div>
+                    <p className="text-slate-600">{selectedWorker.bio || t('worker.verifiedTradesperson', 'Verified tradesperson registered on KaamSetu.')}</p>
                   </div>
 
                   <div>
@@ -259,10 +259,10 @@ export const MobileHireWorkersPage: React.FC = () => {
                     {isBooking ? (
                       <>
                         <span className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                        <span>Sending Request...</span>
+                        <span>{t('common.sending', 'Sending Request...')}</span>
                       </>
                     ) : (
-                      <span>Send Shift Request</span>
+                      <span>{t('employer.sendShiftRequest', 'Send Shift Request')}</span>
                     )}
                   </button>
                 </div>

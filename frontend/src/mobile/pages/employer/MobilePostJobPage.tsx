@@ -77,7 +77,7 @@ export const MobilePostJobPage: React.FC = () => {
           >
             <ArrowLeft className="h-5 w-5" />
           </button>
-          <h1 className="text-base font-bold text-slate-900">Post a Job</h1>
+          <h1 className="text-base font-bold text-slate-900">{t('employer.postJob', 'Post a Job')}</h1>
           <div className="w-10" />
         </div>
       </div>
@@ -93,7 +93,7 @@ export const MobilePostJobPage: React.FC = () => {
         <form onSubmit={handleSubmit} className="space-y-3.5 text-xs">
           {/* Job Title */}
           <div>
-            <label className="block font-semibold text-slate-700 mb-1">Job Title *</label>
+            <label className="block font-semibold text-slate-700 mb-1">{t('jobs.title', 'Job Title')} *</label>
             <input
               type="text"
               value={title}
@@ -106,13 +106,13 @@ export const MobilePostJobPage: React.FC = () => {
 
           {/* Category Dropdown */}
           <div>
-            <label className="block font-semibold text-slate-700 mb-1">Trade Category *</label>
+            <label className="block font-semibold text-slate-700 mb-1">{t('jobs.category', 'Trade Category')} *</label>
             <select
               value={categoryId}
               onChange={(e) => setCategoryId(e.target.value)}
               className="w-full rounded-xl border border-slate-200 p-2.5 text-xs focus:border-indigo-900 focus:outline-none bg-white"
             >
-              <option value="">Select Category</option>
+              <option value="">{t('employer.selectCategory', 'Select Category')}</option>
               {catList.map((cat) => (
                 <option key={cat.id} value={cat.id}>
                   {cat.name}
@@ -124,21 +124,21 @@ export const MobilePostJobPage: React.FC = () => {
           {/* Job Type & Vacancies */}
           <div className="grid grid-cols-2 gap-2">
             <div>
-              <label className="block font-semibold text-slate-700 mb-1">Employment Type</label>
+              <label className="block font-semibold text-slate-700 mb-1">{t('employer.employmentType', 'Employment Type')}</label>
               <select
                 value={jobType}
                 onChange={(e) => setJobType(e.target.value)}
                 className="w-full rounded-xl border border-slate-200 p-2.5 text-xs focus:border-indigo-900 focus:outline-none bg-white"
               >
-                <option value="FULL_TIME">Full Time</option>
-                <option value="PART_TIME">Part Time</option>
-                <option value="DAILY">Daily Wage</option>
-                <option value="PROJECT">Project / Contract</option>
+                <option value="FULL_TIME">{t('workTypes.FULL_TIME', 'Full Time')}</option>
+                <option value="PART_TIME">{t('workTypes.PART_TIME', 'Part Time')}</option>
+                <option value="DAILY">{t('workTypes.DAILY', 'Daily Wage')}</option>
+                <option value="PROJECT">{t('workTypes.PROJECT', 'Project / Contract')}</option>
               </select>
             </div>
 
             <div>
-              <label className="block font-semibold text-slate-700 mb-1">Vacancies</label>
+              <label className="block font-semibold text-slate-700 mb-1">{t('employer.vacancies', 'Vacancies')}</label>
               <input
                 type="number"
                 value={openings}
@@ -193,7 +193,7 @@ export const MobilePostJobPage: React.FC = () => {
               />
             </div>
             <div>
-              <label className="block font-semibold text-slate-700 mb-1">State</label>
+              <label className="block font-semibold text-slate-700 mb-1">{t('common.state', 'State')}</label>
               <input
                 type="text"
                 value={state}
@@ -222,8 +222,8 @@ export const MobilePostJobPage: React.FC = () => {
             <div className="flex items-center gap-2">
               <Zap className="h-4 w-4 text-amber-600" />
               <div>
-                <div className="font-bold text-slate-900">Urgent Requirement</div>
-                <div className="text-[10px] text-slate-500">Highlight to workers for rapid response</div>
+                <div className="font-bold text-slate-900">{t('employer.urgentRequirement', 'Urgent Requirement')}</div>
+                <div className="text-[10px] text-slate-500">{t('employer.highlightToWorkers', 'Highlight to workers for rapid response')}</div>
               </div>
             </div>
             <input
@@ -242,10 +242,10 @@ export const MobilePostJobPage: React.FC = () => {
             {isSubmitting ? (
               <>
                 <span className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                <span>Publishing Job Listing...</span>
+                <span>{t('employer.publishing', 'Publishing Job Listing...')}</span>
               </>
             ) : (
-              <span>Publish Job Listing</span>
+              <span>{t('employer.publishJob', 'Publish Job Listing')}</span>
             )}
           </button>
         </form>

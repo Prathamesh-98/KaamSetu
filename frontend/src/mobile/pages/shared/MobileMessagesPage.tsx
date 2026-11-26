@@ -101,7 +101,7 @@ export const MobileMessagesPage: React.FC = () => {
             </div>
             <div className="flex-1 min-w-0">
               <h2 className="font-bold text-sm text-slate-900 truncate">{otherName}</h2>
-              <span className="text-[10px] text-slate-500 font-medium">Direct Chat</span>
+              <span className="text-[10px] text-slate-500 font-medium">{t('messages.directChat', 'Direct Chat')}</span>
             </div>
           </div>
         </div>
@@ -140,7 +140,7 @@ export const MobileMessagesPage: React.FC = () => {
           ) : (
             <div className="h-full flex flex-col items-center justify-center text-center text-slate-400 text-xs">
               <MessageSquare className="h-10 w-10 mb-2 stroke-[1.5]" />
-              <p>Say hello to start the conversation!</p>
+              <p>{t('messages.sayHello', 'Say hello to start the conversation!')}</p>
             </div>
           )}
           <div ref={messagesEndRef} />
@@ -174,7 +174,7 @@ export const MobileMessagesPage: React.FC = () => {
     <div className="p-4 space-y-3">
       <div>
         <h1 className="text-lg font-bold text-slate-900">{t('nav.messages', 'Messages')}</h1>
-        <p className="text-xs text-slate-500">Communicate directly with workers or employers</p>
+        <p className="text-xs text-slate-500">{t('messages.subTitle', 'Communicate directly with workers or employers')}</p>
       </div>
 
       {/* Search Conversations */}
@@ -199,15 +199,15 @@ export const MobileMessagesPage: React.FC = () => {
       ) : isConvsError ? (
         <div className="rounded-2xl bg-white p-6 text-center border border-red-100 shadow-sm mt-4">
           <AlertCircle className="h-8 w-8 text-red-500 mx-auto mb-2" />
-          <h3 className="font-bold text-slate-800 text-sm">Failed to load conversations</h3>
-          <p className="text-xs text-slate-500 mt-1 mb-3">Please check your connection and try again.</p>
+          <h3 className="font-bold text-slate-800 text-sm">{t('messages.failedLoad', 'Failed to load conversations')}</h3>
+          <p className="text-xs text-slate-500 mt-1 mb-3">{t('common.checkConnection', 'Please check your connection and try again.')}</p>
           <button
             type="button"
             onClick={() => refetchConvs()}
             className="inline-flex items-center gap-1.5 rounded-xl bg-indigo-900 px-4 py-2 text-xs font-bold text-white shadow-sm active:scale-95"
           >
             <RefreshCw className="h-3.5 w-3.5" />
-            <span>Retry</span>
+            <span>{t('common.retry', 'Retry')}</span>
           </button>
         </div>
       ) : convList.length > 0 ? (
@@ -256,8 +256,8 @@ export const MobileMessagesPage: React.FC = () => {
       ) : (
         <div className="rounded-2xl bg-white p-8 text-center border border-slate-100 shadow-sm mt-4">
           <MessageSquare className="h-10 w-10 text-slate-300 mx-auto mb-2" />
-          <h3 className="font-bold text-slate-800 text-sm">No Messages</h3>
-          <p className="text-xs text-slate-500 mt-1">Direct messages about job applications and shifts will appear here.</p>
+          <h3 className="font-bold text-slate-800 text-sm">{t('messages.noMessages', 'No Messages')}</h3>
+          <p className="text-xs text-slate-500 mt-1">{t('messages.noMessagesDesc', 'Direct messages about job applications and shifts will appear here.')}</p>
         </div>
       )}
     </div>

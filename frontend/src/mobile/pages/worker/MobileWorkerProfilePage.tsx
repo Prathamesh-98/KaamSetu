@@ -346,12 +346,12 @@ export const MobileWorkerProfilePage: React.FC = () => {
               <User className="h-6 w-6" />
             </div>
             <div>
-              <span className="text-[10px] font-bold uppercase tracking-wider text-amber-300">New Worker Setup</span>
-              <h2 className="text-lg font-extrabold leading-tight">Create Worker Profile</h2>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-amber-300">{t('worker.newSetup', 'New Worker Setup')}</span>
+              <h2 className="text-lg font-extrabold leading-tight">{t('worker.createProfile', 'Create Worker Profile')}</h2>
             </div>
           </div>
           <p className="text-xs text-indigo-100 leading-relaxed mb-4">
-            Welcome to KaamSetu! Complete your worker profile with your trade, location, and daily wage expectations to start receiving shift bookings and applying for jobs.
+            {t('worker.createProfileBannerDesc', 'Welcome to KaamSetu! Complete your worker profile with your trade, location, and daily wage expectations to start receiving shift bookings and applying for jobs.')}
           </p>
           <button
             type="button"
@@ -359,7 +359,7 @@ export const MobileWorkerProfilePage: React.FC = () => {
             className="w-full min-h-[48px] rounded-2xl bg-[#FF9933] px-4 py-3 text-xs font-extrabold text-white shadow-md active:scale-[0.98] transition-transform flex items-center justify-center gap-2"
           >
             <Plus className="h-4 w-4" />
-            <span>Create Worker Profile Now</span>
+            <span>{t('worker.createProfileNow', 'Create Worker Profile Now')}</span>
           </button>
         </div>
       )}
@@ -440,10 +440,10 @@ export const MobileWorkerProfilePage: React.FC = () => {
                 : 'bg-slate-50 text-slate-600 border-slate-200'
             }`}
           >
-            <span className="text-[10px] uppercase font-bold text-slate-400">Status</span>
+            <span className="text-[10px] uppercase font-bold text-slate-400">{t('worker.status', 'Status')}</span>
             <span className="text-xs font-extrabold mt-0.5 flex items-center gap-1">
               <span className={`h-2 w-2 rounded-full ${workerProfile?.availability_status === 'AVAILABLE' ? 'bg-emerald-500' : 'bg-slate-400'}`} />
-              {workerProfile?.availability_status === 'AVAILABLE' ? 'Available' : 'Busy'}
+              {workerProfile?.availability_status === 'AVAILABLE' ? t('worker.available', 'Available') : t('worker.busy', 'Busy')}
             </span>
           </button>
 
@@ -484,12 +484,12 @@ export const MobileWorkerProfilePage: React.FC = () => {
         {identityStatus === 'VERIFIED' ? (
           <div className="flex items-center gap-2 text-xs text-emerald-700 font-semibold mt-1">
             <CheckCircle2 className="h-4 w-4 text-emerald-600" />
-            <span>Government ID verified. Your profile receives top employer trust.</span>
+            <span>{t('worker.idVerifiedDesc', 'Government ID verified. Your profile receives top employer trust.')}</span>
           </div>
         ) : identityStatus === 'PENDING' ? (
           <div className="flex items-start gap-2 text-xs text-amber-700 font-medium mt-1">
             <Clock className="h-4 w-4 text-amber-600 flex-shrink-0 mt-0.5" />
-            <span>Document under review by KaamSetu administrators. Usually verified within 24 hours.</span>
+            <span>{t('worker.idUnderReviewDesc', 'Document under review by KaamSetu administrators. Usually verified within 24 hours.')}</span>
           </div>
         ) : (
           <div>
@@ -522,7 +522,7 @@ export const MobileWorkerProfilePage: React.FC = () => {
             className="inline-flex items-center gap-1 text-xs font-bold text-indigo-900 bg-indigo-50 px-2.5 py-1 rounded-lg border border-indigo-100 active:scale-95"
           >
             <Plus className="h-3.5 w-3.5" />
-            <span>Add Skill</span>
+            <span>{t('worker.addSkill', 'Add Skill')}</span>
           </button>
         </div>
 
@@ -665,13 +665,13 @@ export const MobileWorkerProfilePage: React.FC = () => {
                 type="button"
                 onClick={() => setEditModalOpen(false)}
                 className="mobile-touch-target rounded-full p-2 text-slate-700 hover:bg-slate-100 flex items-center gap-1 font-semibold text-xs active:scale-95"
-                aria-label="Cancel"
+                aria-label={t('common.cancel', 'Cancel')}
               >
                 <ArrowLeft className="h-5 w-5" />
-                <span>Cancel</span>
+                <span>{t('common.cancel', 'Cancel')}</span>
               </button>
               <h1 className="text-base font-extrabold text-slate-900 tracking-tight">
-                {hasProfile ? 'Edit Worker Profile' : 'Create Worker Profile'}
+                {hasProfile ? t('worker.editWorkerProfile', 'Edit Worker Profile') : t('worker.createWorkerProfile', 'Create Worker Profile')}
               </h1>
               <button
                 type="button"
@@ -679,7 +679,7 @@ export const MobileWorkerProfilePage: React.FC = () => {
                 disabled={isUpdating}
                 className="text-xs font-extrabold text-indigo-900 px-3 py-1.5 hover:underline disabled:opacity-50 active:scale-95"
               >
-                {isUpdating ? 'Saving...' : (hasProfile ? 'Save' : 'Create')}
+                {isUpdating ? t('common.saving', 'Saving...') : (hasProfile ? t('common.save', 'Save') : t('common.create', 'Create'))}
               </button>
             </div>
           </div>
@@ -710,7 +710,7 @@ export const MobileWorkerProfilePage: React.FC = () => {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-bold text-slate-700 mb-1.5">City</label>
+                  <label className="block font-bold text-slate-700 mb-1.5">{t('common.city', 'City')}</label>
                   <input
                     type="text"
                     value={city}
@@ -720,13 +720,13 @@ export const MobileWorkerProfilePage: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label className="block font-bold text-slate-700 mb-1.5">State</label>
+                  <label className="block font-bold text-slate-700 mb-1.5">{t('common.state', 'State')}</label>
                   <select
                     value={state}
                     onChange={(e) => setState(e.target.value)}
                     className="w-full rounded-xl border border-slate-200 p-3 text-xs bg-white focus:border-indigo-900 focus:outline-none min-h-[44px]"
                   >
-                    <option value="">Select State</option>
+                    <option value="">{t('common.selectState', 'Select State')}</option>
                     {INDIAN_STATES.map((s) => (
                       <option key={s} value={s}>{s}</option>
                     ))}
@@ -736,7 +736,7 @@ export const MobileWorkerProfilePage: React.FC = () => {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-bold text-slate-700 mb-1.5">Expected Wage (₹)</label>
+                  <label className="block font-bold text-slate-700 mb-1.5">{t('worker.expectedWage', 'Expected Wage (₹)')}</label>
                   <input
                     type="number"
                     value={expectedSalary}
@@ -746,7 +746,7 @@ export const MobileWorkerProfilePage: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label className="block font-bold text-slate-700 mb-1.5">Wage Type</label>
+                  <label className="block font-bold text-slate-700 mb-1.5">{t('worker.wageType', 'Wage Type')}</label>
                   <select
                     value={salaryType}
                     onChange={(e) => setSalaryType(e.target.value as SalaryType)}
@@ -761,7 +761,7 @@ export const MobileWorkerProfilePage: React.FC = () => {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-bold text-slate-700 mb-1.5">Years Experience</label>
+                  <label className="block font-bold text-slate-700 mb-1.5">{t('worker.yearsExp', 'Years Experience')}</label>
                   <input
                     type="number"
                     value={yearsExperience}
@@ -771,21 +771,21 @@ export const MobileWorkerProfilePage: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label className="block font-bold text-slate-700 mb-1.5">Availability Status</label>
+                  <label className="block font-bold text-slate-700 mb-1.5">{t('worker.availStatus', 'Availability Status')}</label>
                   <select
                     value={availabilityStatus}
                     onChange={(e) => setAvailabilityStatus(e.target.value as AvailabilityStatus)}
                     className="w-full rounded-xl border border-slate-200 p-3 text-xs bg-white focus:border-indigo-900 focus:outline-none min-h-[44px]"
                   >
-                    <option value="AVAILABLE">Available</option>
-                    <option value="BUSY">Busy</option>
-                    <option value="UNAVAILABLE">Unavailable</option>
+                    <option value="AVAILABLE">{t('worker.available', 'Available')}</option>
+                    <option value="BUSY">{t('worker.busy', 'Busy')}</option>
+                    <option value="UNAVAILABLE">{t('worker.unavailable', 'Unavailable')}</option>
                   </select>
                 </div>
               </div>
 
               <div>
-                <label className="block font-bold text-slate-700 mb-2">Preferred Work Types</label>
+                <label className="block font-bold text-slate-700 mb-2">{t('worker.prefWorkTypes', 'Preferred Work Types')}</label>
                 <div className="flex flex-wrap gap-2">
                   {WORK_TYPE_OPTIONS.map((wt) => {
                     const isSelected = preferredWorkTypes.includes(wt);
@@ -856,7 +856,7 @@ export const MobileWorkerProfilePage: React.FC = () => {
         <div className="mobile-modal-overlay">
           <div className="mobile-modal-sheet max-h-[85vh] max-h-[85dvh]">
             <div className="flex items-center justify-between border-b p-4">
-              <h2 className="text-base font-extrabold text-slate-900">Add Skill or Trade</h2>
+              <h2 className="text-base font-extrabold text-slate-900">{t('worker.addSkillOrTrade', 'Add Skill or Trade')}</h2>
               <button
                 type="button"
                 onClick={() => setSkillModalOpen(false)}
@@ -939,7 +939,7 @@ export const MobileWorkerProfilePage: React.FC = () => {
             <div className="flex items-center justify-between border-b p-4">
               <div className="flex items-center gap-2">
                 <ShieldCheck className="h-5 w-5 text-indigo-900" />
-                <h2 className="text-base font-extrabold text-slate-900">Government ID Verification</h2>
+                <h2 className="text-base font-extrabold text-slate-900">{t('worker.govIdVerification', 'Government ID Verification')}</h2>
               </div>
               <button
                 type="button"
@@ -968,10 +968,10 @@ export const MobileWorkerProfilePage: React.FC = () => {
                     onChange={(e) => setIdDocType(e.target.value)}
                     className="w-full rounded-xl border border-slate-200 p-3 text-xs bg-white focus:border-indigo-900 focus:outline-none min-h-[44px]"
                   >
-                    <option value="DRIVING_LICENSE">Driving License</option>
-                    <option value="VOTER_ID">Voter ID Card (EPIC)</option>
-                    <option value="PASSPORT">Passport</option>
-                    <option value="TRADE_LICENSE">Trade / Labor License</option>
+                    <option value="DRIVING_LICENSE">{t('worker.docDrivingLicense', 'Driving License')}</option>
+                    <option value="VOTER_ID">{t('worker.docVoterId', 'Voter ID Card (EPIC)')}</option>
+                    <option value="PASSPORT">{t('worker.docPassport', 'Passport')}</option>
+                    <option value="TRADE_LICENSE">{t('worker.docTradeLicense', 'Trade / Labor License')}</option>
                   </select>
                 </div>
 
@@ -1034,10 +1034,10 @@ export const MobileWorkerProfilePage: React.FC = () => {
                   {isSubmittingId ? (
                     <>
                       <span className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                      <span>Uploading Document...</span>
+                      <span>{t('common.uploading', 'Uploading Document...')}</span>
                     </>
                   ) : (
-                    <span>Submit for Verification</span>
+                    <span>{t('worker.submitVerification', 'Submit for Verification')}</span>
                   )}
                 </button>
               </div>

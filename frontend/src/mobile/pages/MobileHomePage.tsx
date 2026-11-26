@@ -268,15 +268,15 @@ export const MobileHomePage: React.FC = () => {
         {!isAuthenticated && (
           <div className="rounded-2xl bg-indigo-900 text-white p-4 flex items-center justify-between shadow-sm">
             <div>
-              <h3 className="font-bold text-sm">Join KaamSetu Today</h3>
-              <p className="text-xs text-indigo-200 mt-0.5">Find jobs or hire verified workers</p>
+              <h3 className="font-bold text-sm">{t('landing.joinToday', 'Join KaamSetu Today')}</h3>
+              <p className="text-xs text-indigo-200 mt-0.5">{t('landing.tagline', 'Find jobs or hire verified workers')}</p>
             </div>
             <button
               type="button"
               onClick={() => navigate('/register')}
               className="rounded-xl bg-[#FF9933] px-3.5 py-2 text-xs font-bold text-white shadow active:scale-95 transition-transform"
             >
-              Get Started
+              {t('common.getStarted', 'Get Started')}
             </button>
           </div>
         )}
