@@ -98,7 +98,7 @@ export const MobilePostJobPage: React.FC = () => {
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="e.g. Mason for Commercial Project"
+              placeholder={t('jobs.titlePlaceholder', 'e.g. Mason for Commercial Project')}
               required
               className="w-full rounded-xl border border-slate-200 p-2.5 text-xs focus:border-indigo-900 focus:outline-none"
             />
@@ -151,20 +151,20 @@ export const MobilePostJobPage: React.FC = () => {
 
           {/* Wage / Salary */}
           <div>
-            <label className="block font-semibold text-slate-700 mb-1">Compensation Range (₹)</label>
+            <label className="block font-semibold text-slate-700 mb-1">{t('jobs.compensationRange', 'Compensation Range (₹)')}</label>
             <div className="grid grid-cols-3 gap-2">
               <input
                 type="number"
                 value={salaryMin}
                 onChange={(e) => setSalaryMin(e.target.value)}
-                placeholder="Min ₹"
+                placeholder={t('jobs.minWagePlaceholder', 'Min ₹')}
                 className="w-full rounded-xl border border-slate-200 p-2.5 text-xs focus:border-indigo-900 focus:outline-none"
               />
               <input
                 type="number"
                 value={salaryMax}
                 onChange={(e) => setSalaryMax(e.target.value)}
-                placeholder="Max ₹"
+                placeholder={t('jobs.maxWagePlaceholder', 'Max ₹')}
                 className="w-full rounded-xl border border-slate-200 p-2.5 text-xs focus:border-indigo-900 focus:outline-none"
               />
               <select
@@ -172,9 +172,9 @@ export const MobilePostJobPage: React.FC = () => {
                 onChange={(e) => setSalaryPeriod(e.target.value)}
                 className="w-full rounded-xl border border-slate-200 p-2.5 text-xs focus:border-indigo-900 focus:outline-none bg-white"
               >
-                <option value="DAY">per day</option>
-                <option value="MONTH">per month</option>
-                <option value="HOUR">per hour</option>
+                <option value="DAY">{t('jobs.perDay', 'per day')}</option>
+                <option value="MONTH">{t('jobs.perMonth', 'per month')}</option>
+                <option value="HOUR">{t('jobs.perHour', 'per hour')}</option>
               </select>
             </div>
           </div>
@@ -182,12 +182,12 @@ export const MobilePostJobPage: React.FC = () => {
           {/* Location */}
           <div className="grid grid-cols-2 gap-2">
             <div>
-              <label className="block font-semibold text-slate-700 mb-1">City *</label>
+              <label className="block font-semibold text-slate-700 mb-1">{t('jobs.city', 'City')} *</label>
               <input
                 type="text"
                 value={city}
                 onChange={(e) => setCity(e.target.value)}
-                placeholder="e.g. Pune"
+                placeholder={t('jobs.cityPlaceholder', 'e.g. Pune')}
                 required
                 className="w-full rounded-xl border border-slate-200 p-2.5 text-xs focus:border-indigo-900 focus:outline-none"
               />
@@ -198,7 +198,7 @@ export const MobilePostJobPage: React.FC = () => {
                 type="text"
                 value={state}
                 onChange={(e) => setState(e.target.value)}
-                placeholder="e.g. Maharashtra"
+                placeholder={t('jobs.statePlaceholder', 'e.g. Maharashtra')}
                 className="w-full rounded-xl border border-slate-200 p-2.5 text-xs focus:border-indigo-900 focus:outline-none"
               />
             </div>
@@ -206,11 +206,11 @@ export const MobilePostJobPage: React.FC = () => {
 
           {/* Description */}
           <div>
-            <label className="block font-semibold text-slate-700 mb-1">Job Details & Requirements *</label>
+            <label className="block font-semibold text-slate-700 mb-1">{t('jobs.detailsAndReqs', 'Job Details & Requirements')} *</label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Describe work duties, site location, required experience..."
+              placeholder={t('jobs.descPlaceholder', 'Describe work duties, site location, required experience...')}
               rows={4}
               required
               className="w-full rounded-xl border border-slate-200 p-2.5 text-xs focus:border-indigo-900 focus:outline-none"

@@ -13,6 +13,7 @@ import { extractErrorMessage } from '../../../api/client';
 import { useAuth } from '../../../contexts/AuthContext';
 import type { EmployerProfile, VerificationRecord } from '../../../types';
 import MobileLanguageModal from '../../components/MobileLanguageModal';
+import MobileEmployerVerificationCenter from '../../components/MobileEmployerVerificationCenter';
 import { useStatusBar } from '../../hooks/useStatusBar';
 import { INDIAN_STATES } from '../../../utils/constants';
 
@@ -340,7 +341,7 @@ export const MobileEmployerProfilePage: React.FC = () => {
           <div className="flex items-center gap-2">
             <Shield className="h-4 w-4 text-indigo-900" />
             <h3 className="text-xs font-bold uppercase tracking-wider text-slate-700">
-              Company Verification
+              {t('employer.companyVerification', 'Company Verification')}
             </h3>
           </div>
           <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${
@@ -352,7 +353,7 @@ export const MobileEmployerProfilePage: React.FC = () => {
               ? 'bg-red-50 text-red-700 border border-red-200'
               : 'bg-slate-100 text-slate-600'
           }`}>
-            {companyStatus}
+            {t(`verification.status.${companyStatus}`, companyStatus)}
           </span>
         </div>
 
@@ -371,7 +372,7 @@ export const MobileEmployerProfilePage: React.FC = () => {
             <p className="text-xs text-slate-600 mb-2.5">
               {companyStatus === 'REJECTED'
                 ? `Verification was rejected: ${latestCompanyRecord?.rejection_reason || 'Please submit valid incorporation or GST documents.'}`
-                : 'Upload your GSTIN, Certificate of Incorporation, or MSME registration to earn verified status.'}
+                : t('employer.uploadDocsDesc', 'Upload your company documents to receive verified employer status.')}
             </p>
             <button
               type="button"
@@ -379,7 +380,7 @@ export const MobileEmployerProfilePage: React.FC = () => {
               className="inline-flex items-center gap-1.5 rounded-xl bg-indigo-900 px-3.5 py-2 text-xs font-bold text-white shadow-sm active:scale-95"
             >
               <UploadCloud className="h-4 w-4" />
-              <span>{companyStatus === 'REJECTED' ? 'Resubmit Business Documents' : 'Verify Company Now'}</span>
+              <span>{companyStatus === 'REJECTED' ? t('employer.resubmitBusinessDocs', 'Resubmit Business Documents') : t('employer.verifyCompanyNow', 'Verify Company Now')}</span>
             </button>
           </div>
         )}
@@ -387,6 +388,20 @@ export const MobileEmployerProfilePage: React.FC = () => {
 
       {/* 3. Menu Items */}
       <div className="rounded-2xl bg-white border border-slate-100 shadow-sm overflow-hidden divide-y divide-slate-100">
+        <button
+          type="button"
+          onClick={handleOpenVerification}
+          className="flex w-full items-center justify-between p-3.5 text-left text-xs font-semibold text-slate-800 hover:bg-slate-50 active:bg-slate-100"
+        >
+          <div className="flex items-center gap-3">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-50 text-indigo-900">
+              <ShieldCheck className="h-4 w-4" />
+            </div>
+            <span>{t('verification.companyCenterTitle', 'Business Verification Center')}</span>
+          </div>
+          <ChevronRight className="h-4 w-4 text-slate-400" />
+        </button>
+
         <button
           type="button"
           onClick={() => navigate('/employer/jobs')}
@@ -424,7 +439,7 @@ export const MobileEmployerProfilePage: React.FC = () => {
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-50 text-emerald-700">
               <Calendar className="h-4 w-4" />
             </div>
-            <span>Shifts & Settlement</span>
+            <span>{t('employer.shiftsSettlement', 'Shifts & Settlement')}</span>
           </div>
           <ChevronRight className="h-4 w-4 text-slate-400" />
         </button>
@@ -614,141 +629,13 @@ export const MobileEmployerProfilePage: React.FC = () => {
         </div>
       )}
 
-      {/* ── Company Verification Modal ──────────────────────────────────────── */}
+      {/* ── Business Verification Center Full-Screen ─────────────────── */}
       {verificationModalOpen && (
-        <div className="mobile-modal-overlay">
-          <div className="mobile-modal-sheet max-h-[90vh] max-h-[90dvh]">
-            <div className="flex items-center justify-between border-b p-4">
-              <div className="flex items-center gap-2">
-                <ShieldCheck className="h-5 w-5 text-indigo-900" />
-                <h2 className="text-base font-extrabold text-slate-900">{t('employer.companyVerification', 'Company Verification')}</h2>
-              </div>
-              <button
-                type="button"
-                onClick={() => setVerificationModalOpen(false)}
-                className="mobile-touch-target rounded-full p-1 text-slate-400 hover:bg-slate-100"
-                aria-label="Close"
-              >
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-
-            {/* Scrollable Form Body */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-3.5 text-xs">
-              {vError && (
-                <div className="flex items-start gap-2 rounded-xl bg-red-50 p-3 text-xs text-red-700 border border-red-200 shadow-sm">
-                  <AlertCircle className="h-4 w-4 text-red-500 flex-shrink-0 mt-0.5" />
-                  <span>{vError}</span>
-                </div>
-              )}
-
-              <form id="employer-verification-form" onSubmit={handleSubmitCompany} className="space-y-3.5">
-                <div>
-                  <label className="block font-bold text-slate-700 mb-1.5">Organization Name *</label>
-                  <input
-                    type="text"
-                    value={vOrgName}
-                    onChange={(e) => setVOrgName(e.target.value)}
-                    placeholder="Registered legal company name"
-                    className="w-full rounded-xl border border-slate-200 p-3 text-xs bg-white focus:border-indigo-900 focus:outline-none min-h-[44px]"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="block font-bold text-slate-700 mb-1.5">{t('employer.orgType', 'Organization Type')}</label>
-                  <select
-                    value={vOrgType}
-                    onChange={(e) => setVOrgType(e.target.value)}
-                    className="w-full rounded-xl border border-slate-200 p-3 text-xs bg-white focus:border-indigo-900 focus:outline-none min-h-[44px]"
-                  >
-                    <option value="Private Limited">{t('employer.orgTypePrivateLtd', 'Private Limited')}</option>
-                    <option value="Proprietorship">{t('employer.orgTypeProprietorship', 'Proprietorship')}</option>
-                    <option value="Partnership / LLP">{t('employer.orgTypePartnership', 'Partnership / LLP')}</option>
-                    <option value="Public Limited">{t('employer.orgTypePublicLtd', 'Public Limited')}</option>
-                    <option value="Contractor / Individual">{t('employer.orgTypeContractor', 'Contractor / Individual')}</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block font-bold text-slate-700 mb-1.5">{t('employer.gstinLabel', 'GSTIN / Tax ID / CIN')}</label>
-                  <input
-                    type="text"
-                    value={taxId}
-                    onChange={(e) => setTaxId(e.target.value)}
-                    placeholder="e.g. 27AAAAA0000A1Z5"
-                    className="w-full rounded-xl border border-slate-200 p-3 text-xs bg-white focus:border-indigo-900 focus:outline-none min-h-[44px]"
-                  />
-                </div>
-
-                <div>
-                  <label className="block font-bold text-slate-700 mb-1.5">Registration Document (GST / CIN / MSME) *</label>
-                  <input
-                    type="file"
-                    ref={docFileInputRef}
-                    onChange={(e) => {
-                      const f = e.target.files?.[0];
-                      if (f) {
-                        if (!ALLOWED_MIME_TYPES.includes(f.type)) {
-                          setVError('Please select a PDF, JPEG, PNG, or WebP document');
-                          return;
-                        }
-                        if (f.size > MAX_FILE_SIZE_BYTES) {
-                          setVError('File size must be under 5MB');
-                          return;
-                        }
-                        setVError('');
-                        setDocFile(f);
-                      }
-                    }}
-                    accept="image/*,application/pdf"
-                    className="w-full rounded-xl border border-slate-200 p-2 text-xs bg-white focus:outline-none min-h-[44px]"
-                  />
-                  <p className="mt-1 text-[11px] text-slate-400">PDF, JPG, PNG or WebP (max 5MB)</p>
-                </div>
-
-                <div>
-                  <label className="block font-bold text-slate-700 mb-1.5">{t('employer.verificationNotes', 'Notes / Registration Details')}</label>
-                  <input
-                    type="text"
-                    value={vNotes}
-                    onChange={(e) => setVNotes(e.target.value)}
-                    placeholder="Additional registration or verification notes..."
-                    className="w-full rounded-xl border border-slate-200 p-3 text-xs focus:border-indigo-900 focus:outline-none min-h-[44px]"
-                  />
-                </div>
-              </form>
-            </div>
-
-            {/* Sticky Action Footer */}
-            <div className="mobile-sticky-footer">
-              <div className="flex items-center gap-3">
-                <button
-                  type="button"
-                  onClick={() => setVerificationModalOpen(false)}
-                  disabled={isSubmittingCompany}
-                  className="mobile-touch-target flex-1 rounded-xl border border-slate-300 py-3 text-center text-xs font-bold text-slate-700 bg-white hover:bg-slate-50 active:scale-95 transition-transform min-h-[48px]"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  form="employer-verification-form"
-                  disabled={isSubmittingCompany}
-                  className="mobile-touch-target flex-[2] rounded-xl bg-indigo-900 py-3 text-center text-xs font-bold text-white shadow-md active:scale-95 disabled:opacity-60 flex items-center justify-center gap-2 min-h-[48px]"
-                >
-                  {isSubmittingCompany ? (
-                    <>
-                      <span className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                      <span>{t('common.uploading', 'Uploading Documents...')}</span>
-                    </>
-                  ) : (
-                    <span>{t('employer.submitVerification', 'Submit Company Verification')}</span>
-                  )}
-                </button>
-              </div>
-            </div>
-          </div>
+        <div className="mobile-fullscreen-editor">
+          <MobileEmployerVerificationCenter
+            profile={employerProfile || undefined}
+            onClose={() => setVerificationModalOpen(false)}
+          />
         </div>
       )}
 

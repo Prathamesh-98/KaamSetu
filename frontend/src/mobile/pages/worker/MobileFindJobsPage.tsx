@@ -266,11 +266,11 @@ export const MobileFindJobsPage: React.FC = () => {
                     </div>
                   )}
 
-                  <label className="block font-bold text-slate-700">Cover Note (Optional)</label>
+                  <label className="block font-bold text-slate-700">{t('jobs.coverNoteOptional', 'Cover Note (Optional)')}</label>
                   <textarea
                     value={coverNote}
                     onChange={(e) => setCoverNote(e.target.value)}
-                    placeholder="Add a brief note to employer (e.g. your availability, years of experience)..."
+                    placeholder={t('jobs.coverNotePlaceholder', 'Add a brief note to employer (e.g. your availability, years of experience)...')}
                     rows={2}
                     className="w-full rounded-xl border border-slate-200 p-2.5 text-xs focus:border-indigo-900 focus:outline-none"
                   />
@@ -286,7 +286,7 @@ export const MobileFindJobsPage: React.FC = () => {
                   onClick={() => setSelectedJob(null)}
                   className="w-full rounded-xl bg-emerald-700 py-3 text-center text-xs font-bold text-white shadow min-h-[48px]"
                 >
-                  Close
+                  {t('common.close', 'Close')}
                 </button>
               ) : (
                 <div className="flex items-center gap-3">
@@ -295,7 +295,7 @@ export const MobileFindJobsPage: React.FC = () => {
                     onClick={() => setSelectedJob(null)}
                     className="mobile-touch-target flex-1 rounded-xl border border-slate-300 py-3 text-center text-xs font-bold text-slate-700 bg-white hover:bg-slate-50 active:scale-95 transition-transform min-h-[48px]"
                   >
-                    Cancel
+                    {t('common.cancel', 'Cancel')}
                   </button>
                   <button
                     type="button"

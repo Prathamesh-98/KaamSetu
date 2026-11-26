@@ -32,14 +32,16 @@
 .mobile-app-root {
   background-color: var(--mobile-bg);
   color: var(--mobile-dark);
-  min-height: 100vh;
-  min-height: 100dvh;
+  height: 100vh;
+  height: 100dvh;
+  max-height: 100dvh;
   width: 100%;
   max-width: 100%;
-  overflow-x: hidden;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
-  position: relative;
+  position: fixed;
+  inset: 0;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   -webkit-tap-highlight-color: transparent;
   padding-left: var(--sal);
@@ -48,6 +50,7 @@
 
 /* Top Safe Area Header */
 .mobile-header-safe {
+  flex-shrink: 0;
   padding-top: max(var(--app-safe-top), var(--sat), 10px);
   background: #FFFFFF;
   border-bottom: 1px solid var(--mobile-border);
@@ -56,9 +59,10 @@
   z-index: 40;
 }
 
-/* Bottom Safe Area Nav */
+/* Bottom Safe Area Nav — Permanently pinned to bottom */
 .mobile-nav-safe {
-  padding-bottom: max(var(--app-safe-bottom), var(--sab), 8px);
+  flex-shrink: 0;
+  width: 100%;
   background: #FFFFFF;
   border-top: 1px solid var(--mobile-border);
   position: fixed;
@@ -66,16 +70,37 @@
   left: 0;
   right: 0;
   z-index: 50;
-  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 -3px 12px rgba(15, 23, 42, 0.08);
+  padding-bottom: max(var(--app-safe-bottom), var(--sab), 10px);
+  transform: translateZ(0);
+  will-change: transform;
+  transition: transform 0.2s ease-in-out, opacity 0.2s ease-in-out;
 }
 
-/* Content padding to avoid fixed bottom nav and status bar overlap */
+/* Hide bottom navigation during fullscreen editors, modals, or explicit hidden flag */
+body:has(.mobile-fullscreen-editor) .mobile-nav-safe,
+body:has(.mobile-modal-overlay) .mobile-nav-safe,
+.mobile-app-root:has(.mobile-fullscreen-editor) .mobile-nav-safe,
+.mobile-app-root:has(.mobile-modal-overlay) .mobile-nav-safe,
+.mobile-nav-hidden {
+  display: none !important;
+  pointer-events: none !important;
+  transform: translateY(100%) !important;
+  opacity: 0 !important;
+}
+
+/* Content padding: only content area scrolls; content never hidden behind nav */
 .mobile-content-area {
-  flex: 1;
-  padding-top: max(var(--app-safe-top), var(--sat), 0px);
-  padding-bottom: calc(var(--mobile-bottom-nav-height) + max(var(--app-safe-bottom), var(--sab), 8px) + 16px);
+  flex: 1 1 0%;
+  min-height: 0;
+  height: 100%;
+  width: 100%;
   overflow-y: auto;
+  overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+  padding-top: max(var(--app-safe-top), var(--sat), 0px);
+  padding-bottom: calc(var(--mobile-bottom-nav-height) + max(var(--app-safe-bottom), var(--sab), 12px) + 24px);
 }
 
 /* Fullscreen Mobile Form/Editor (Covers fixed bottom navigation completely) */

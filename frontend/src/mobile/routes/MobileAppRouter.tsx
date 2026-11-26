@@ -21,6 +21,7 @@ import MobileWorkerDashboard from '../pages/worker/MobileWorkerDashboard';
 import MobileFindJobsPage from '../pages/worker/MobileFindJobsPage';
 import MobileWorkerProfilePage from '../pages/worker/MobileWorkerProfilePage';
 import MobileWorkerShiftsPage from '../pages/worker/MobileWorkerShiftsPage';
+import MobileWorkerVerificationCenter from '../components/MobileWorkerVerificationCenter';
 
 // Employer Mobile Pages
 import MobileEmployerDashboard from '../pages/employer/MobileEmployerDashboard';
@@ -28,6 +29,7 @@ import MobileHireWorkersPage from '../pages/employer/MobileHireWorkersPage';
 import MobileMyJobsPage from '../pages/employer/MobileMyJobsPage';
 import MobilePostJobPage from '../pages/employer/MobilePostJobPage';
 import MobileEmployerProfilePage from '../pages/employer/MobileEmployerProfilePage';
+import MobileEmployerVerificationCenter from '../components/MobileEmployerVerificationCenter';
 
 // Shared existing sub-pages (lazy loaded)
 const ForgotPasswordPage = lazy(() => import('../../pages/auth/ForgotPasswordPage'));
@@ -147,6 +149,7 @@ export const MobileAppRouter: React.FC = () => {
               <Route path="/worker/shifts" element={<MobileWorkerShiftsPage />} />
               <Route path="/worker/availability" element={<MyAvailabilityPage />} />
               <Route path="/worker/profile" element={<MobileWorkerProfilePage />} />
+              <Route path="/worker/verification" element={<MobileWorkerVerificationCenter />} />
               <Route path="/worker/messages" element={<MobileMessagesPage />} />
             </Route>
 
@@ -167,6 +170,7 @@ export const MobileAppRouter: React.FC = () => {
               <Route path="/employer/workers/:id" element={<EmployerWorkerDetailPage />} />
               <Route path="/employer/saved-workers" element={<SavedWorkersPage />} />
               <Route path="/employer/profile" element={<MobileEmployerProfilePage />} />
+              <Route path="/employer/verification" element={<MobileEmployerVerificationCenter />} />
               <Route path="/employer/shifts" element={<EmployerShiftBookingsPage />} />
               <Route path="/employer/messages" element={<MobileMessagesPage />} />
             </Route>

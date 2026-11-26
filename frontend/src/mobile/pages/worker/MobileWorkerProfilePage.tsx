@@ -16,6 +16,7 @@ import type {
   WorkerProfile, SalaryType, AvailabilityStatus, Skill, VerificationRecord, WorkerProfilePayload 
 } from '../../../types';
 import MobileLanguageModal from '../../components/MobileLanguageModal';
+import MobileWorkerVerificationCenter from '../../components/MobileWorkerVerificationCenter';
 import { useStatusBar } from '../../hooks/useStatusBar';
 import { INDIAN_STATES } from '../../../utils/constants';
 
@@ -450,10 +451,10 @@ export const MobileWorkerProfilePage: React.FC = () => {
           {/* Expected Wage */}
           <div className="flex flex-col items-center justify-center p-2 rounded-xl bg-slate-50 border border-slate-100 text-center">
             <span className="text-[10px] uppercase font-bold text-slate-400">
-              {workerProfile?.salary_type ? `Wage (${workerProfile.salary_type.toLowerCase()})` : 'Expected Wage'}
+              {workerProfile?.salary_type ? `${t('worker.expectedWage', 'Expected Wage')} (${workerProfile.salary_type.toLowerCase()})` : t('worker.expectedWage', 'Expected Wage')}
             </span>
             <span className="text-xs font-extrabold text-indigo-900 mt-0.5">
-              ₹{workerProfile?.expected_salary ? `${workerProfile.expected_salary}` : 'Negotiable'}
+              ₹{workerProfile?.expected_salary ? `${workerProfile.expected_salary}` : t('worker.negotiable', 'Negotiable')}
             </span>
           </div>
         </div>
@@ -465,7 +466,7 @@ export const MobileWorkerProfilePage: React.FC = () => {
           <div className="flex items-center gap-2">
             <Shield className="h-4 w-4 text-indigo-900" />
             <h3 className="text-xs font-bold uppercase tracking-wider text-slate-700">
-              Trust & Verification
+              {t('worker.trustVerification', 'Trust & Verification')}
             </h3>
           </div>
           <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${
@@ -477,7 +478,7 @@ export const MobileWorkerProfilePage: React.FC = () => {
               ? 'bg-red-50 text-red-700 border border-red-200'
               : 'bg-slate-100 text-slate-600'
           }`}>
-            {identityStatus}
+            {t(`verification.status.${identityStatus}`, identityStatus)}
           </span>
         </div>
 
@@ -496,7 +497,7 @@ export const MobileWorkerProfilePage: React.FC = () => {
             <p className="text-xs text-slate-600 mb-2.5">
               {identityStatus === 'REJECTED'
                 ? `Verification was rejected: ${latestIdRecord?.rejection_reason || 'Please submit a clear government ID.'}`
-                : 'Upload your Aadhaar, Voter ID, Driving License or Trade License to get verified and attract more employers.'}
+                : t('worker.uploadIdToEarnBadge', 'Upload your Aadhaar, Voter ID or Driving License to earn a verified worker badge and unlock premium employer shifts.')}
             </p>
             <button
               type="button"
@@ -504,7 +505,7 @@ export const MobileWorkerProfilePage: React.FC = () => {
               className="inline-flex items-center gap-1.5 rounded-xl bg-indigo-900 px-3.5 py-2 text-xs font-bold text-white shadow-sm active:scale-95"
             >
               <UploadCloud className="h-4 w-4" />
-              <span>{identityStatus === 'REJECTED' ? 'Resubmit Government ID' : 'Verify Identity Now'}</span>
+              <span>{identityStatus === 'REJECTED' ? t('verification.resubmitId', 'Resubmit Government ID') : t('verification.actionVerifyNow', 'Verify Identity Now')}</span>
             </button>
           </div>
         )}
@@ -559,7 +560,7 @@ export const MobileWorkerProfilePage: React.FC = () => {
             })}
           </div>
         ) : (
-          <p className="text-xs text-slate-500">No skills added yet. Tap "Add Skill" to highlight your work expertise.</p>
+          <p className="text-xs text-slate-500">{t('worker.noSkillsYet', 'No skills added yet. Tap "Add Skill" to highlight your work expertise.')}</p>
         )}
       </div>
 
@@ -567,7 +568,7 @@ export const MobileWorkerProfilePage: React.FC = () => {
       {workerProfile?.preferred_work_types && workerProfile.preferred_work_types.length > 0 && (
         <div className="rounded-2xl bg-white p-4 border border-slate-100 shadow-sm">
           <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">
-            Preferred Work Types
+            {t('worker.preferredWorkTypes', 'Preferred Work Types')}
           </h3>
           <div className="flex flex-wrap gap-1.5">
             {workerProfile.preferred_work_types.map((wt: string) => (
@@ -584,6 +585,19 @@ export const MobileWorkerProfilePage: React.FC = () => {
 
       {/* 5. Navigation Menu Items */}
       <div className="rounded-2xl bg-white border border-slate-100 shadow-sm overflow-hidden divide-y divide-slate-100">
+        <button
+          type="button"
+          onClick={() => setVerificationModalOpen(true)}
+          className="flex w-full items-center justify-between p-3.5 text-left text-xs font-semibold text-slate-800 hover:bg-slate-50 active:bg-slate-100"
+        >
+          <div className="flex items-center gap-3">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-50 text-indigo-900">
+              <ShieldCheck className="h-4 w-4" />
+            </div>
+            <span>{t('worker.trustVerification', 'Trust & Verification Center')}</span>
+          </div>
+          <ChevronRight className="h-4 w-4 text-slate-400" />
+        </button>
         <button
           type="button"
           onClick={() => navigate('/worker/applications')}
@@ -932,117 +946,13 @@ export const MobileWorkerProfilePage: React.FC = () => {
         </div>
       )}
 
-      {/* ── Identity Verification Modal ─────────────────────────────────────── */}
+      {/* ── Trust & Verification Center Full-Screen ─────────────────────── */}
       {verificationModalOpen && (
-        <div className="mobile-modal-overlay">
-          <div className="mobile-modal-sheet max-h-[90vh] max-h-[90dvh]">
-            <div className="flex items-center justify-between border-b p-4">
-              <div className="flex items-center gap-2">
-                <ShieldCheck className="h-5 w-5 text-indigo-900" />
-                <h2 className="text-base font-extrabold text-slate-900">{t('worker.govIdVerification', 'Government ID Verification')}</h2>
-              </div>
-              <button
-                type="button"
-                onClick={() => setVerificationModalOpen(false)}
-                className="mobile-touch-target rounded-full p-1 text-slate-400 hover:bg-slate-100"
-                aria-label="Close"
-              >
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-
-            {/* Scrollable Form Body */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-3.5 text-xs">
-              {idError && (
-                <div className="flex items-start gap-2 rounded-xl bg-red-50 p-3 text-xs text-red-700 border border-red-200 shadow-sm">
-                  <AlertCircle className="h-4 w-4 text-red-500 flex-shrink-0 mt-0.5" />
-                  <span>{idError}</span>
-                </div>
-              )}
-
-              <form id="worker-verification-form" onSubmit={handleSubmitIdentity} className="space-y-3.5">
-                <div>
-                  <label className="block font-bold text-slate-700 mb-1.5">Document Type *</label>
-                  <select
-                    value={idDocType}
-                    onChange={(e) => setIdDocType(e.target.value)}
-                    className="w-full rounded-xl border border-slate-200 p-3 text-xs bg-white focus:border-indigo-900 focus:outline-none min-h-[44px]"
-                  >
-                    <option value="DRIVING_LICENSE">{t('worker.docDrivingLicense', 'Driving License')}</option>
-                    <option value="VOTER_ID">{t('worker.docVoterId', 'Voter ID Card (EPIC)')}</option>
-                    <option value="PASSPORT">{t('worker.docPassport', 'Passport')}</option>
-                    <option value="TRADE_LICENSE">{t('worker.docTradeLicense', 'Trade / Labor License')}</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block font-bold text-slate-700 mb-1.5">Upload Document File *</label>
-                  <input
-                    type="file"
-                    ref={idFileInputRef}
-                    onChange={(e) => {
-                      const f = e.target.files?.[0];
-                      if (f) {
-                        if (!ALLOWED_MIME_TYPES.includes(f.type)) {
-                          setIdError('Please select a PDF, JPEG, PNG, or WebP document');
-                          return;
-                        }
-                        if (f.size > MAX_FILE_SIZE_BYTES) {
-                          setIdError('File size must be under 5MB');
-                          return;
-                        }
-                        setIdError('');
-                        setIdFile(f);
-                      }
-                    }}
-                    accept="image/*,application/pdf"
-                    className="w-full rounded-xl border border-slate-200 p-2 text-xs bg-white focus:outline-none min-h-[44px]"
-                  />
-                  <p className="mt-1 text-[11px] text-slate-400">PDF, JPG, PNG or WebP (max 5MB)</p>
-                </div>
-
-                <div>
-                  <label className="block font-bold text-slate-700 mb-1.5">Additional Notes (Optional)</label>
-                  <input
-                    type="text"
-                    value={idNotes}
-                    onChange={(e) => setIdNotes(e.target.value)}
-                    placeholder="Document number or extra notes..."
-                    className="w-full rounded-xl border border-slate-200 p-3 text-xs focus:border-indigo-900 focus:outline-none min-h-[44px]"
-                  />
-                </div>
-              </form>
-            </div>
-
-            {/* Sticky Action Footer */}
-            <div className="mobile-sticky-footer">
-              <div className="flex items-center gap-3">
-                <button
-                  type="button"
-                  onClick={() => setVerificationModalOpen(false)}
-                  disabled={isSubmittingId}
-                  className="mobile-touch-target flex-1 rounded-xl border border-slate-300 py-3 text-center text-xs font-bold text-slate-700 bg-white hover:bg-slate-50 active:scale-95 transition-transform min-h-[48px]"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  form="worker-verification-form"
-                  disabled={isSubmittingId}
-                  className="mobile-touch-target flex-[2] rounded-xl bg-indigo-900 py-3 text-center text-xs font-bold text-white shadow-md active:scale-95 disabled:opacity-60 flex items-center justify-center gap-2 min-h-[48px]"
-                >
-                  {isSubmittingId ? (
-                    <>
-                      <span className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                      <span>{t('common.uploading', 'Uploading Document...')}</span>
-                    </>
-                  ) : (
-                    <span>{t('worker.submitVerification', 'Submit for Verification')}</span>
-                  )}
-                </button>
-              </div>
-            </div>
-          </div>
+        <div className="mobile-fullscreen-editor">
+          <MobileWorkerVerificationCenter
+            profile={workerProfile || undefined}
+            onClose={() => setVerificationModalOpen(false)}
+          />
         </div>
       )}
 

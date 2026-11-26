@@ -126,7 +126,7 @@ export const MobileHireWorkersPage: React.FC = () => {
                     <p className="text-xs text-slate-500 flex items-center gap-1 mt-0.5">
                       <MapPin className="h-3 w-3 text-amber-600" />
                       <span>{w.city || 'India'}</span>
-                      {w.years_experience && <span>· {w.years_experience} yrs exp</span>}
+                      {w.years_experience && <span>· {w.years_experience} {t('worker.yrsExp', 'yrs exp')}</span>}
                     </p>
                   </div>
                 </div>
@@ -152,7 +152,7 @@ export const MobileHireWorkersPage: React.FC = () => {
                 </div>
 
                 <div className="font-bold text-indigo-900 text-xs">
-                  ₹{w.expected_salary || 800}<span className="text-[10px] font-normal text-slate-500">/day</span>
+                  ₹{w.expected_salary || 800}<span className="text-[10px] font-normal text-slate-500">{t('worker.perDay', '/day')}</span>
                 </div>
               </div>
             </div>

@@ -83,7 +83,7 @@ export const MobileWorkerShiftsPage: React.FC = () => {
               <div key={shift.id} className="mobile-card p-4 space-y-3">
                 <div className="flex items-start justify-between">
                   <div>
-                    <h3 className="font-bold text-slate-900 text-sm">{shift.job?.title || 'Shift Booking'}</h3>
+                    <h3 className="font-bold text-slate-900 text-sm">{shift.job?.title || t('shifts.shiftBooking', 'Shift Booking')}</h3>
                     <p className="text-xs text-slate-500 mt-0.5">{shift.employer?.organization_name || 'Employer'}</p>
                   </div>
                   <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-bold ${
@@ -100,7 +100,7 @@ export const MobileWorkerShiftsPage: React.FC = () => {
                 <div className="flex items-center justify-between bg-slate-50 p-2.5 rounded-xl text-xs">
                   <div className="flex items-center gap-1.5 text-slate-600">
                     <Clock className="h-4 w-4 text-slate-400" />
-                    <span>{shift.shift_date || 'Date scheduled'}</span>
+                    <span>{shift.shift_date || t('shifts.dateScheduled', 'Date scheduled')}</span>
                   </div>
                   <div className="font-extrabold text-indigo-900 text-sm">
                     ₹{shift.agreed_wage || shift.job?.salary_min || 0}
@@ -114,14 +114,14 @@ export const MobileWorkerShiftsPage: React.FC = () => {
                       onClick={() => acceptMutation.mutate(shift.id)}
                       className="flex-1 rounded-xl bg-indigo-900 py-2 text-xs font-bold text-white shadow-sm"
                     >
-                      Accept Shift
+                      {t('shifts.accept', 'Accept Shift')}
                     </button>
                     <button
                       type="button"
                       onClick={() => declineMutation.mutate(shift.id)}
                       className="flex-1 rounded-xl bg-white border border-slate-200 py-2 text-xs font-bold text-slate-700"
                     >
-                      Decline
+                      {t('shifts.decline', 'Decline')}
                     </button>
                   </div>
                 )}
@@ -147,12 +147,12 @@ export const MobileWorkerShiftsPage: React.FC = () => {
             {historyList.map((item: any) => (
               <div key={item.id} className="mobile-card p-4 space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="font-bold text-xs text-slate-900">{item.title || 'Completed Shift'}</span>
+                  <span className="font-bold text-xs text-slate-900">{item.title || t('shifts.completedShift', 'Completed Shift')}</span>
                   <span className="font-extrabold text-xs text-emerald-700">₹{item.amount || 0}</span>
                 </div>
                 <div className="flex items-center justify-between text-[11px] text-slate-500">
                   <span>{item.completed_at ? new Date(item.completed_at).toLocaleDateString() : 'Settled'}</span>
-                  <span className="text-emerald-600 font-semibold">Payment Confirmed ✓</span>
+                  <span className="text-emerald-600 font-semibold">{t('shifts.paymentConfirmed', 'Payment Confirmed ✓')}</span>
                 </div>
               </div>
             ))}

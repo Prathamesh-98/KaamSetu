@@ -153,7 +153,7 @@ export const MobileMessagesPage: React.FC = () => {
               type="text"
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
-              placeholder="Type your message..."
+              placeholder={t('messages.typeMessagePlaceholder', 'Type your message...')}
               className="flex-1 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-xs font-medium focus:bg-white focus:border-indigo-900 focus:outline-none"
             />
             <button
@@ -184,7 +184,7 @@ export const MobileMessagesPage: React.FC = () => {
           type="text"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder="Search conversations..."
+          placeholder={t('messages.searchPlaceholder', 'Search conversations...')}
           className="w-full rounded-2xl border border-slate-200 bg-white py-2 pl-10 pr-4 text-xs font-medium shadow-sm focus:border-indigo-900 focus:outline-none"
         />
       </div>
