@@ -7,6 +7,7 @@ import { useAuth } from '../../contexts/AuthContext'
 import { authApi } from '../../api/services'
 import { extractErrorMessage } from '../../api/client'
 import { motion } from 'framer-motion'
+import BrandLogo from '../../components/common/BrandLogo'
 
 export default function LoginPage() {
   const { t } = useTranslation()
@@ -57,14 +58,9 @@ export default function LoginPage() {
         {/* Content */}
         <div className="relative z-10 flex flex-col h-full p-10 lg:p-14 justify-between">
           <div>
-            <Link to="/" className="inline-flex items-center gap-2 mb-12 group">
-              <div className="w-9 h-9 gradient-primary rounded-xl flex items-center justify-center shadow-md">
-                <Briefcase className="w-5 h-5 text-white" />
-              </div>
-              <span className="font-display font-bold text-xl text-white">
-                Kaam<span className="text-primary-600">Setu</span>
-              </span>
-            </Link>
+            <div className="mb-12">
+              <BrandLogo variant="dark" size="lg" />
+            </div>
 
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
               <h2 className="text-3xl lg:text-4xl font-bold mb-4 leading-tight">
@@ -97,15 +93,8 @@ export default function LoginPage() {
       <div className="w-full md:w-[55%] lg:w-[60%] flex items-center justify-center p-4 sm:p-6 lg:p-12">
         <div className="w-full max-w-md">
           {/* Mobile Header (Hidden on Desktop) */}
-          <div className="md:hidden text-center mb-8">
-            <Link to="/" className="inline-flex items-center gap-2 mb-6 group">
-              <div className="w-9 h-9 gradient-primary rounded-xl flex items-center justify-center shadow-md">
-                <Briefcase className="w-5 h-5 text-white" />
-              </div>
-              <span className="font-display font-bold text-xl text-dark">
-                Kaam<span className="text-primary-600">Setu</span>
-              </span>
-            </Link>
+          <div className="md:hidden flex justify-center mb-8">
+            <BrandLogo variant="light" size="lg" className="mb-2" />
           </div>
 
           <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5, delay: 0.1 }}>
