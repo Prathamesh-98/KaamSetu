@@ -9,11 +9,13 @@ import {
 import { employerApi, jobsApi, applicationsApi, notificationsApi } from '../../../api/services';
 import { useAuth } from '../../../contexts/AuthContext';
 import type { JobListItem, Application, EmployerProfile } from '../../../types';
+import { useStatusBar } from '../../hooks/useStatusBar';
 
 export const MobileEmployerDashboard: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { user } = useAuth();
+  useStatusBar(false);
 
   // Parallel data loading
   const { data: profile } = useQuery({
@@ -54,13 +56,13 @@ export const MobileEmployerDashboard: React.FC = () => {
   return (
     <div className="p-4 space-y-4">
       {/* 1. Header Greeting & Post Job Action */}
-      <div className="flex items-center justify-between">
-        <div>
+      <div className="flex items-center justify-between gap-3">
+        <div className="min-w-0 flex-1">
           <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-500">
-            <Building2 className="h-3.5 w-3.5 text-indigo-900" />
-            <span>{employerProfile?.organization_name || 'Employer Portal'}</span>
+            <Building2 className="h-3.5 w-3.5 text-indigo-900 flex-shrink-0" />
+            <span className="truncate">{employerProfile?.organization_name || 'Employer Portal'}</span>
           </div>
-          <h1 className="text-xl font-extrabold text-slate-900 tracking-tight mt-0.5">
+          <h1 className="text-xl font-extrabold text-slate-900 tracking-tight mt-0.5 truncate">
             Welcome, {employerProfile?.organization_name?.split(' ')[0] || user?.email?.split('@')[0]} 👋
           </h1>
         </div>
@@ -69,12 +71,12 @@ export const MobileEmployerDashboard: React.FC = () => {
         <button
           type="button"
           onClick={() => navigate('/notifications')}
-          className="mobile-touch-target relative rounded-full bg-white p-2.5 text-slate-700 shadow-sm border border-slate-100"
+          className="mobile-touch-target flex-shrink-0 min-h-[48px] min-w-[48px] relative rounded-full bg-white p-2.5 text-slate-700 shadow-sm border border-slate-100 flex items-center justify-center active:scale-95 transition-transform"
           aria-label="Notifications"
         >
           <Bell className="h-5 w-5 text-indigo-900" />
           {unreadNotifs > 0 && (
-            <span className="absolute right-1 top-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-600 text-[10px] font-bold text-white">
+            <span className="absolute right-1.5 top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-red-600 text-[10px] font-bold text-white">
               {unreadNotifs}
             </span>
           )}

@@ -6,6 +6,8 @@ import { useQuery } from '@tanstack/react-query';
 import { chatApi, notificationsApi } from '../../api/services';
 import { useAuth } from '../../contexts/AuthContext';
 import { useBackButton } from '../hooks/useBackButton';
+import { useWindowInsets } from '../hooks/useWindowInsets';
+import { useStatusBar } from '../hooks/useStatusBar';
 
 export const WorkerMobileLayout: React.FC = () => {
   const { t } = useTranslation();
@@ -13,6 +15,8 @@ export const WorkerMobileLayout: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
   useBackButton();
+  useWindowInsets();
+  useStatusBar(false);
 
   // Chat unread count
   const { data: chatUnread } = useQuery({

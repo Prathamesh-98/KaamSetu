@@ -7,12 +7,14 @@ import { authApi } from '../../api/services';
 import { extractErrorMessage } from '../../api/client';
 import BrandLogo from '../../components/common/BrandLogo';
 import { useBackButton } from '../hooks/useBackButton';
+import { useStatusBar } from '../hooks/useStatusBar';
 
 export const MobileLoginPage: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { login } = useAuth();
   useBackButton();
+  useStatusBar(false);
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -85,9 +87,30 @@ export const MobileLoginPage: React.FC = () => {
         </div>
 
         {error && (
-          <div className="mb-4 flex items-start gap-2.5 rounded-xl bg-red-50 p-3.5 text-xs text-red-700 border border-red-200">
-            <AlertCircle className="h-4 w-4 flex-shrink-0 text-red-500 mt-0.5" />
-            <span className="flex-1">{error}</span>
+          <div className="mb-4 p-3.5 rounded-xl bg-red-50 border border-red-200 text-red-900 text-xs">
+            <div className="flex items-start gap-2.5">
+              <AlertCircle className="w-4 h-4 text-red-600 flex-shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <p className="font-bold text-xs text-red-900">{t('auth.loginFailedTitle', 'Unable to sign in')}</p>
+                <p className="mt-1 text-red-700 text-xs leading-relaxed">
+                  {t('auth.loginGuidance', 'Check your credentials, or register if you are new to KaamSetu.')}
+                </p>
+                <div className="mt-2.5 flex flex-wrap items-center gap-2">
+                  <Link
+                    to="/register"
+                    className="inline-flex items-center text-xs font-bold bg-[#1F2A6B] text-white px-2.5 py-1.5 rounded-lg shadow-sm active:scale-95 transition-transform"
+                  >
+                    {t('auth.registerNow', 'Register for KaamSetu')}
+                  </Link>
+                  <Link
+                    to="/forgot-password"
+                    className="text-xs font-semibold text-red-800 hover:underline py-1 px-1"
+                  >
+                    {t('auth.forgotPassword', 'Forgot password?')}
+                  </Link>
+                </div>
+              </div>
+            </div>
           </div>
         )}
 

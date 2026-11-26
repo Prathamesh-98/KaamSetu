@@ -8,6 +8,7 @@ import { extractErrorMessage } from '../../api/client';
 import type { UserRole } from '../../types';
 import BrandLogo from '../../components/common/BrandLogo';
 import { useBackButton } from '../hooks/useBackButton';
+import { useStatusBar } from '../hooks/useStatusBar';
 
 export const MobileRegisterPage: React.FC = () => {
   const { t } = useTranslation();
@@ -15,6 +16,7 @@ export const MobileRegisterPage: React.FC = () => {
   const [searchParams] = useSearchParams();
   const { login } = useAuth();
   useBackButton();
+  useStatusBar(false);
 
   const urlRole = searchParams.get('role');
   const [role, setRole] = useState<UserRole>(

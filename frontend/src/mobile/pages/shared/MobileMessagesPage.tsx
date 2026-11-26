@@ -2,16 +2,18 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { 
-  MessageSquare, Send, ArrowLeft, User, Search, Clock, Check, CheckCheck 
+  MessageSquare, Send, ArrowLeft, Search, AlertCircle, RefreshCw 
 } from 'lucide-react';
 import { chatApi } from '../../../api/services';
 import { useAuth } from '../../../contexts/AuthContext';
 import type { Conversation, Message } from '../../../types';
+import { useStatusBar } from '../../hooks/useStatusBar';
 
 export const MobileMessagesPage: React.FC = () => {
   const { t } = useTranslation();
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  useStatusBar(false);
 
   const [activeConversation, setActiveConversation] = useState<Conversation | null>(null);
   const [inputText, setInputText] = useState('');
@@ -19,7 +21,12 @@ export const MobileMessagesPage: React.FC = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Conversations list
-  const { data: conversations, isLoading: isConvsLoading } = useQuery({
+  const { 
+    data: conversations, 
+    isLoading: isConvsLoading, 
+    isError: isConvsError, 
+    refetch: refetchConvs 
+  } = useQuery({
     queryKey: ['chat-conversations'],
     queryFn: chatApi.getConversations,
     refetchInterval: 6000,
@@ -188,6 +195,20 @@ export const MobileMessagesPage: React.FC = () => {
           {[1, 2, 3].map((n) => (
             <div key={n} className="h-16 rounded-2xl mobile-skeleton" />
           ))}
+        </div>
+      ) : isConvsError ? (
+        <div className="rounded-2xl bg-white p-6 text-center border border-red-100 shadow-sm mt-4">
+          <AlertCircle className="h-8 w-8 text-red-500 mx-auto mb-2" />
+          <h3 className="font-bold text-slate-800 text-sm">Failed to load conversations</h3>
+          <p className="text-xs text-slate-500 mt-1 mb-3">Please check your connection and try again.</p>
+          <button
+            type="button"
+            onClick={() => refetchConvs()}
+            className="inline-flex items-center gap-1.5 rounded-xl bg-indigo-900 px-4 py-2 text-xs font-bold text-white shadow-sm active:scale-95"
+          >
+            <RefreshCw className="h-3.5 w-3.5" />
+            <span>Retry</span>
+          </button>
         </div>
       ) : convList.length > 0 ? (
         <div className="space-y-2">
