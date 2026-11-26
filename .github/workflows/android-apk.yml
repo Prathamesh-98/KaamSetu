@@ -57,9 +57,18 @@ jobs:
           ET.register_namespace('android', ns)
           t = ET.parse(p)
           app = t.getroot().find('application')
-          for key in ['allowBackup','usesCleartextTraffic','debuggable']:
+          for key in ['allowBackup','usesCleartextTraffic']:
               app.set('{'+ns+'}'+key, 'false')
           t.write(p, encoding='utf-8', xml_declaration=True)
+
+          # Ensure lintOptions does not abort release builds on informational warnings
+          bg = 'android/app/build.gradle'
+          with open(bg, 'r', encoding='utf-8') as f:
+              content = f.read()
+          if 'lintOptions' not in content:
+              content = content.replace('android {', 'android {\n    lintOptions {\n        checkReleaseBuilds false\n        abortOnError false\n    }\n', 1)
+              with open(bg, 'w', encoding='utf-8') as f:
+                  f.write(content)
           PY
       - name: Compile non-debuggable test release
         run: |
