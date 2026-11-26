@@ -549,6 +549,7 @@ class AdminStats(BaseModel):
     total_jobs: int
     total_applications: int
     completed_jobs: int
+    pending_verifications: int = 0
 
 
 class PaginatedResponse(BaseModel):
@@ -744,6 +745,10 @@ class VerificationRecordResponse(BaseModel):
     verified_at: Optional[datetime] = None
     created_at: datetime
     metadata: Optional[Dict[str, Any]] = None
+    user_email: Optional[str] = None
+    user_name: Optional[str] = None
+    user_role: Optional[str] = None
+    user_phone: Optional[str] = None
 
     model_config = {"from_attributes": True}
 
@@ -752,6 +757,15 @@ class VerificationRecordResponse(BaseModel):
         eff_status = getattr(record, "effective_status", record.status)
         v_status = eff_status.value if hasattr(eff_status, "value") else str(eff_status)
         v_type = record.verification_type.value if hasattr(record.verification_type, "value") else str(record.verification_type)
+        u = getattr(record, "user", None)
+        u_name = None
+        if u:
+            if getattr(u, "worker_profile", None) and u.worker_profile.full_name:
+                u_name = u.worker_profile.full_name
+            elif getattr(u, "employer_profile", None):
+                u_name = u.employer_profile.organization_name or u.employer_profile.full_name
+            elif getattr(u, "admin_profile", None) and u.admin_profile.full_name:
+                u_name = u.admin_profile.full_name
         return cls(
             id=record.id,
             user_id=record.user_id,
@@ -765,6 +779,10 @@ class VerificationRecordResponse(BaseModel):
             verified_at=record.verified_at,
             created_at=record.created_at,
             metadata=record.metadata_dict if hasattr(record, "metadata_dict") else None,
+            user_email=u.email if u else None,
+            user_name=u_name,
+            user_role=u.role.value if (u and hasattr(u, "role") and hasattr(u.role, "value")) else None,
+            user_phone=u.phone if u else None,
         )
 
 
