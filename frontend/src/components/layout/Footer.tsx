@@ -1,6 +1,7 @@
 // KaamSetu — Footer
 import { Link } from 'react-router-dom'
-import { Briefcase, MapPin, Mail, Phone } from 'lucide-react'
+import { MapPin, Mail, Phone } from 'lucide-react'
+import BrandLogo from '../common/BrandLogo'
 
 export default function Footer() {
   const currentYear = new Date().getFullYear()
@@ -12,12 +13,9 @@ export default function Footer() {
 
           {/* Brand */}
           <div className="lg:col-span-1">
-            <Link to="/" className="flex items-center gap-2 mb-4">
-              <div className="w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center">
-                <Briefcase className="w-4 h-4 text-white" />
-              </div>
-              <span className="font-display font-bold text-xl">KaamSetu</span>
-            </Link>
+            <div className="mb-4">
+              <BrandLogo variant="dark" size="lg" />
+            </div>
             <p className="text-gray-400 text-sm leading-relaxed mb-4">
               Connecting workers with opportunities across India. Find local talent or discover work based on your skills and availability.
             </p>

@@ -9,6 +9,7 @@ import { useTranslation } from 'react-i18next'
 import { useAuth } from '../contexts/AuthContext'
 import LanguageSelector from '../components/layout/LanguageSelector'
 import NotificationDropdown from '../components/layout/NotificationDropdown'
+import BrandLogo from '../components/common/BrandLogo'
 import { useQuery } from '@tanstack/react-query'
 import { chatApi } from '../api/services'
 
@@ -52,14 +53,7 @@ export default function WorkerLayout() {
         {/* Logo */}
         <div className="px-6 py-5 border-b border-[#E7ECF3] flex items-center justify-between">
           <div>
-            <Link to="/" className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-[#2455E8] rounded-lg flex items-center justify-center">
-                <Briefcase className="w-4 h-4 text-white" />
-              </div>
-              <span className="font-bold text-[#182849] text-xl">
-                Kaam<span className="text-[#2455E8]">Setu</span>
-              </span>
-            </Link>
+            <BrandLogo variant="light" size="md" />
             <div className="mt-1 text-[11px] text-gray-500 font-medium uppercase tracking-wider">{t('nav.workerPortal', 'Worker Portal')}</div>
           </div>
           <button className="lg:hidden p-1 text-gray-500 hover:bg-gray-100 rounded-md" onClick={() => setSidebarOpen(false)}>

@@ -1,11 +1,12 @@
 // KaamSetu - Navbar
 import { useState, useEffect } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
-import { Menu, X, Briefcase, LogOut, LayoutDashboard } from 'lucide-react'
+import { Menu, X, LogOut, LayoutDashboard } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import { useTranslation } from 'react-i18next'
 import LanguageSelector from './LanguageSelector'
 import NotificationDropdown from './NotificationDropdown'
+import BrandLogo from '../common/BrandLogo'
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
@@ -51,14 +52,7 @@ export default function Navbar() {
         <div className="flex items-center justify-between h-16">
 
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-2 group">
-            <div className="w-8 h-8 gradient-primary rounded-lg flex items-center justify-center shadow-sm group-hover:shadow-md transition-shadow">
-              <Briefcase className="w-4 h-4 text-white" />
-            </div>
-            <span className={`font-display font-bold text-lg transition-colors duration-300 ${isTransparent ? 'text-white' : 'text-dark'}`}>
-              Kaam<span className="text-primary-600">Setu</span>
-            </span>
-          </Link>
+          <BrandLogo variant={isTransparent ? 'dark' : 'light'} size="md" />
 
           {/* Desktop Nav */}
           <div className="hidden md:flex items-center gap-6">
