@@ -60,19 +60,20 @@ export const MobileWorkerProfilePage: React.FC = () => {
   });
 
   const workerProfile = profile as WorkerProfile | null | undefined;
+  const hasProfile = Boolean(workerProfile && workerProfile.id);
 
   // Verification status query
   const { data: statusSummary } = useQuery({
     queryKey: ['worker-verification-status'],
     queryFn: verificationsApi.getMyStatus,
-    enabled: !!user,
+    enabled: !!user && hasProfile,
   });
 
   // Verification history query
   const { data: history = [] } = useQuery({
     queryKey: ['worker-verification-history'],
     queryFn: verificationsApi.getMyHistory,
-    enabled: !!user,
+    enabled: !!user && hasProfile,
   });
 
   const isVerified = statusSummary?.is_identity_verified || (workerProfile as any)?.is_verified || false;
@@ -101,7 +102,7 @@ export const MobileWorkerProfilePage: React.FC = () => {
   const { data: availableSkills = [] } = useQuery({
     queryKey: ['skills-list', skillSearch],
     queryFn: () => skillsApi.list(skillSearch.trim() || undefined),
-    enabled: skillModalOpen,
+    enabled: skillModalOpen && hasProfile,
   });
 
   // Identity verification form state
@@ -115,6 +116,12 @@ export const MobileWorkerProfilePage: React.FC = () => {
   const handlePhotoSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
+    if (!hasProfile) {
+      toast.error('Please create your profile first before uploading a photo');
+      handleOpenEdit();
+      return;
+    }
 
     if (!file.type.startsWith('image/')) {
       toast.error('Please select an image file (JPEG, PNG, WebP)');
@@ -139,7 +146,7 @@ export const MobileWorkerProfilePage: React.FC = () => {
     }
   };
 
-  // ── Open Edit Modal ────────────────────────────────────────────────────────
+  // ── Open Edit / Create Modal ──────────────────────────────────────────────
   const handleOpenEdit = () => {
     setFormError('');
     if (workerProfile) {
@@ -148,10 +155,20 @@ export const MobileWorkerProfilePage: React.FC = () => {
       setState(workerProfile.state || '');
       setExpectedSalary(workerProfile.expected_salary ? String(workerProfile.expected_salary) : '');
       setSalaryType((workerProfile.salary_type as SalaryType) || 'DAILY');
-      setYearsExperience(workerProfile.years_experience !== null ? String(workerProfile.years_experience) : '');
+      setYearsExperience(workerProfile.years_experience !== null && workerProfile.years_experience !== undefined ? String(workerProfile.years_experience) : '');
       setAvailabilityStatus(workerProfile.availability_status || 'AVAILABLE');
       setPreferredWorkTypes(workerProfile.preferred_work_types || []);
       setBio(workerProfile.bio || '');
+    } else {
+      setFullName(user?.email ? user.email.split('@')[0] : '');
+      setCity('');
+      setState('');
+      setExpectedSalary('');
+      setSalaryType('DAILY');
+      setYearsExperience('');
+      setAvailabilityStatus('AVAILABLE');
+      setPreferredWorkTypes([]);
+      setBio('');
     }
     setEditModalOpen(true);
   };
@@ -162,7 +179,7 @@ export const MobileWorkerProfilePage: React.FC = () => {
     );
   };
 
-  // ── Save Profile ──────────────────────────────────────────────────────────
+  // ── Save / Create Profile ────────────────────────────────────────────────
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
     setFormError('');
@@ -172,25 +189,66 @@ export const MobileWorkerProfilePage: React.FC = () => {
       toast.error(msg);
       return;
     }
+    if (fullName.trim().length < 2) {
+      const msg = 'Full Name must be at least 2 characters';
+      setFormError(msg);
+      toast.error(msg);
+      return;
+    }
+
+    const expNum = yearsExperience.trim() !== '' ? Number(yearsExperience.trim()) : null;
+    if (expNum !== null) {
+      if (isNaN(expNum) || expNum < 0 || expNum > 60) {
+        const msg = 'Years of experience must be a realistic number between 0 and 60';
+        setFormError(msg);
+        toast.error(msg);
+        return;
+      }
+    }
+
+    const salNum = expectedSalary.trim() !== '' ? Number(expectedSalary.trim()) : null;
+    if (salNum !== null) {
+      if (isNaN(salNum) || salNum <= 0 || salNum > 10000000) {
+        const msg = 'Please enter a valid wage amount';
+        setFormError(msg);
+        toast.error(msg);
+        return;
+      }
+    }
+
+    if (bio.trim().length > 1000) {
+      const msg = 'Bio cannot exceed 1000 characters';
+      setFormError(msg);
+      toast.error(msg);
+      return;
+    }
+
     setIsUpdating(true);
     try {
-      const payload: Partial<WorkerProfilePayload> = {
+      const payload: WorkerProfilePayload = {
         full_name: fullName.trim(),
-        city: city.trim(),
-        state: state.trim(),
-        expected_salary: expectedSalary ? Number(expectedSalary) : undefined,
+        city: city.trim() || undefined,
+        state: state.trim() || undefined,
+        expected_salary: salNum !== null ? salNum : undefined,
         salary_type: salaryType,
-        years_experience: yearsExperience ? Number(yearsExperience) : 0,
+        years_experience: expNum !== null ? expNum : 0,
         availability_status: availabilityStatus,
         preferred_work_types: preferredWorkTypes,
-        bio: bio.trim(),
+        bio: bio.trim() || undefined,
       };
-      await workerApi.updateProfile(payload);
+
+      if (!hasProfile) {
+        await workerApi.createProfile(payload);
+        toast.success('Worker profile created successfully!');
+      } else {
+        await workerApi.updateProfile(payload);
+        toast.success('Profile updated successfully!');
+      }
+
       await queryClient.invalidateQueries({ queryKey: ['worker-profile', user?.id] });
-      toast.success('Profile updated successfully!');
       setEditModalOpen(false);
     } catch (err) {
-      const msg = extractErrorMessage(err) || 'Failed to update profile';
+      const msg = extractErrorMessage(err) || (hasProfile ? 'Failed to update profile' : 'Failed to create profile');
       setFormError(msg);
       toast.error(msg);
     } finally {
@@ -279,6 +337,32 @@ export const MobileWorkerProfilePage: React.FC = () => {
         accept="image/*"
         className="hidden"
       />
+
+      {/* 0. Welcome Setup Card when No Profile exists yet */}
+      {!hasProfile && !isProfileLoading && (
+        <div className="rounded-3xl bg-gradient-to-br from-indigo-950 via-indigo-900 to-[#1F2A6B] p-5 text-white shadow-md">
+          <div className="flex items-center gap-3 mb-2.5">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#FF9933] text-white shadow-sm flex-shrink-0">
+              <User className="h-6 w-6" />
+            </div>
+            <div>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-amber-300">New Worker Setup</span>
+              <h2 className="text-lg font-extrabold leading-tight">Create Worker Profile</h2>
+            </div>
+          </div>
+          <p className="text-xs text-indigo-100 leading-relaxed mb-4">
+            Welcome to KaamSetu! Complete your worker profile with your trade, location, and daily wage expectations to start receiving shift bookings and applying for jobs.
+          </p>
+          <button
+            type="button"
+            onClick={handleOpenEdit}
+            className="w-full min-h-[48px] rounded-2xl bg-[#FF9933] px-4 py-3 text-xs font-extrabold text-white shadow-md active:scale-[0.98] transition-transform flex items-center justify-center gap-2"
+          >
+            <Plus className="h-4 w-4" />
+            <span>Create Worker Profile Now</span>
+          </button>
+        </div>
+      )}
 
       {/* 1. Header Card with Avatar & Verification */}
       <div className="rounded-3xl bg-white p-5 border border-slate-100 shadow-sm flex flex-col items-center text-center relative overflow-hidden">
@@ -587,7 +671,7 @@ export const MobileWorkerProfilePage: React.FC = () => {
                 <span>Cancel</span>
               </button>
               <h1 className="text-base font-extrabold text-slate-900 tracking-tight">
-                Edit Worker Profile
+                {hasProfile ? 'Edit Worker Profile' : 'Create Worker Profile'}
               </h1>
               <button
                 type="button"
@@ -595,7 +679,7 @@ export const MobileWorkerProfilePage: React.FC = () => {
                 disabled={isUpdating}
                 className="text-xs font-extrabold text-indigo-900 px-3 py-1.5 hover:underline disabled:opacity-50 active:scale-95"
               >
-                {isUpdating ? 'Saving...' : 'Save'}
+                {isUpdating ? 'Saving...' : (hasProfile ? 'Save' : 'Create')}
               </button>
             </div>
           </div>
@@ -756,10 +840,10 @@ export const MobileWorkerProfilePage: React.FC = () => {
                 {isUpdating ? (
                   <>
                     <span className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    <span>Saving Changes...</span>
+                    <span>{hasProfile ? 'Saving Changes...' : 'Creating Profile...'}</span>
                   </>
                 ) : (
-                  <span>Save Changes</span>
+                  <span>{hasProfile ? 'Save Changes' : 'Create Worker Profile'}</span>
                 )}
               </button>
             </div>

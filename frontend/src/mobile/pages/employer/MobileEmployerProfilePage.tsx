@@ -5,7 +5,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { 
   Building2, MapPin, Phone, Mail, Globe, ShieldCheck, Shield, 
   Briefcase, Heart, Calendar, LogOut, ChevronRight, Edit3, X, 
-  Camera, UploadCloud, AlertCircle, Clock, CheckCircle2, ArrowLeft 
+  Camera, UploadCloud, AlertCircle, Clock, CheckCircle2, ArrowLeft, Plus 
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { employerApi, verificationsApi, uploadApi } from '../../../api/services';
@@ -43,19 +43,20 @@ export const MobileEmployerProfilePage: React.FC = () => {
   });
 
   const employerProfile = profile as EmployerProfile | null | undefined;
+  const hasProfile = Boolean(employerProfile && employerProfile.id);
 
   // Verification status query
   const { data: statusSummary } = useQuery({
     queryKey: ['employer-verification-status'],
     queryFn: verificationsApi.getMyStatus,
-    enabled: !!user,
+    enabled: !!user && hasProfile,
   });
 
   // Verification history query
   const { data: history = [] } = useQuery({
     queryKey: ['employer-verification-history'],
     queryFn: verificationsApi.getMyHistory,
-    enabled: !!user,
+    enabled: !!user && hasProfile,
   });
 
   const isVerified = statusSummary?.company_status === 'VERIFIED' || employerProfile?.is_verified || false;
@@ -87,6 +88,12 @@ export const MobileEmployerProfilePage: React.FC = () => {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    if (!hasProfile) {
+      toast.error('Please create your company profile first before uploading a logo');
+      handleOpenEdit();
+      return;
+    }
+
     if (!file.type.startsWith('image/')) {
       toast.error('Please select an image file (JPEG, PNG, WebP)');
       return;
@@ -110,22 +117,30 @@ export const MobileEmployerProfilePage: React.FC = () => {
     }
   };
 
-  // ── Open Edit Modal ────────────────────────────────────────────────────────
+  // ── Open Edit / Create Modal ──────────────────────────────────────────────
   const handleOpenEdit = () => {
     setFormError('');
     if (employerProfile) {
       setOrgName(employerProfile.organization_name || '');
       setFullName(employerProfile.full_name || '');
-      setOrgType(employerProfile.organization_type || '');
+      setOrgType(employerProfile.organization_type || 'Private Limited');
       setCity(employerProfile.city || '');
       setState(employerProfile.state || '');
       setWebsite(employerProfile.website || '');
       setBio(employerProfile.bio || '');
+    } else {
+      setOrgName('');
+      setFullName(user?.email ? user.email.split('@')[0] : '');
+      setOrgType('Private Limited');
+      setCity('');
+      setState('');
+      setWebsite('');
+      setBio('');
     }
     setEditModalOpen(true);
   };
 
-  // ── Save Profile ──────────────────────────────────────────────────────────
+  // ── Save / Create Profile ────────────────────────────────────────────────
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
     setFormError('');
@@ -135,22 +150,38 @@ export const MobileEmployerProfilePage: React.FC = () => {
       toast.error(msg);
       return;
     }
+
+    if (bio.trim().length > 1000) {
+      const msg = 'Company description cannot exceed 1000 characters';
+      setFormError(msg);
+      toast.error(msg);
+      return;
+    }
+
     setIsUpdating(true);
     try {
-      await employerApi.updateProfile({
-        organization_name: orgName.trim(),
+      const payload: Partial<EmployerProfile> = {
+        organization_name: orgName.trim() || fullName.trim(),
         full_name: fullName.trim() || orgName.trim(),
-        organization_type: orgType.trim(),
+        organization_type: orgType.trim() || 'Private Limited',
         city: city.trim(),
         state: state.trim(),
         website: website.trim(),
         bio: bio.trim(),
-      });
+      };
+
+      if (!hasProfile) {
+        await employerApi.createProfile(payload);
+        toast.success('Company profile created successfully!');
+      } else {
+        await employerApi.updateProfile(payload);
+        toast.success('Company profile updated successfully!');
+      }
+
       await queryClient.invalidateQueries({ queryKey: ['employer-profile', user?.id] });
-      toast.success('Company profile updated successfully!');
       setEditModalOpen(false);
     } catch (err) {
-      const msg = extractErrorMessage(err) || 'Failed to update company profile';
+      const msg = extractErrorMessage(err) || (hasProfile ? 'Failed to update company profile' : 'Failed to create company profile');
       setFormError(msg);
       toast.error(msg);
     } finally {
@@ -212,6 +243,32 @@ export const MobileEmployerProfilePage: React.FC = () => {
         accept="image/*"
         className="hidden"
       />
+
+      {/* 0. Welcome Setup Card when No Profile exists yet */}
+      {!hasProfile && !isProfileLoading && (
+        <div className="rounded-3xl bg-gradient-to-br from-indigo-950 via-indigo-900 to-[#1F2A6B] p-5 text-white shadow-md">
+          <div className="flex items-center gap-3 mb-2.5">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#FF9933] text-white shadow-sm flex-shrink-0">
+              <Building2 className="h-6 w-6" />
+            </div>
+            <div>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-amber-300">New Employer Setup</span>
+              <h2 className="text-lg font-extrabold leading-tight">Create Company Profile</h2>
+            </div>
+          </div>
+          <p className="text-xs text-indigo-100 leading-relaxed mb-4">
+            You are registered! Complete your company profile to start posting job listings, searching skilled candidates, and booking daily shifts.
+          </p>
+          <button
+            type="button"
+            onClick={handleOpenEdit}
+            className="w-full min-h-[48px] rounded-2xl bg-[#FF9933] px-4 py-3 text-xs font-extrabold text-white shadow-md active:scale-[0.98] transition-transform flex items-center justify-center gap-2"
+          >
+            <Plus className="h-4 w-4" />
+            <span>Create Employer Profile Now</span>
+          </button>
+        </div>
+      )}
 
       {/* 1. Header Card with Company Info */}
       <div className="rounded-3xl bg-white p-5 border border-slate-100 shadow-sm flex flex-col items-center text-center relative overflow-hidden">
@@ -417,7 +474,7 @@ export const MobileEmployerProfilePage: React.FC = () => {
                 <span>Cancel</span>
               </button>
               <h1 className="text-base font-extrabold text-slate-900 tracking-tight">
-                Edit Company Profile
+                {hasProfile ? 'Edit Company Profile' : 'Create Company Profile'}
               </h1>
               <button
                 type="button"
@@ -425,7 +482,7 @@ export const MobileEmployerProfilePage: React.FC = () => {
                 disabled={isUpdating}
                 className="text-xs font-extrabold text-indigo-900 px-3 py-1.5 hover:underline disabled:opacity-50 active:scale-95"
               >
-                {isUpdating ? 'Saving...' : 'Save'}
+                {isUpdating ? 'Saving...' : (hasProfile ? 'Save' : 'Create')}
               </button>
             </div>
           </div>
@@ -546,10 +603,10 @@ export const MobileEmployerProfilePage: React.FC = () => {
                 {isUpdating ? (
                   <>
                     <span className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    <span>Saving Company...</span>
+                    <span>{hasProfile ? 'Saving Company...' : 'Creating Profile...'}</span>
                   </>
                 ) : (
-                  <span>Save Changes</span>
+                  <span>{hasProfile ? 'Save Changes' : 'Create Company Profile'}</span>
                 )}
               </button>
             </div>

@@ -1,7 +1,7 @@
 name: KaamSetu Android APK
 on:
   push:
-    branches: [android-native-ui, android-hardened, android-profile-fixes]
+    branches: [android-native-ui, android-hardened, android-profile-fixes, android-comprehensive-overhaul]
   workflow_dispatch:
 permissions:
   contents: read
