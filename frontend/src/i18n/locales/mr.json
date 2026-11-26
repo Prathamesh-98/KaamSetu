@@ -203,7 +203,10 @@
     "autoRedirectIn": "{{seconds}} सेकंदात लॉगिनकडे पुनर्निर्देशित करत आहे...",
     "signInNow": "नवीन पासवर्डसह साइन इन करा",
     "needSupportTitle": "मॅन्युअल रिकव्हरीसाठी मदत हवी आहे?",
-    "needSupportDesc": "ईमेल आणि फोन दोन्हीचा प्रवेश गमावला आहे का? आमची मदत कार्यसंघ मदत करू शकते."
+    "needSupportDesc": "ईमेल आणि फोन दोन्हीचा प्रवेश गमावला आहे का? आमची मदत कार्यसंघ मदत करू शकते.",
+    "loginFailedTitle": "साइन इन करता आले नाही",
+    "loginGuidance": "तुमचे क्रेडेंशियल्स तपासा किंवा तुम्ही कामसेतूवर नवीन असल्यास नोंदणी करा.",
+    "registerNow": "कामसेतूवर नोंदणी करा"
   },
   "worker": {
     "dashboard": "कामगार डॅशबोर्ड",
@@ -292,7 +295,9 @@
     "statusBusy": "सध्या व्यस्त",
     "statusNotAvailable": "उपलब्ध नाही",
     "welcomeSubtitle": "कामसेतूवर आपली पुढील संधी शोधा.",
-    "workDetails": "काम आणि अनुभव तपशील"
+    "workDetails": "काम आणि अनुभव तपशील",
+    "uploadPhoto": "फोटो बदला",
+    "verifyIdentity": "ओळख पडताळणी करा"
   },
   "employer": {
     "dashboard": "नियोक्ता डॅशबोर्ड",
@@ -357,7 +362,9 @@
     "viewAction": "पहा",
     "viewsCol": "दृश्ये",
     "website": "वेबसाइट",
-    "yrsExp": "वर्षांचा अनुभव"
+    "yrsExp": "वर्षांचा अनुभव",
+    "uploadLogo": "लोगो बदला",
+    "verifyBusiness": "व्यवसाय पडताळणी करा"
   },
   "jobs": {
     "expectedSalary": "अपेक्षित वेतन",
@@ -839,8 +846,9 @@
     "rejectionReasonMandatory": "नाकारण्याचे अनिवार्य कारण आवश्यक आहे.",
     "revocationReasonMandatory": "रद्द करण्याचे अनिवार्य कारण आवश्यक आहे.",
     "verified": "पडताळलेले",
-    "verifiedBadge": "ओळख पडताळलेली",
-    "otpSentInstructions": "तुमच्या मोबाईलवर पाठवलेला 6-अंकी पडताळणी कोड प्रविष्ट करा."
+    "verifiedBadge": "पडताळणी पूर्ण",
+    "otpSentInstructions": "तुमच्या मोबाईलवर पाठवलेला 6-अंकी पडताळणी कोड प्रविष्ट करा.",
+    "pendingReview": "पडताळणी पुनरावलोकन प्रलंबित"
   },
   "admin": {
     "verificationQueue": "पडताळणी पुनरावलोकन कतार",
@@ -1036,7 +1044,10 @@
     "closeModal": "बंद करा",
     "verificationsTitle": "विश्वास आणि पडताळणी पुनरावलोकन",
     "verificationsSubtitle": "प्रलंबित ओळखपत्रे, कौशल्य प्रमाणपत्रे आणि कंपनी कागदपत्रांचे पुनरावलोकन करा.",
-    "passwordComplexityNote": "पासवर्ड किमान 8 वर्णांचा असावा, ज्यामध्ये 1 मोठे अक्षर आणि 1 अंक असणे आवश्यक आहे."
+    "passwordComplexityNote": "पासवर्ड किमान 8 वर्णांचा असावा, ज्यामध्ये 1 मोठे अक्षर आणि 1 अंक असणे आवश्यक आहे.",
+    "statusCompleted": "पूर्ण झाले",
+    "pendingVerifications": "प्रलंबित पडताळणी",
+    "profileIncomplete": "प्रोफाइल अपूर्ण आहे"
   },
   "payments": {
     "status": {

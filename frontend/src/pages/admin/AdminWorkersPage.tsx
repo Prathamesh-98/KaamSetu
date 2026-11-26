@@ -125,6 +125,11 @@ export default function AdminWorkersPage() {
                       <div className="font-semibold text-dark">{w.full_name}</div>
                       {w.phone && <div className="text-xs text-gray-500 mt-0.5">{w.phone}</div>}
                       {w.email && <div className="text-xs text-gray-400 font-mono mt-0.5">{w.email}</div>}
+                      {!w.bio && !w.city && (
+                        <span className="inline-block mt-1 text-[10px] px-1.5 py-0.5 rounded bg-amber-50 text-amber-700 border border-amber-200 font-medium">
+                          {t('admin.profileIncomplete', 'Profile Incomplete')}
+                        </span>
+                      )}
                     </td>
 
                     {/* Skills list */}

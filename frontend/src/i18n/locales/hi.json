@@ -203,7 +203,10 @@
     "autoRedirectIn": "{{seconds}} सेकंड में लॉगिन पर पुनर्निर्देशित किया जा रहा है...",
     "signInNow": "नए पासवर्ड के साथ साइन इन करें",
     "needSupportTitle": "क्या मैनुअल रिकवरी में मदद चाहिए?",
-    "needSupportDesc": "क्या ईमेल और फोन दोनों तक पहुंच खो गई है? हमारी सहायता टीम मदद कर सकती है।"
+    "needSupportDesc": "क्या ईमेल और फोन दोनों तक पहुंच खो गई है? हमारी सहायता टीम मदद कर सकती है।",
+    "loginFailedTitle": "साइन इन करने में असमर्थ",
+    "loginGuidance": "अपने क्रेडेंशियल्स जांचें, या यदि आप कामसेतु पर नए हैं तो पंजीकरण करें।",
+    "registerNow": "कामसेतु पर पंजीकरण करें"
   },
   "worker": {
     "dashboard": "कामगार डैशबोर्ड",
@@ -292,7 +295,9 @@
     "statusBusy": "वर्तमान में व्यस्त",
     "statusNotAvailable": "उपलब्ध नहीं",
     "welcomeSubtitle": "कामसेतु पर अपना अगला अवसर खोजें।",
-    "workDetails": "कार्य एवं अनुभव विवरण"
+    "workDetails": "कार्य एवं अनुभव विवरण",
+    "uploadPhoto": "फ़ोटो बदलें",
+    "verifyIdentity": "पहचान सत्यापित करें"
   },
   "employer": {
     "dashboard": "नियोक्ता डैशबोर्ड",
@@ -357,7 +362,9 @@
     "viewAction": "देखें",
     "viewsCol": "देखे गए",
     "website": "वेबसाइट",
-    "yrsExp": "वर्षों का अनुभव"
+    "yrsExp": "वर्षों का अनुभव",
+    "uploadLogo": "लोगो बदलें",
+    "verifyBusiness": "व्यवसाय सत्यापित करें"
   },
   "jobs": {
     "expectedSalary": "अपेक्षित वेतन",
@@ -839,8 +846,9 @@
     "rejectionReasonMandatory": "अस्वीकृति का एक अनिवार्य कारण आवश्यक है।",
     "revocationReasonMandatory": "रद्द करने का एक अनिवार्य कारण आवश्यक है।",
     "verified": "सत्यापित",
-    "verifiedBadge": "पहचान सत्यापित",
-    "otpSentInstructions": "अपने मोबाइल पर भेजा गया 6 अंकों का सत्यापन कोड दर्ज करें।"
+    "verifiedBadge": "सत्यापित",
+    "otpSentInstructions": "अपने मोबाइल पर भेजा गया 6 अंकों का सत्यापन कोड दर्ज करें।",
+    "pendingReview": "सत्यापन समीक्षा लंबित है"
   },
   "admin": {
     "verificationQueue": "सत्यापन समीक्षा कतार",
@@ -1036,7 +1044,10 @@
     "closeModal": "बंद करें",
     "verificationsTitle": "विश्वास एवं सत्यापन समीक्षा",
     "verificationsSubtitle": "लंबित पहचान पत्र, कौशल प्रमाणपत्र और कंपनी दस्तावेजों की समीक्षा करें।",
-    "passwordComplexityNote": "पासवर्ड कम से कम 8 अक्षरों का होना चाहिए, जिसमें 1 बड़ा अक्षर और 1 अंक होना चाहिए।"
+    "passwordComplexityNote": "पासवर्ड कम से कम 8 अक्षरों का होना चाहिए, जिसमें 1 बड़ा अक्षर और 1 अंक होना चाहिए।",
+    "statusCompleted": "पूर्ण हुआ",
+    "pendingVerifications": "लंबित सत्यापन",
+    "profileIncomplete": "प्रोफ़ाइल अधूरी है"
   },
   "payments": {
     "status": {

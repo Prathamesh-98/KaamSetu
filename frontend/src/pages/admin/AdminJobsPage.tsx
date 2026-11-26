@@ -80,6 +80,8 @@ export default function AdminJobsPage() {
         return <span className="badge bg-emerald-50 text-emerald-700 border border-emerald-200">Active</span>;
       case 'CLOSED':
         return <span className="badge bg-gray-100 text-gray-700 border border-gray-200">Closed</span>;
+      case 'COMPLETED':
+        return <span className="badge bg-teal-50 text-teal-700 border border-teal-200">Completed</span>;
       case 'CANCELLED':
         return <span className="badge bg-red-50 text-red-700 border border-red-200">Cancelled</span>;
       case 'DRAFT':
@@ -168,6 +170,7 @@ export default function AdminJobsPage() {
               <option value="ALL">{t('admin.allStatuses', 'All Statuses')}</option>
               <option value="ACTIVE">{t('admin.statusActive', 'Active (Open)')}</option>
               <option value="CLOSED">{t('admin.statusClosed', 'Closed')}</option>
+              <option value="COMPLETED">{t('admin.statusCompleted', 'Completed')}</option>
               <option value="CANCELLED">{t('admin.statusCancelled', 'Cancelled')}</option>
               <option value="DRAFT">{t('admin.statusDraft', 'Draft')}</option>
             </select>

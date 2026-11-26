@@ -76,6 +76,14 @@ export default function AdminDashboard() {
       link: '/admin/payments',
       sublabel: 'Offline settlement ledger'
     },
+    {
+      label: 'Pending Verifications',
+      value: displayStats.pending_verifications ?? 0,
+      icon: CheckCircle,
+      color: 'text-amber-600 bg-amber-50 group-hover:bg-amber-100',
+      link: '/admin/verifications',
+      sublabel: 'Trust & ID reviews'
+    },
   ]
 
   return (
