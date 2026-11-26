@@ -45,6 +45,9 @@ jobs:
         run: |
           npx cap add android
           npx cap sync android
+      - name: Apply KaamSetu branding and launcher icons
+        run: |
+          cp -rf resources/android/res/* android/app/src/main/res/
       - name: Harden Android manifest
         run: |
           python - <<'PY'
