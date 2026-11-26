@@ -85,7 +85,7 @@ export default function AdminLayout() {
       <aside
         className={`fixed inset-y-0 left-0 z-50 w-64 bg-dark text-white flex flex-col transition-transform duration-300 ${
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
-        } lg:translate-x-0 lg:static lg:shadow-none`}
+        } lg:translate-x-0 lg:sticky lg:top-0 lg:h-dvh lg:self-start lg:shrink-0 lg:shadow-none`}
         aria-label="Admin navigation"
       >
         <div className="p-6 border-b border-white/10 flex items-center justify-between">
@@ -108,7 +108,7 @@ export default function AdminLayout() {
         </div>
 
         {/* Navigation list */}
-        <nav className="p-4 space-y-1 flex-1 overflow-y-auto">
+        <nav className="p-4 space-y-1 flex-1 min-h-0 overflow-y-auto">
           {navItems.map((item) => {
             const isActive = item.exact
               ? location.pathname === item.path
