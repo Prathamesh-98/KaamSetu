@@ -16,7 +16,7 @@ jobs:
           POSTGRES_DB: kaamsetu_test
         ports:
           - 5432:5432
-        options: --health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 10
+        options: --health-cmd "pg_isready -U postgres -d kaamsetu_test" --health-interval 5s --health-timeout 5s --health-retries 10
     env:
       DATABASE_URL: postgresql+asyncpg://postgres:ci-only-password@127.0.0.1:5432/kaamsetu_test
       TEST_DATABASE_URL: postgresql+asyncpg://postgres:ci-only-password@127.0.0.1:5432/kaamsetu_test
@@ -48,4 +48,4 @@ jobs:
           psql -h 127.0.0.1 -U postgres -d kaamsetu_test -v ON_ERROR_STOP=1 -f ../security-review/database-up.sql
           psql -h 127.0.0.1 -U postgres -d kaamsetu_test -v ON_ERROR_STOP=1 -c "DO \$\$ BEGIN IF EXISTS (SELECT 1 FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace WHERE n.nspname='public' AND c.relkind='r' AND (NOT c.relrowsecurity OR has_table_privilege('anon',c.oid,'SELECT') OR has_table_privilege('authenticated',c.oid,'SELECT'))) THEN RAISE EXCEPTION 'Protection incomplete'; END IF; END \$\$;"
       - name: Regression suite
-        run: python -m pytest tests -q --maxfail=10
+        run: python -m pytest tests -q
