@@ -5,7 +5,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { 
   Building2, MapPin, Phone, Mail, Globe, ShieldCheck, Shield, 
   Briefcase, Heart, Calendar, LogOut, ChevronRight, Edit3, X, 
-  Camera, UploadCloud, AlertCircle, Clock, CheckCircle2 
+  Camera, UploadCloud, AlertCircle, Clock, CheckCircle2, ArrowLeft 
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { employerApi, verificationsApi, uploadApi } from '../../../api/services';
@@ -70,6 +70,7 @@ export const MobileEmployerProfilePage: React.FC = () => {
   const [state, setState] = useState('');
   const [website, setWebsite] = useState('');
   const [bio, setBio] = useState('');
+  const [formError, setFormError] = useState('');
   const [isUpdating, setIsUpdating] = useState(false);
 
   // Verification form states
@@ -111,6 +112,7 @@ export const MobileEmployerProfilePage: React.FC = () => {
 
   // ── Open Edit Modal ────────────────────────────────────────────────────────
   const handleOpenEdit = () => {
+    setFormError('');
     if (employerProfile) {
       setOrgName(employerProfile.organization_name || '');
       setFullName(employerProfile.full_name || '');
@@ -126,8 +128,11 @@ export const MobileEmployerProfilePage: React.FC = () => {
   // ── Save Profile ──────────────────────────────────────────────────────────
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
+    setFormError('');
     if (!orgName.trim() && !fullName.trim()) {
-      toast.error('Company or Contact Person name is required');
+      const msg = 'Company or Contact Person name is required';
+      setFormError(msg);
+      toast.error(msg);
       return;
     }
     setIsUpdating(true);
@@ -145,7 +150,9 @@ export const MobileEmployerProfilePage: React.FC = () => {
       toast.success('Company profile updated successfully!');
       setEditModalOpen(false);
     } catch (err) {
-      toast.error(extractErrorMessage(err) || 'Failed to update company profile');
+      const msg = extractErrorMessage(err) || 'Failed to update company profile';
+      setFormError(msg);
+      toast.error(msg);
     } finally {
       setIsUpdating(false);
     }
@@ -394,72 +401,98 @@ export const MobileEmployerProfilePage: React.FC = () => {
         </button>
       </div>
 
-      {/* ── Edit Employer Profile Modal ─────────────────────────────────────── */}
+      {/* ── Edit Employer Profile Full-Screen Mobile Editor (Covers bottom navigation completely) ── */}
       {editModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 p-0 sm:items-center sm:p-4 backdrop-blur-sm">
-          <div className="w-full max-w-md max-h-[88vh] flex flex-col rounded-t-3xl bg-white p-5 shadow-2xl sm:rounded-2xl overflow-y-auto">
-            <div className="flex items-center justify-between border-b pb-3 mb-4">
-              <h2 className="text-base font-extrabold text-slate-900">Edit Company Profile</h2>
+        <div className="mobile-fullscreen-editor">
+          {/* Top Sticky Header */}
+          <div className="mobile-header-safe bg-white border-b border-slate-200">
+            <div className="flex h-14 items-center justify-between px-3">
               <button
                 type="button"
                 onClick={() => setEditModalOpen(false)}
-                className="mobile-touch-target rounded-full p-1 text-slate-400 hover:bg-slate-100"
+                className="mobile-touch-target rounded-full p-2 text-slate-700 hover:bg-slate-100 flex items-center gap-1 font-semibold text-xs active:scale-95"
+                aria-label="Cancel"
               >
-                <X className="h-5 w-5" />
+                <ArrowLeft className="h-5 w-5" />
+                <span>Cancel</span>
+              </button>
+              <h1 className="text-base font-extrabold text-slate-900 tracking-tight">
+                Edit Company Profile
+              </h1>
+              <button
+                type="button"
+                onClick={handleSaveProfile}
+                disabled={isUpdating}
+                className="text-xs font-extrabold text-indigo-900 px-3 py-1.5 hover:underline disabled:opacity-50 active:scale-95"
+              >
+                {isUpdating ? 'Saving...' : 'Save'}
               </button>
             </div>
+          </div>
 
-            <form onSubmit={handleSaveProfile} className="space-y-3.5 text-xs">
+          {/* Separately Scrollable Form Body */}
+          <div className="flex-1 overflow-y-auto p-4 space-y-4 max-w-lg mx-auto w-full">
+            {formError && (
+              <div className="flex items-start gap-2.5 rounded-xl bg-red-50 p-3.5 text-xs text-red-700 border border-red-200 shadow-sm">
+                <AlertCircle className="h-4 w-4 flex-shrink-0 text-red-500 mt-0.5" />
+                <span className="font-medium leading-relaxed">{formError}</span>
+              </div>
+            )}
+
+            <form id="employer-profile-form" onSubmit={handleSaveProfile} className="space-y-4 text-xs">
               <div>
-                <label className="block font-semibold text-slate-700 mb-1">Company / Organization Name *</label>
+                <label className="block font-bold text-slate-700 mb-1.5">
+                  Company / Organization Name <span className="text-red-500">*</span>
+                </label>
                 <input
                   type="text"
                   value={orgName}
                   onChange={(e) => setOrgName(e.target.value)}
-                  className="w-full rounded-xl border border-slate-200 p-3 text-xs focus:border-indigo-900 focus:outline-none"
+                  placeholder="e.g. Acme Construction Services"
+                  className="w-full rounded-xl border border-slate-200 p-3 text-xs bg-white focus:border-indigo-900 focus:outline-none min-h-[44px]"
                   required
                 />
               </div>
 
               <div>
-                <label className="block font-semibold text-slate-700 mb-1">Contact Person Name</label>
+                <label className="block font-bold text-slate-700 mb-1.5">Contact Person Name</label>
                 <input
                   type="text"
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
                   placeholder="Primary contact name"
-                  className="w-full rounded-xl border border-slate-200 p-3 text-xs focus:border-indigo-900 focus:outline-none"
+                  className="w-full rounded-xl border border-slate-200 p-3 text-xs bg-white focus:border-indigo-900 focus:outline-none min-h-[44px]"
                 />
               </div>
 
               <div>
-                <label className="block font-semibold text-slate-700 mb-1">Industry / Organization Type</label>
+                <label className="block font-bold text-slate-700 mb-1.5">Industry / Organization Type</label>
                 <input
                   type="text"
                   value={orgType}
                   onChange={(e) => setOrgType(e.target.value)}
                   placeholder="e.g. Construction, Manufacturing, Logistics"
-                  className="w-full rounded-xl border border-slate-200 p-3 text-xs focus:border-indigo-900 focus:outline-none"
+                  className="w-full rounded-xl border border-slate-200 p-3 text-xs bg-white focus:border-indigo-900 focus:outline-none min-h-[44px]"
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-semibold text-slate-700 mb-1">City</label>
+                  <label className="block font-bold text-slate-700 mb-1.5">City</label>
                   <input
                     type="text"
                     value={city}
                     onChange={(e) => setCity(e.target.value)}
                     placeholder="e.g. Pune"
-                    className="w-full rounded-xl border border-slate-200 p-3 text-xs focus:border-indigo-900 focus:outline-none"
+                    className="w-full rounded-xl border border-slate-200 p-3 text-xs bg-white focus:border-indigo-900 focus:outline-none min-h-[44px]"
                   />
                 </div>
                 <div>
-                  <label className="block font-semibold text-slate-700 mb-1">State</label>
+                  <label className="block font-bold text-slate-700 mb-1.5">State</label>
                   <select
                     value={state}
                     onChange={(e) => setState(e.target.value)}
-                    className="w-full rounded-xl border border-slate-200 p-3 text-xs bg-white focus:border-indigo-900 focus:outline-none"
+                    className="w-full rounded-xl border border-slate-200 p-3 text-xs bg-white focus:border-indigo-900 focus:outline-none min-h-[44px]"
                   >
                     <option value="">Select State</option>
                     {INDIAN_STATES.map((s) => (
@@ -470,44 +503,65 @@ export const MobileEmployerProfilePage: React.FC = () => {
               </div>
 
               <div>
-                <label className="block font-semibold text-slate-700 mb-1">Website URL</label>
+                <label className="block font-bold text-slate-700 mb-1.5">Website URL</label>
                 <input
                   type="url"
                   value={website}
                   onChange={(e) => setWebsite(e.target.value)}
                   placeholder="https://company.com"
-                  className="w-full rounded-xl border border-slate-200 p-3 text-xs focus:border-indigo-900 focus:outline-none"
+                  className="w-full rounded-xl border border-slate-200 p-3 text-xs bg-white focus:border-indigo-900 focus:outline-none min-h-[44px]"
                 />
               </div>
 
               <div>
-                <label className="block font-semibold text-slate-700 mb-1">Company About / Bio</label>
+                <label className="block font-bold text-slate-700 mb-1.5">Company About / Bio</label>
                 <textarea
                   value={bio}
                   onChange={(e) => setBio(e.target.value)}
                   placeholder="Tell workers about your business, projects, and work opportunities..."
-                  rows={3}
-                  className="w-full rounded-xl border border-slate-200 p-3 text-xs focus:border-indigo-900 focus:outline-none"
+                  rows={4}
+                  className="w-full rounded-xl border border-slate-200 p-3 text-xs bg-white focus:border-indigo-900 focus:outline-none leading-relaxed"
                 />
               </div>
+            </form>
+          </div>
 
+          {/* Permanently Accessible Sticky Action Footer */}
+          <div className="mobile-sticky-footer">
+            <div className="flex items-center gap-3 max-w-lg mx-auto w-full">
+              <button
+                type="button"
+                onClick={() => setEditModalOpen(false)}
+                disabled={isUpdating}
+                className="mobile-touch-target flex-1 rounded-xl border border-slate-300 py-3 text-center text-xs font-bold text-slate-700 bg-white hover:bg-slate-50 active:scale-95 transition-transform min-h-[48px]"
+              >
+                Cancel
+              </button>
               <button
                 type="submit"
+                form="employer-profile-form"
                 disabled={isUpdating}
-                className="w-full rounded-xl bg-indigo-900 py-3 text-center text-xs font-bold text-white shadow-md active:scale-95 disabled:opacity-60 mt-3"
+                className="mobile-touch-target flex-[2] rounded-xl bg-indigo-900 py-3 text-center text-xs font-bold text-white shadow-md active:scale-95 transition-transform disabled:opacity-60 flex items-center justify-center gap-2 min-h-[48px]"
               >
-                {isUpdating ? 'Saving Company...' : 'Save Company Details'}
+                {isUpdating ? (
+                  <>
+                    <span className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    <span>Saving Company...</span>
+                  </>
+                ) : (
+                  <span>Save Changes</span>
+                )}
               </button>
-            </form>
+            </div>
           </div>
         </div>
       )}
 
       {/* ── Company Verification Modal ──────────────────────────────────────── */}
       {verificationModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 p-0 sm:items-center sm:p-4 backdrop-blur-sm">
-          <div className="w-full max-w-md max-h-[85vh] flex flex-col rounded-t-3xl bg-white p-5 shadow-2xl sm:rounded-2xl overflow-y-auto">
-            <div className="flex items-center justify-between border-b pb-3 mb-4">
+        <div className="mobile-modal-overlay">
+          <div className="mobile-modal-sheet max-h-[90vh] max-h-[90dvh]">
+            <div className="flex items-center justify-between border-b p-4">
               <div className="flex items-center gap-2">
                 <ShieldCheck className="h-5 w-5 text-indigo-900" />
                 <h2 className="text-base font-extrabold text-slate-900">Company Verification</h2>
@@ -516,108 +570,127 @@ export const MobileEmployerProfilePage: React.FC = () => {
                 type="button"
                 onClick={() => setVerificationModalOpen(false)}
                 className="mobile-touch-target rounded-full p-1 text-slate-400 hover:bg-slate-100"
+                aria-label="Close"
               >
                 <X className="h-5 w-5" />
               </button>
             </div>
 
-            {vError && (
-              <div className="mb-3 flex items-start gap-2 rounded-xl bg-red-50 p-3 text-xs text-red-700 border border-red-200">
-                <AlertCircle className="h-4 w-4 text-red-500 flex-shrink-0 mt-0.5" />
-                <span>{vError}</span>
-              </div>
-            )}
+            {/* Scrollable Form Body */}
+            <div className="flex-1 overflow-y-auto p-4 space-y-3.5 text-xs">
+              {vError && (
+                <div className="flex items-start gap-2 rounded-xl bg-red-50 p-3 text-xs text-red-700 border border-red-200 shadow-sm">
+                  <AlertCircle className="h-4 w-4 text-red-500 flex-shrink-0 mt-0.5" />
+                  <span>{vError}</span>
+                </div>
+              )}
 
-            <form onSubmit={handleSubmitCompany} className="space-y-3.5 text-xs">
-              <div>
-                <label className="block font-semibold text-slate-700 mb-1">Organization Name *</label>
-                <input
-                  type="text"
-                  value={vOrgName}
-                  onChange={(e) => setVOrgName(e.target.value)}
-                  className="w-full rounded-xl border border-slate-200 p-3 text-xs focus:border-indigo-900 focus:outline-none"
-                  required
-                />
-              </div>
+              <form id="employer-verification-form" onSubmit={handleSubmitCompany} className="space-y-3.5">
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1.5">Organization Name *</label>
+                  <input
+                    type="text"
+                    value={vOrgName}
+                    onChange={(e) => setVOrgName(e.target.value)}
+                    placeholder="Registered legal company name"
+                    className="w-full rounded-xl border border-slate-200 p-3 text-xs bg-white focus:border-indigo-900 focus:outline-none min-h-[44px]"
+                    required
+                  />
+                </div>
 
-              <div>
-                <label className="block font-semibold text-slate-700 mb-1">Organization Type</label>
-                <select
-                  value={vOrgType}
-                  onChange={(e) => setVOrgType(e.target.value)}
-                  className="w-full rounded-xl border border-slate-200 p-3 text-xs bg-white focus:border-indigo-900 focus:outline-none"
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1.5">Organization Type</label>
+                  <select
+                    value={vOrgType}
+                    onChange={(e) => setVOrgType(e.target.value)}
+                    className="w-full rounded-xl border border-slate-200 p-3 text-xs bg-white focus:border-indigo-900 focus:outline-none min-h-[44px]"
+                  >
+                    <option value="Private Limited">Private Limited</option>
+                    <option value="Proprietorship">Proprietorship</option>
+                    <option value="Partnership / LLP">Partnership / LLP</option>
+                    <option value="Public Limited">Public Limited</option>
+                    <option value="Contractor / Individual">Contractor / Individual</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1.5">GSTIN / Tax ID / CIN</label>
+                  <input
+                    type="text"
+                    value={taxId}
+                    onChange={(e) => setTaxId(e.target.value)}
+                    placeholder="e.g. 27AAAAA0000A1Z5"
+                    className="w-full rounded-xl border border-slate-200 p-3 text-xs bg-white focus:border-indigo-900 focus:outline-none min-h-[44px]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1.5">Registration Document (GST / CIN / MSME) *</label>
+                  <input
+                    type="file"
+                    ref={docFileInputRef}
+                    onChange={(e) => {
+                      const f = e.target.files?.[0];
+                      if (f) {
+                        if (!ALLOWED_MIME_TYPES.includes(f.type)) {
+                          setVError('Please select a PDF, JPEG, PNG, or WebP document');
+                          return;
+                        }
+                        if (f.size > MAX_FILE_SIZE_BYTES) {
+                          setVError('File size must be under 5MB');
+                          return;
+                        }
+                        setVError('');
+                        setDocFile(f);
+                      }
+                    }}
+                    accept="image/*,application/pdf"
+                    className="w-full rounded-xl border border-slate-200 p-2 text-xs bg-white focus:outline-none min-h-[44px]"
+                  />
+                  <p className="mt-1 text-[11px] text-slate-400">PDF, JPG, PNG or WebP (max 5MB)</p>
+                </div>
+
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1.5">Notes / Registration Details</label>
+                  <input
+                    type="text"
+                    value={vNotes}
+                    onChange={(e) => setVNotes(e.target.value)}
+                    placeholder="Additional registration or verification notes..."
+                    className="w-full rounded-xl border border-slate-200 p-3 text-xs focus:border-indigo-900 focus:outline-none min-h-[44px]"
+                  />
+                </div>
+              </form>
+            </div>
+
+            {/* Sticky Action Footer */}
+            <div className="mobile-sticky-footer">
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => setVerificationModalOpen(false)}
+                  disabled={isSubmittingCompany}
+                  className="mobile-touch-target flex-1 rounded-xl border border-slate-300 py-3 text-center text-xs font-bold text-slate-700 bg-white hover:bg-slate-50 active:scale-95 transition-transform min-h-[48px]"
                 >
-                  <option value="Private Limited">Private Limited</option>
-                  <option value="Proprietorship">Proprietorship</option>
-                  <option value="Partnership / LLP">Partnership / LLP</option>
-                  <option value="Public Limited">Public Limited</option>
-                  <option value="Contractor / Individual">Contractor / Individual</option>
-                </select>
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  form="employer-verification-form"
+                  disabled={isSubmittingCompany}
+                  className="mobile-touch-target flex-[2] rounded-xl bg-indigo-900 py-3 text-center text-xs font-bold text-white shadow-md active:scale-95 disabled:opacity-60 flex items-center justify-center gap-2 min-h-[48px]"
+                >
+                  {isSubmittingCompany ? (
+                    <>
+                      <span className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      <span>Uploading Documents...</span>
+                    </>
+                  ) : (
+                    <span>Submit Company Verification</span>
+                  )}
+                </button>
               </div>
-
-              <div>
-                <label className="block font-semibold text-slate-700 mb-1">GSTIN / Tax ID / CIN</label>
-                <input
-                  type="text"
-                  value={taxId}
-                  onChange={(e) => setTaxId(e.target.value)}
-                  placeholder="e.g. 27AAAAA0000A1Z5"
-                  className="w-full rounded-xl border border-slate-200 p-3 text-xs focus:border-indigo-900 focus:outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="block font-semibold text-slate-700 mb-1">Registration Document (GST / CIN / MSME) *</label>
-                <input
-                  type="file"
-                  ref={docFileInputRef}
-                  onChange={(e) => {
-                    const f = e.target.files?.[0];
-                    if (f) {
-                      if (!ALLOWED_MIME_TYPES.includes(f.type)) {
-                        setVError('Please select a PDF, JPEG, PNG, or WebP document');
-                        return;
-                      }
-                      if (f.size > MAX_FILE_SIZE_BYTES) {
-                        setVError('File size must be under 5MB');
-                        return;
-                      }
-                      setVError('');
-                      setDocFile(f);
-                    }
-                  }}
-                  accept="image/*,application/pdf"
-                  className="w-full rounded-xl border border-slate-200 p-2 text-xs bg-white focus:outline-none"
-                />
-                <p className="mt-1 text-[11px] text-slate-400">PDF, JPG, PNG or WebP (max 5MB)</p>
-              </div>
-
-              <div>
-                <label className="block font-semibold text-slate-700 mb-1">Notes / Registration Details</label>
-                <input
-                  type="text"
-                  value={vNotes}
-                  onChange={(e) => setVNotes(e.target.value)}
-                  placeholder="Additional registration or verification notes..."
-                  className="w-full rounded-xl border border-slate-200 p-3 text-xs focus:border-indigo-900 focus:outline-none"
-                />
-              </div>
-
-              <button
-                type="submit"
-                disabled={isSubmittingCompany}
-                className="w-full rounded-xl bg-indigo-900 py-3 text-center text-xs font-bold text-white shadow-md active:scale-95 disabled:opacity-60 mt-3 flex items-center justify-center gap-2"
-              >
-                {isSubmittingCompany ? (
-                  <>
-                    <span className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    <span>Uploading Documents...</span>
-                  </>
-                ) : (
-                  <span>Submit Company Verification</span>
-                )}
-              </button>
-            </form>
+            </div>
           </div>
         </div>
       )}

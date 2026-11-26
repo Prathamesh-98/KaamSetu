@@ -6,7 +6,7 @@ import {
   User, MapPin, Phone, Mail, Award, CheckCircle2, Star, 
   FileText, Bookmark, Calendar, Globe, LogOut, ChevronRight, 
   Edit3, ShieldCheck, Shield, Clock, Camera, AlertCircle, X, 
-  Plus, Search, RefreshCw, UploadCloud, Check 
+  Plus, Search, RefreshCw, UploadCloud, Check, ArrowLeft 
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { workerApi, verificationsApi, uploadApi, skillsApi } from '../../../api/services';
@@ -89,6 +89,7 @@ export const MobileWorkerProfilePage: React.FC = () => {
   const [availabilityStatus, setAvailabilityStatus] = useState<AvailabilityStatus>('AVAILABLE');
   const [preferredWorkTypes, setPreferredWorkTypes] = useState<string[]>([]);
   const [bio, setBio] = useState('');
+  const [formError, setFormError] = useState('');
   const [isUpdating, setIsUpdating] = useState(false);
 
   // Skill state
@@ -140,6 +141,7 @@ export const MobileWorkerProfilePage: React.FC = () => {
 
   // ── Open Edit Modal ────────────────────────────────────────────────────────
   const handleOpenEdit = () => {
+    setFormError('');
     if (workerProfile) {
       setFullName(workerProfile.full_name || '');
       setCity(workerProfile.city || '');
@@ -163,8 +165,11 @@ export const MobileWorkerProfilePage: React.FC = () => {
   // ── Save Profile ──────────────────────────────────────────────────────────
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
+    setFormError('');
     if (!fullName.trim()) {
-      toast.error('Full Name is required');
+      const msg = 'Full Name is required';
+      setFormError(msg);
+      toast.error(msg);
       return;
     }
     setIsUpdating(true);
@@ -185,7 +190,9 @@ export const MobileWorkerProfilePage: React.FC = () => {
       toast.success('Profile updated successfully!');
       setEditModalOpen(false);
     } catch (err) {
-      toast.error(extractErrorMessage(err) || 'Failed to update profile');
+      const msg = extractErrorMessage(err) || 'Failed to update profile';
+      setFormError(msg);
+      toast.error(msg);
     } finally {
       setIsUpdating(false);
     }
@@ -564,50 +571,76 @@ export const MobileWorkerProfilePage: React.FC = () => {
         </button>
       </div>
 
-      {/* ── Edit Profile Modal ──────────────────────────────────────────────── */}
+      {/* ── Edit Profile Full-Screen Mobile Editor (Covers bottom navigation completely) ── */}
       {editModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 p-0 sm:items-center sm:p-4 backdrop-blur-sm">
-          <div className="w-full max-w-md max-h-[88vh] flex flex-col rounded-t-3xl bg-white p-5 shadow-2xl sm:rounded-2xl overflow-y-auto">
-            <div className="flex items-center justify-between border-b pb-3 mb-4">
-              <h2 className="text-base font-extrabold text-slate-900">Edit Worker Profile</h2>
+        <div className="mobile-fullscreen-editor">
+          {/* Top Sticky Header */}
+          <div className="mobile-header-safe bg-white border-b border-slate-200">
+            <div className="flex h-14 items-center justify-between px-3">
               <button
                 type="button"
                 onClick={() => setEditModalOpen(false)}
-                className="mobile-touch-target rounded-full p-1 text-slate-400 hover:bg-slate-100"
+                className="mobile-touch-target rounded-full p-2 text-slate-700 hover:bg-slate-100 flex items-center gap-1 font-semibold text-xs active:scale-95"
+                aria-label="Cancel"
               >
-                <X className="h-5 w-5" />
+                <ArrowLeft className="h-5 w-5" />
+                <span>Cancel</span>
+              </button>
+              <h1 className="text-base font-extrabold text-slate-900 tracking-tight">
+                Edit Worker Profile
+              </h1>
+              <button
+                type="button"
+                onClick={handleSaveProfile}
+                disabled={isUpdating}
+                className="text-xs font-extrabold text-indigo-900 px-3 py-1.5 hover:underline disabled:opacity-50 active:scale-95"
+              >
+                {isUpdating ? 'Saving...' : 'Save'}
               </button>
             </div>
+          </div>
 
-            <form onSubmit={handleSaveProfile} className="space-y-3.5 text-xs">
+          {/* Separately Scrollable Form Body */}
+          <div className="flex-1 overflow-y-auto p-4 space-y-4 max-w-lg mx-auto w-full">
+            {formError && (
+              <div className="flex items-start gap-2.5 rounded-xl bg-red-50 p-3.5 text-xs text-red-700 border border-red-200 shadow-sm">
+                <AlertCircle className="h-4 w-4 flex-shrink-0 text-red-500 mt-0.5" />
+                <span className="font-medium leading-relaxed">{formError}</span>
+              </div>
+            )}
+
+            <form id="worker-profile-form" onSubmit={handleSaveProfile} className="space-y-4 text-xs">
               <div>
-                <label className="block font-semibold text-slate-700 mb-1">Full Name *</label>
+                <label className="block font-bold text-slate-700 mb-1.5">
+                  Full Name <span className="text-red-500">*</span>
+                </label>
                 <input
                   type="text"
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
-                  className="w-full rounded-xl border border-slate-200 p-3 text-xs focus:border-indigo-900 focus:outline-none"
+                  placeholder="Your full name"
+                  className="w-full rounded-xl border border-slate-200 p-3 text-xs bg-white focus:border-indigo-900 focus:outline-none min-h-[44px]"
                   required
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-semibold text-slate-700 mb-1">City</label>
+                  <label className="block font-bold text-slate-700 mb-1.5">City</label>
                   <input
                     type="text"
                     value={city}
                     onChange={(e) => setCity(e.target.value)}
                     placeholder="e.g. Mumbai"
-                    className="w-full rounded-xl border border-slate-200 p-3 text-xs focus:border-indigo-900 focus:outline-none"
+                    className="w-full rounded-xl border border-slate-200 p-3 text-xs bg-white focus:border-indigo-900 focus:outline-none min-h-[44px]"
                   />
                 </div>
                 <div>
-                  <label className="block font-semibold text-slate-700 mb-1">State</label>
+                  <label className="block font-bold text-slate-700 mb-1.5">State</label>
                   <select
                     value={state}
                     onChange={(e) => setState(e.target.value)}
-                    className="w-full rounded-xl border border-slate-200 p-3 text-xs bg-white focus:border-indigo-900 focus:outline-none"
+                    className="w-full rounded-xl border border-slate-200 p-3 text-xs bg-white focus:border-indigo-900 focus:outline-none min-h-[44px]"
                   >
                     <option value="">Select State</option>
                     {INDIAN_STATES.map((s) => (
@@ -617,23 +650,23 @@ export const MobileWorkerProfilePage: React.FC = () => {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-semibold text-slate-700 mb-1">Expected Wage (₹)</label>
+                  <label className="block font-bold text-slate-700 mb-1.5">Expected Wage (₹)</label>
                   <input
                     type="number"
                     value={expectedSalary}
                     onChange={(e) => setExpectedSalary(e.target.value)}
                     placeholder="e.g. 800"
-                    className="w-full rounded-xl border border-slate-200 p-3 text-xs focus:border-indigo-900 focus:outline-none"
+                    className="w-full rounded-xl border border-slate-200 p-3 text-xs bg-white focus:border-indigo-900 focus:outline-none min-h-[44px]"
                   />
                 </div>
                 <div>
-                  <label className="block font-semibold text-slate-700 mb-1">Wage Type</label>
+                  <label className="block font-bold text-slate-700 mb-1.5">Wage Type</label>
                   <select
                     value={salaryType}
                     onChange={(e) => setSalaryType(e.target.value as SalaryType)}
-                    className="w-full rounded-xl border border-slate-200 p-3 text-xs bg-white focus:border-indigo-900 focus:outline-none"
+                    className="w-full rounded-xl border border-slate-200 p-3 text-xs bg-white focus:border-indigo-900 focus:outline-none min-h-[44px]"
                   >
                     {SALARY_TYPES.map((st) => (
                       <option key={st.value} value={st.value}>{st.label}</option>
@@ -642,23 +675,23 @@ export const MobileWorkerProfilePage: React.FC = () => {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-semibold text-slate-700 mb-1">Years Experience</label>
+                  <label className="block font-bold text-slate-700 mb-1.5">Years Experience</label>
                   <input
                     type="number"
                     value={yearsExperience}
                     onChange={(e) => setYearsExperience(e.target.value)}
                     placeholder="e.g. 5"
-                    className="w-full rounded-xl border border-slate-200 p-3 text-xs focus:border-indigo-900 focus:outline-none"
+                    className="w-full rounded-xl border border-slate-200 p-3 text-xs bg-white focus:border-indigo-900 focus:outline-none min-h-[44px]"
                   />
                 </div>
                 <div>
-                  <label className="block font-semibold text-slate-700 mb-1">Availability</label>
+                  <label className="block font-bold text-slate-700 mb-1.5">Availability Status</label>
                   <select
                     value={availabilityStatus}
                     onChange={(e) => setAvailabilityStatus(e.target.value as AvailabilityStatus)}
-                    className="w-full rounded-xl border border-slate-200 p-3 text-xs bg-white focus:border-indigo-900 focus:outline-none"
+                    className="w-full rounded-xl border border-slate-200 p-3 text-xs bg-white focus:border-indigo-900 focus:outline-none min-h-[44px]"
                   >
                     <option value="AVAILABLE">Available</option>
                     <option value="BUSY">Busy</option>
@@ -668,8 +701,8 @@ export const MobileWorkerProfilePage: React.FC = () => {
               </div>
 
               <div>
-                <label className="block font-semibold text-slate-700 mb-1.5">Preferred Work Types</label>
-                <div className="flex flex-wrap gap-1.5">
+                <label className="block font-bold text-slate-700 mb-2">Preferred Work Types</label>
+                <div className="flex flex-wrap gap-2">
                   {WORK_TYPE_OPTIONS.map((wt) => {
                     const isSelected = preferredWorkTypes.includes(wt);
                     return (
@@ -677,10 +710,10 @@ export const MobileWorkerProfilePage: React.FC = () => {
                         key={wt}
                         type="button"
                         onClick={() => toggleWorkType(wt)}
-                        className={`rounded-lg px-2.5 py-1 text-[11px] font-bold border transition-colors ${
+                        className={`rounded-xl px-3 py-1.5 text-xs font-bold border transition-colors min-h-[36px] ${
                           isSelected
-                            ? 'bg-indigo-900 text-white border-indigo-900'
-                            : 'bg-slate-50 text-slate-600 border-slate-200'
+                            ? 'bg-indigo-900 text-white border-indigo-900 shadow-sm'
+                            : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
                         }`}
                       >
                         {wt.replace('_', ' ')}
@@ -691,63 +724,87 @@ export const MobileWorkerProfilePage: React.FC = () => {
               </div>
 
               <div>
-                <label className="block font-semibold text-slate-700 mb-1">Bio & Experience Summary</label>
+                <label className="block font-bold text-slate-700 mb-1.5">Bio & Experience Summary</label>
                 <textarea
                   value={bio}
                   onChange={(e) => setBio(e.target.value)}
                   placeholder="Tell employers about your skills, past projects, and specializations..."
-                  rows={3}
-                  className="w-full rounded-xl border border-slate-200 p-3 text-xs focus:border-indigo-900 focus:outline-none"
+                  rows={4}
+                  className="w-full rounded-xl border border-slate-200 p-3 text-xs bg-white focus:border-indigo-900 focus:outline-none leading-relaxed"
                 />
               </div>
+            </form>
+          </div>
 
+          {/* Permanently Accessible Sticky Action Footer */}
+          <div className="mobile-sticky-footer">
+            <div className="flex items-center gap-3 max-w-lg mx-auto w-full">
+              <button
+                type="button"
+                onClick={() => setEditModalOpen(false)}
+                disabled={isUpdating}
+                className="mobile-touch-target flex-1 rounded-xl border border-slate-300 py-3 text-center text-xs font-bold text-slate-700 bg-white hover:bg-slate-50 active:scale-95 transition-transform min-h-[48px]"
+              >
+                Cancel
+              </button>
               <button
                 type="submit"
+                form="worker-profile-form"
                 disabled={isUpdating}
-                className="w-full rounded-xl bg-indigo-900 py-3 text-center text-xs font-bold text-white shadow-md active:scale-95 disabled:opacity-60 mt-3"
+                className="mobile-touch-target flex-[2] rounded-xl bg-indigo-900 py-3 text-center text-xs font-bold text-white shadow-md active:scale-95 transition-transform disabled:opacity-60 flex items-center justify-center gap-2 min-h-[48px]"
               >
-                {isUpdating ? 'Saving Profile...' : 'Save Profile Changes'}
+                {isUpdating ? (
+                  <>
+                    <span className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    <span>Saving Changes...</span>
+                  </>
+                ) : (
+                  <span>Save Changes</span>
+                )}
               </button>
-            </form>
+            </div>
           </div>
         </div>
       )}
 
       {/* ── Add Skill Modal ─────────────────────────────────────────────────── */}
       {skillModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 p-0 sm:items-center sm:p-4 backdrop-blur-sm">
-          <div className="w-full max-w-md max-h-[85vh] flex flex-col rounded-t-3xl bg-white p-5 shadow-2xl sm:rounded-2xl overflow-y-auto">
-            <div className="flex items-center justify-between border-b pb-3 mb-3">
+        <div className="mobile-modal-overlay">
+          <div className="mobile-modal-sheet max-h-[85vh] max-h-[85dvh]">
+            <div className="flex items-center justify-between border-b p-4">
               <h2 className="text-base font-extrabold text-slate-900">Add Skill or Trade</h2>
               <button
                 type="button"
                 onClick={() => setSkillModalOpen(false)}
                 className="mobile-touch-target rounded-full p-1 text-slate-400 hover:bg-slate-100"
+                aria-label="Close"
               >
                 <X className="h-5 w-5" />
               </button>
             </div>
 
             {/* Search Input */}
-            <div className="relative mb-3">
-              <Search className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
-              <input
-                type="text"
-                value={skillSearch}
-                onChange={(e) => setSkillSearch(e.target.value)}
-                placeholder="Search skills (e.g. Masonry, Plumbing, Carpentry)..."
-                className="w-full rounded-xl border border-slate-200 py-2.5 pl-9 pr-3 text-xs focus:border-indigo-900 focus:outline-none"
-              />
+            <div className="p-4 pb-2">
+              <div className="relative">
+                <Search className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
+                <input
+                  type="text"
+                  value={skillSearch}
+                  onChange={(e) => setSkillSearch(e.target.value)}
+                  placeholder="Search skills (e.g. Masonry, Plumbing, Carpentry)..."
+                  className="w-full rounded-xl border border-slate-200 py-2.5 pl-9 pr-3 text-xs bg-slate-50 focus:bg-white focus:border-indigo-900 focus:outline-none min-h-[44px]"
+                />
+              </div>
             </div>
 
             {/* Skills List */}
-            <div className="flex-1 overflow-y-auto max-h-60 space-y-1.5 divide-y divide-slate-50">
+            <div className="flex-1 overflow-y-auto p-4 pt-1 space-y-2 divide-y divide-slate-50">
               {availableSkills.map((sk: Skill) => {
                 const hasSkill = workerSkills.some((ws: any) => (ws.skill?.id || ws.skill_id) === sk.id);
                 return (
                   <div
                     key={sk.id}
-                    className="flex items-center justify-between p-2 hover:bg-slate-50 rounded-xl"
+                    className="flex items-center justify-between p-2.5 hover:bg-slate-50 rounded-xl transition-colors"
                   >
                     <div>
                       <h4 className="text-xs font-bold text-slate-900">{sk.name}</h4>
@@ -764,17 +821,28 @@ export const MobileWorkerProfilePage: React.FC = () => {
                           years: Number(selectedYears) || 1,
                         })
                       }
-                      className={`inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text-xs font-bold ${
+                      className={`inline-flex items-center gap-1 rounded-xl px-3 py-1.5 text-xs font-bold min-h-[36px] ${
                         hasSkill
                           ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
-                          : 'bg-indigo-900 text-white active:scale-95'
+                          : 'bg-indigo-900 text-white active:scale-95 shadow-sm'
                       }`}
                     >
-                      {hasSkill ? 'Added' : 'Add'}
+                      {hasSkill ? 'Added' : 'Add Skill'}
                     </button>
                   </div>
                 );
               })}
+            </div>
+
+            {/* Sticky Action Footer */}
+            <div className="mobile-sticky-footer">
+              <button
+                type="button"
+                onClick={() => setSkillModalOpen(false)}
+                className="w-full rounded-xl border border-slate-300 py-3 text-center text-xs font-bold text-slate-700 bg-white hover:bg-slate-50 active:scale-95 transition-transform min-h-[48px]"
+              >
+                Close
+              </button>
             </div>
           </div>
         </div>
@@ -782,9 +850,9 @@ export const MobileWorkerProfilePage: React.FC = () => {
 
       {/* ── Identity Verification Modal ─────────────────────────────────────── */}
       {verificationModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 p-0 sm:items-center sm:p-4 backdrop-blur-sm">
-          <div className="w-full max-w-md max-h-[85vh] flex flex-col rounded-t-3xl bg-white p-5 shadow-2xl sm:rounded-2xl overflow-y-auto">
-            <div className="flex items-center justify-between border-b pb-3 mb-4">
+        <div className="mobile-modal-overlay">
+          <div className="mobile-modal-sheet max-h-[90vh] max-h-[90dvh]">
+            <div className="flex items-center justify-between border-b p-4">
               <div className="flex items-center gap-2">
                 <ShieldCheck className="h-5 w-5 text-indigo-900" />
                 <h2 className="text-base font-extrabold text-slate-900">Government ID Verification</h2>
@@ -793,85 +861,103 @@ export const MobileWorkerProfilePage: React.FC = () => {
                 type="button"
                 onClick={() => setVerificationModalOpen(false)}
                 className="mobile-touch-target rounded-full p-1 text-slate-400 hover:bg-slate-100"
+                aria-label="Close"
               >
                 <X className="h-5 w-5" />
               </button>
             </div>
 
-            {idError && (
-              <div className="mb-3 flex items-start gap-2 rounded-xl bg-red-50 p-3 text-xs text-red-700 border border-red-200">
-                <AlertCircle className="h-4 w-4 text-red-500 flex-shrink-0 mt-0.5" />
-                <span>{idError}</span>
-              </div>
-            )}
+            {/* Scrollable Form Body */}
+            <div className="flex-1 overflow-y-auto p-4 space-y-3.5 text-xs">
+              {idError && (
+                <div className="flex items-start gap-2 rounded-xl bg-red-50 p-3 text-xs text-red-700 border border-red-200 shadow-sm">
+                  <AlertCircle className="h-4 w-4 text-red-500 flex-shrink-0 mt-0.5" />
+                  <span>{idError}</span>
+                </div>
+              )}
 
-            <form onSubmit={handleSubmitIdentity} className="space-y-3.5 text-xs">
-              <div>
-                <label className="block font-semibold text-slate-700 mb-1">Document Type *</label>
-                <select
-                  value={idDocType}
-                  onChange={(e) => setIdDocType(e.target.value)}
-                  className="w-full rounded-xl border border-slate-200 p-3 text-xs bg-white focus:border-indigo-900 focus:outline-none"
+              <form id="worker-verification-form" onSubmit={handleSubmitIdentity} className="space-y-3.5">
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1.5">Document Type *</label>
+                  <select
+                    value={idDocType}
+                    onChange={(e) => setIdDocType(e.target.value)}
+                    className="w-full rounded-xl border border-slate-200 p-3 text-xs bg-white focus:border-indigo-900 focus:outline-none min-h-[44px]"
+                  >
+                    <option value="DRIVING_LICENSE">Driving License</option>
+                    <option value="VOTER_ID">Voter ID Card (EPIC)</option>
+                    <option value="PASSPORT">Passport</option>
+                    <option value="TRADE_LICENSE">Trade / Labor License</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1.5">Upload Document File *</label>
+                  <input
+                    type="file"
+                    ref={idFileInputRef}
+                    onChange={(e) => {
+                      const f = e.target.files?.[0];
+                      if (f) {
+                        if (!ALLOWED_MIME_TYPES.includes(f.type)) {
+                          setIdError('Please select a PDF, JPEG, PNG, or WebP document');
+                          return;
+                        }
+                        if (f.size > MAX_FILE_SIZE_BYTES) {
+                          setIdError('File size must be under 5MB');
+                          return;
+                        }
+                        setIdError('');
+                        setIdFile(f);
+                      }
+                    }}
+                    accept="image/*,application/pdf"
+                    className="w-full rounded-xl border border-slate-200 p-2 text-xs bg-white focus:outline-none min-h-[44px]"
+                  />
+                  <p className="mt-1 text-[11px] text-slate-400">PDF, JPG, PNG or WebP (max 5MB)</p>
+                </div>
+
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1.5">Additional Notes (Optional)</label>
+                  <input
+                    type="text"
+                    value={idNotes}
+                    onChange={(e) => setIdNotes(e.target.value)}
+                    placeholder="Document number or extra notes..."
+                    className="w-full rounded-xl border border-slate-200 p-3 text-xs focus:border-indigo-900 focus:outline-none min-h-[44px]"
+                  />
+                </div>
+              </form>
+            </div>
+
+            {/* Sticky Action Footer */}
+            <div className="mobile-sticky-footer">
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => setVerificationModalOpen(false)}
+                  disabled={isSubmittingId}
+                  className="mobile-touch-target flex-1 rounded-xl border border-slate-300 py-3 text-center text-xs font-bold text-slate-700 bg-white hover:bg-slate-50 active:scale-95 transition-transform min-h-[48px]"
                 >
-                  <option value="DRIVING_LICENSE">Driving License</option>
-                  <option value="VOTER_ID">Voter ID Card (EPIC)</option>
-                  <option value="PASSPORT">Passport</option>
-                  <option value="TRADE_LICENSE">Trade / Labor License</option>
-                </select>
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  form="worker-verification-form"
+                  disabled={isSubmittingId}
+                  className="mobile-touch-target flex-[2] rounded-xl bg-indigo-900 py-3 text-center text-xs font-bold text-white shadow-md active:scale-95 disabled:opacity-60 flex items-center justify-center gap-2 min-h-[48px]"
+                >
+                  {isSubmittingId ? (
+                    <>
+                      <span className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      <span>Uploading Document...</span>
+                    </>
+                  ) : (
+                    <span>Submit for Verification</span>
+                  )}
+                </button>
               </div>
-
-              <div>
-                <label className="block font-semibold text-slate-700 mb-1">Upload Document File *</label>
-                <input
-                  type="file"
-                  ref={idFileInputRef}
-                  onChange={(e) => {
-                    const f = e.target.files?.[0];
-                    if (f) {
-                      if (!ALLOWED_MIME_TYPES.includes(f.type)) {
-                        setIdError('Please select a PDF, JPEG, PNG, or WebP document');
-                        return;
-                      }
-                      if (f.size > MAX_FILE_SIZE_BYTES) {
-                        setIdError('File size must be under 5MB');
-                        return;
-                      }
-                      setIdError('');
-                      setIdFile(f);
-                    }
-                  }}
-                  accept="image/*,application/pdf"
-                  className="w-full rounded-xl border border-slate-200 p-2 text-xs bg-white focus:outline-none"
-                />
-                <p className="mt-1 text-[11px] text-slate-400">PDF, JPG, PNG or WebP (max 5MB)</p>
-              </div>
-
-              <div>
-                <label className="block font-semibold text-slate-700 mb-1">Additional Notes (Optional)</label>
-                <input
-                  type="text"
-                  value={idNotes}
-                  onChange={(e) => setIdNotes(e.target.value)}
-                  placeholder="Document number or extra notes..."
-                  className="w-full rounded-xl border border-slate-200 p-3 text-xs focus:border-indigo-900 focus:outline-none"
-                />
-              </div>
-
-              <button
-                type="submit"
-                disabled={isSubmittingId}
-                className="w-full rounded-xl bg-indigo-900 py-3 text-center text-xs font-bold text-white shadow-md active:scale-95 disabled:opacity-60 mt-3 flex items-center justify-center gap-2"
-              >
-                {isSubmittingId ? (
-                  <>
-                    <span className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    <span>Uploading Document...</span>
-                  </>
-                ) : (
-                  <span>Submit for Verification</span>
-                )}
-              </button>
-            </form>
+            </div>
           </div>
         </div>
       )}

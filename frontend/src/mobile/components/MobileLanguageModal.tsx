@@ -29,8 +29,8 @@ export const MobileLanguageModal: React.FC<MobileLanguageModalProps> = ({ isOpen
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 p-0 sm:items-center sm:p-4">
-      <div className="w-full max-w-sm rounded-t-2xl bg-white p-5 shadow-2xl sm:rounded-2xl">
+    <div className="fixed inset-0 z-[100] flex items-end justify-center bg-black/60 p-0 sm:items-center sm:p-4 backdrop-blur-sm">
+      <div className="w-full max-w-sm rounded-t-3xl bg-white p-5 shadow-2xl sm:rounded-2xl">
         <div className="mb-4 flex items-center justify-between border-b pb-3">
           <h2 className="text-lg font-bold text-slate-900">
             {t('nav.selectLanguage', 'Select Language')}

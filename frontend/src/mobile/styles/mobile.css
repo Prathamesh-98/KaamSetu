@@ -78,6 +78,70 @@
   -webkit-overflow-scrolling: touch;
 }
 
+/* Fullscreen Mobile Form/Editor (Covers fixed bottom navigation completely) */
+.mobile-fullscreen-editor {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background-color: var(--mobile-bg);
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+}
+
+/* Modal Overlay (always above bottom navigation) */
+.mobile-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  background-color: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+@media (min-width: 640px) {
+  .mobile-modal-overlay {
+    align-items: center;
+    padding: 1rem;
+  }
+}
+
+/* Modal Bottom Sheet / Dialog Card */
+.mobile-modal-sheet {
+  width: 100%;
+  max-width: 28rem;
+  max-height: 90vh;
+  max-height: 90dvh;
+  display: flex;
+  flex-direction: column;
+  background-color: #FFFFFF;
+  border-top-left-radius: 1.5rem;
+  border-top-right-radius: 1.5rem;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+}
+
+@media (min-width: 640px) {
+  .mobile-modal-sheet {
+    border-radius: 1.25rem;
+  }
+}
+
+/* Sticky Action Footer for Modals and Forms */
+.mobile-sticky-footer {
+  background-color: #FFFFFF;
+  border-top: 1px solid var(--mobile-border);
+  padding: 0.875rem 1rem;
+  padding-bottom: max(var(--app-safe-bottom), var(--sab), 12px);
+  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.05);
+  z-index: 20;
+}
+
 /* Minimum 48dp Touch Target */
 .mobile-touch-target {
   min-width: 48px;

@@ -237,9 +237,16 @@ export const MobilePostJobPage: React.FC = () => {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full rounded-xl bg-indigo-900 py-3 text-center text-xs font-bold text-white shadow-md active:scale-95 disabled:opacity-60 mt-3"
+            className="w-full rounded-xl bg-indigo-900 py-3.5 text-center text-xs font-bold text-white shadow-md active:scale-95 disabled:opacity-60 mt-4 min-h-[48px] flex items-center justify-center gap-2"
           >
-            {isSubmitting ? 'Publishing Job...' : 'Publish Job Listing'}
+            {isSubmitting ? (
+              <>
+                <span className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                <span>Publishing Job Listing...</span>
+              </>
+            ) : (
+              <span>Publish Job Listing</span>
+            )}
           </button>
         </form>
       </div>

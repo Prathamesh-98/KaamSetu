@@ -168,9 +168,9 @@ export const MobileHireWorkersPage: React.FC = () => {
 
       {/* Booking / Profile Modal */}
       {selectedWorker && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 p-0 sm:items-center sm:p-4">
-          <div className="w-full max-w-md max-h-[85vh] flex flex-col rounded-t-3xl bg-white p-5 shadow-2xl sm:rounded-2xl overflow-y-auto">
-            <div className="flex items-start justify-between border-b pb-3 mb-3">
+        <div className="mobile-modal-overlay">
+          <div className="mobile-modal-sheet max-h-[88vh] max-h-[88dvh]">
+            <div className="flex items-start justify-between border-b p-4">
               <div className="flex items-center gap-3">
                 <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-900 text-white font-bold text-base shadow">
                   {selectedWorker.full_name?.charAt(0) || 'W'}
@@ -184,63 +184,90 @@ export const MobileHireWorkersPage: React.FC = () => {
                 type="button"
                 onClick={() => setSelectedWorker(null)}
                 className="mobile-touch-target rounded-full p-1 text-slate-400 hover:bg-slate-100"
+                aria-label="Close"
               >
                 <X className="h-6 w-6" />
               </button>
             </div>
 
-            {bookingSuccess ? (
-              <div className="rounded-2xl bg-emerald-50 p-6 text-center border border-emerald-200 my-4">
-                <CheckCircle2 className="h-10 w-10 text-emerald-600 mx-auto mb-2" />
-                <h4 className="font-bold text-emerald-900 text-base">Shift Booking Requested!</h4>
-                <p className="text-xs text-emerald-700 mt-1">The worker will receive your shift request notification.</p>
+            {/* Scrollable Form Body */}
+            <div className="flex-1 overflow-y-auto p-4 space-y-3.5 text-xs">
+              {bookingSuccess ? (
+                <div className="rounded-2xl bg-emerald-50 p-6 text-center border border-emerald-200 my-2">
+                  <CheckCircle2 className="h-10 w-10 text-emerald-600 mx-auto mb-2" />
+                  <h4 className="font-bold text-emerald-900 text-base">Shift Booking Requested!</h4>
+                  <p className="text-xs text-emerald-700 mt-1">The worker will receive your shift request notification.</p>
+                </div>
+              ) : (
+                <form id="hire-worker-form" onSubmit={handleRequestBooking} className="space-y-3.5 py-1">
+                  <div className="bg-slate-50 p-3 rounded-2xl space-y-1">
+                    <div className="font-semibold text-slate-700">Worker Bio</div>
+                    <p className="text-slate-600">{selectedWorker.bio || 'Verified tradesperson registered on KaamSetu.'}</p>
+                  </div>
+
+                  <div>
+                    <label className="block font-bold text-slate-700 mb-1">Select Shift Date *</label>
+                    <input
+                      type="date"
+                      value={bookingDate}
+                      onChange={(e) => setBookingDate(e.target.value)}
+                      required
+                      className="w-full rounded-xl border border-slate-200 p-3 text-xs bg-white focus:border-indigo-900 focus:outline-none min-h-[44px]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block font-bold text-slate-700 mb-1">Agreed Daily Wage (₹) *</label>
+                    <input
+                      type="number"
+                      value={bookingWage}
+                      onChange={(e) => setBookingWage(e.target.value)}
+                      placeholder={selectedWorker.expected_salary ? String(selectedWorker.expected_salary) : '800'}
+                      required
+                      className="w-full rounded-xl border border-slate-200 p-3 text-xs bg-white focus:border-indigo-900 focus:outline-none min-h-[44px]"
+                    />
+                  </div>
+                </form>
+              )}
+            </div>
+
+            {/* Sticky Action Footer */}
+            <div className="mobile-sticky-footer">
+              {bookingSuccess ? (
                 <button
                   type="button"
                   onClick={() => setSelectedWorker(null)}
-                  className="mt-4 rounded-xl bg-emerald-700 px-5 py-2 text-xs font-bold text-white shadow"
+                  className="w-full rounded-xl bg-emerald-700 py-3 text-center text-xs font-bold text-white shadow-md active:scale-95 min-h-[48px]"
                 >
                   Done
                 </button>
-              </div>
-            ) : (
-              <form onSubmit={handleRequestBooking} className="space-y-3.5 text-xs py-2">
-                <div className="bg-slate-50 p-3 rounded-2xl space-y-1">
-                  <div className="font-semibold text-slate-700">Worker Bio</div>
-                  <p className="text-slate-600">{selectedWorker.bio || 'Verified tradesperson registered on KaamSetu.'}</p>
+              ) : (
+                <div className="flex items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setSelectedWorker(null)}
+                    className="mobile-touch-target flex-1 rounded-xl border border-slate-300 py-3 text-center text-xs font-bold text-slate-700 bg-white hover:bg-slate-50 active:scale-95 transition-transform min-h-[48px]"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    form="hire-worker-form"
+                    disabled={isBooking}
+                    className="mobile-touch-target flex-[2] rounded-xl bg-indigo-900 py-3 text-center text-xs font-bold text-white shadow-md active:scale-95 disabled:opacity-60 flex items-center justify-center gap-2 min-h-[48px]"
+                  >
+                    {isBooking ? (
+                      <>
+                        <span className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                        <span>Sending Request...</span>
+                      </>
+                    ) : (
+                      <span>Send Shift Request</span>
+                    )}
+                  </button>
                 </div>
-
-                <div>
-                  <label className="block font-semibold text-slate-700 mb-1">Select Shift Date</label>
-                  <input
-                    type="date"
-                    value={bookingDate}
-                    onChange={(e) => setBookingDate(e.target.value)}
-                    required
-                    className="w-full rounded-xl border border-slate-200 p-2.5 text-xs focus:border-indigo-900 focus:outline-none"
-                  />
-                </div>
-
-                <div>
-                  <label className="block font-semibold text-slate-700 mb-1">Agreed Wage (₹)</label>
-                  <input
-                    type="number"
-                    value={bookingWage}
-                    onChange={(e) => setBookingWage(e.target.value)}
-                    placeholder={selectedWorker.expected_salary ? String(selectedWorker.expected_salary) : '800'}
-                    required
-                    className="w-full rounded-xl border border-slate-200 p-2.5 text-xs focus:border-indigo-900 focus:outline-none"
-                  />
-                </div>
-
-                <button
-                  type="submit"
-                  disabled={isBooking}
-                  className="w-full rounded-xl bg-indigo-900 py-3 text-center text-xs font-bold text-white shadow-md active:scale-95 disabled:opacity-60 mt-2"
-                >
-                  {isBooking ? 'Sending Booking Request...' : 'Send Shift Request'}
-                </button>
-              </form>
-            )}
+              )}
+            </div>
           </div>
         </div>
       )}

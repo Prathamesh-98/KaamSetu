@@ -192,28 +192,29 @@ export const MobileFindJobsPage: React.FC = () => {
 
       {/* Job Details Bottom Sheet / Modal */}
       {selectedJob && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 p-0 sm:items-center sm:p-4">
-          <div className="w-full max-w-lg max-h-[85vh] flex flex-col rounded-t-3xl bg-white p-5 shadow-2xl sm:rounded-2xl overflow-y-auto">
+        <div className="mobile-modal-overlay">
+          <div className="mobile-modal-sheet max-h-[88vh] max-h-[88dvh]">
             {/* Header */}
-            <div className="flex items-start justify-between border-b pb-3">
-              <div>
+            <div className="flex items-start justify-between border-b p-4">
+              <div className="min-w-0 flex-1 mr-2">
                 <span className="inline-block rounded-md bg-indigo-50 px-2 py-0.5 text-[11px] font-bold text-indigo-900">
                   {selectedJob.category?.name || 'General'}
                 </span>
-                <h2 className="text-lg font-bold text-slate-900 mt-1">{selectedJob.title}</h2>
-                <p className="text-xs text-slate-500">{selectedJob.employer?.organization_name || 'Verified Employer'}</p>
+                <h2 className="text-base font-extrabold text-slate-900 mt-1 truncate">{selectedJob.title}</h2>
+                <p className="text-xs text-slate-500 truncate">{selectedJob.employer?.organization_name || 'Verified Employer'}</p>
               </div>
               <button
                 type="button"
                 onClick={() => setSelectedJob(null)}
-                className="mobile-touch-target rounded-full p-1 text-slate-400 hover:bg-slate-100"
+                className="mobile-touch-target rounded-full p-1 text-slate-400 hover:bg-slate-100 flex-shrink-0"
+                aria-label="Close"
               >
                 <X className="h-6 w-6" />
               </button>
             </div>
 
-            {/* Details Content */}
-            <div className="py-4 space-y-4 text-xs">
+            {/* Scrollable Details Content */}
+            <div className="flex-1 overflow-y-auto p-4 space-y-4 text-xs">
               <div className="grid grid-cols-2 gap-3 bg-slate-50 p-3 rounded-2xl">
                 <div>
                   <span className="text-slate-400 block text-[10px] uppercase font-semibold">Compensation</span>
@@ -225,8 +226,8 @@ export const MobileFindJobsPage: React.FC = () => {
                 <div>
                   <span className="text-slate-400 block text-[10px] uppercase font-semibold">Location</span>
                   <span className="font-bold text-slate-800 text-xs flex items-center gap-1 mt-0.5">
-                    <MapPin className="h-3.5 w-3.5 text-amber-600" />
-                    {selectedJob.city || 'India'}
+                    <MapPin className="h-3.5 w-3.5 text-amber-600 flex-shrink-0" />
+                    <span className="truncate">{selectedJob.city || 'India'}</span>
                   </span>
                 </div>
               </div>
@@ -249,7 +250,7 @@ export const MobileFindJobsPage: React.FC = () => {
                 </div>
               )}
 
-              {/* Application Form / Feedback */}
+              {/* Application Form Note */}
               {applySuccess ? (
                 <div className="rounded-2xl bg-emerald-50 p-4 text-center border border-emerald-200">
                   <CheckCircle className="h-8 w-8 text-emerald-600 mx-auto mb-1.5" />
@@ -265,6 +266,7 @@ export const MobileFindJobsPage: React.FC = () => {
                     </div>
                   )}
 
+                  <label className="block font-bold text-slate-700">Cover Note (Optional)</label>
                   <textarea
                     value={coverNote}
                     onChange={(e) => setCoverNote(e.target.value)}
@@ -272,15 +274,40 @@ export const MobileFindJobsPage: React.FC = () => {
                     rows={2}
                     className="w-full rounded-xl border border-slate-200 p-2.5 text-xs focus:border-indigo-900 focus:outline-none"
                   />
+                </div>
+              )}
+            </div>
 
+            {/* Sticky Action Footer */}
+            <div className="mobile-sticky-footer">
+              {applySuccess ? (
+                <button
+                  type="button"
+                  onClick={() => setSelectedJob(null)}
+                  className="w-full rounded-xl bg-emerald-700 py-3 text-center text-xs font-bold text-white shadow min-h-[48px]"
+                >
+                  Close
+                </button>
+              ) : (
+                <div className="flex items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setSelectedJob(null)}
+                    className="mobile-touch-target flex-1 rounded-xl border border-slate-300 py-3 text-center text-xs font-bold text-slate-700 bg-white hover:bg-slate-50 active:scale-95 transition-transform min-h-[48px]"
+                  >
+                    Cancel
+                  </button>
                   <button
                     type="button"
                     onClick={handleApply}
                     disabled={isApplying}
-                    className="w-full rounded-xl bg-indigo-900 py-3 text-center text-xs font-bold text-white shadow-md active:scale-[0.99] flex items-center justify-center gap-2 disabled:opacity-60"
+                    className="mobile-touch-target flex-[2] rounded-xl bg-indigo-900 py-3 text-center text-xs font-bold text-white shadow-md active:scale-95 flex items-center justify-center gap-2 disabled:opacity-60 min-h-[48px]"
                   >
                     {isApplying ? (
-                      <span>Submitting...</span>
+                      <>
+                        <span className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                        <span>Submitting...</span>
+                      </>
                     ) : (
                       <>
                         <Send className="h-3.5 w-3.5" />
