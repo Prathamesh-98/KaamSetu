@@ -82,3 +82,22 @@ async def root():
 @app.get("/health", tags=["Health"])
 async def health_check():
     return {"status": "ok"}
+
+
+@app.get("/health/db", tags=["Health"])
+async def database_health_check():
+    """Check database readiness without exposing internal details."""
+    import asyncio
+    from sqlalchemy import text
+    from fastapi.responses import JSONResponse
+    from app.db.session import engine
+
+    async def probe():
+        async with engine.connect() as conn:
+            await conn.execute(text("SELECT 1"))
+
+    try:
+        await asyncio.wait_for(probe(), timeout=5)
+    except Exception:
+        return JSONResponse(status_code=503, content={"status": "unavailable"}, headers={"Cache-Control": "no-store"})
+    return JSONResponse(content={"status": "ok"}, headers={"Cache-Control": "no-store"})
