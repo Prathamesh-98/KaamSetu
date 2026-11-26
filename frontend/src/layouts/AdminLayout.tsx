@@ -8,6 +8,7 @@ import {
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '../contexts/AuthContext'
 import LanguageSelector from '../components/layout/LanguageSelector'
+import BrandLogo from '../components/common/BrandLogo'
 
 export default function AdminLayout() {
   const { user, logout } = useAuth()
@@ -89,13 +90,10 @@ export default function AdminLayout() {
       >
         <div className="p-6 border-b border-white/10 flex items-center justify-between">
           <div>
-            <div className="flex items-center gap-2 mb-1">
-              <div className="w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center">
-                <Briefcase className="w-4 h-4 text-white" />
-              </div>
-              <span className="font-display font-bold text-lg">KaamSetu Admin</span>
+            <div className="mb-2">
+              <BrandLogo variant="dark" size="md" subtitle="Admin" />
             </div>
-            <div className="text-[11px] text-white/50 tracking-wider uppercase font-semibold mt-1">
+            <div className="text-[11px] text-white/50 tracking-wider uppercase font-semibold">
               Platform Management
             </div>
           </div>
