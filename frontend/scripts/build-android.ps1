@@ -6,7 +6,6 @@ function Run-Native {
     if ($LASTEXITCODE -ne 0) { throw "$Command failed: $LASTEXITCODE" }
 }
 Run-Native "npm.cmd" @("ci")
-Run-Native "npm.cmd" @("install","--no-save","--package-lock=false","@capacitor/core@7.0.0","@capacitor/cli@7.0.0","@capacitor/android@7.0.0")
 $env:VITE_API_BASE_URL = "https://kaamsetu-api-staging.onrender.com"
 Run-Native "npm.cmd" @("run","build")
 if (!(Test-Path "android/gradlew.bat")) { Run-Native "npx.cmd" @("cap","add","android") }

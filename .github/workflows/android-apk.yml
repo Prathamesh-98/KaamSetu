@@ -1,7 +1,7 @@
 name: KaamSetu Android APK
 on:
   push:
-    branches: [android-hardened]
+    branches: [android-native-ui, android-hardened]
   workflow_dispatch:
 permissions:
   contents: read
@@ -27,15 +27,17 @@ jobs:
       - name: Install Android SDK
         run: sdkmanager "platforms;android-35" "build-tools;35.0.0"
       - name: Install dependencies
-        run: |
-          npm ci
-          npm install --no-save --package-lock=false @capacitor/core@7.0.0 @capacitor/cli@7.0.0 @capacitor/android@7.0.0
+        run: npm ci
       - name: Audit dependencies
         run: npm audit --json > npm-audit.json || true
       - uses: actions/upload-artifact@v4
         with:
           name: dependency-audit
           path: frontend/npm-audit.json
+      - name: TypeScript validation
+        run: npx tsc --noEmit
+      - name: Localization validation
+        run: python scripts/validate_locales.py
       - name: Build web assets
         env:
           VITE_ANDROID_BUILD: 'true'
@@ -57,38 +59,40 @@ jobs:
           ET.register_namespace('android', ns)
           t = ET.parse(p)
           app = t.getroot().find('application')
-          for key in ['allowBackup','usesCleartextTraffic']:
+          for key in ['allowBackup', 'usesCleartextTraffic']:
               app.set('{'+ns+'}'+key, 'false')
+          # Do not hardcode android:debuggable in manifest, let Gradle manage release debugging
+          if '{'+ns+'}debuggable' in app.attrib:
+              del app.attrib['{'+ns+'}debuggable']
           t.write(p, encoding='utf-8', xml_declaration=True)
-
-          # Ensure lintOptions does not abort release builds on informational warnings
-          bg = 'android/app/build.gradle'
-          with open(bg, 'r', encoding='utf-8') as f:
-              content = f.read()
-          if 'lintOptions' not in content:
-              content = content.replace('android {', 'android {\n    lintOptions {\n        checkReleaseBuilds false\n        abortOnError false\n    }\n', 1)
-              with open(bg, 'w', encoding='utf-8') as f:
-                  f.write(content)
           PY
-      - name: Compile non-debuggable test release
+      - name: Compile non-debuggable release APK and verify
         run: |
           cd android
           chmod +x gradlew
+          ./gradlew lintRelease --no-daemon
           ./gradlew assembleRelease --no-daemon
           SDK="${ANDROID_HOME}/build-tools/35.0.0"
           keytool -genkeypair -keystore "$RUNNER_TEMP/test.jks" -storepass temporary-test -keypass temporary-test -alias test -keyalg RSA -keysize 2048 -validity 365 -dname "CN=KaamSetu ephemeral test"
           "$SDK/zipalign" -p -f 4 app/build/outputs/apk/release/app-release-unsigned.apk "$RUNNER_TEMP/aligned.apk"
           "$SDK/apksigner" sign --ks "$RUNNER_TEMP/test.jks" --ks-pass pass:temporary-test --key-pass pass:temporary-test --out ../KaamSetu.apk "$RUNNER_TEMP/aligned.apk"
-          "$SDK/apksigner" verify --verbose --print-certs ../KaamSetu.apk
-          "$SDK/aapt" dump badging ../KaamSetu.apk > ../apk-verification.txt
+          echo "=== APKSIGNER VERIFICATION ===" > ../apk-verification.txt
+          "$SDK/apksigner" verify --verbose --print-certs ../KaamSetu.apk >> ../apk-verification.txt
+          echo "=== AAPT BADGING DUMP ===" >> ../apk-verification.txt
+          "$SDK/aapt" dump badging ../KaamSetu.apk >> ../apk-verification.txt
+          echo "=== AAPT PERMISSIONS DUMP ===" >> ../apk-verification.txt
+          "$SDK/aapt" dump permissions ../KaamSetu.apk >> ../apk-verification.txt
+          echo "=== MANIFEST XMLTREE ===" >> ../apk-verification.txt
           "$SDK/aapt" dump xmltree ../KaamSetu.apk AndroidManifest.xml >> ../apk-verification.txt
-          if grep -q 'application-debuggable' ../apk-verification.txt; then exit 1; fi
+          if grep -q 'application-debuggable' ../apk-verification.txt; then echo "ERROR: Release APK must not be debuggable!"; exit 1; fi
+          echo "=== SHA-256 CHECKSUM ===" >> ../apk-verification.txt
           sha256sum ../KaamSetu.apk >> ../apk-verification.txt
       - uses: actions/upload-artifact@v4
         with:
-          name: KaamSetu-Hardened-Test-APK
+          name: KaamSetu-Native-UI-Release-APK
           path: |
             frontend/KaamSetu.apk
             frontend/apk-verification.txt
+            frontend/npm-audit.json
           if-no-files-found: error
           retention-days: 14
