@@ -136,6 +136,11 @@ export default function AdminEmployersPage() {
                       )}
                       {emp.phone && <div className="text-xs text-gray-500 mt-0.5">{emp.phone}</div>}
                       {emp.email && <div className="text-xs text-gray-400 font-mono mt-0.5">{emp.email}</div>}
+                      {!emp.city && !emp.organization_name && (
+                        <span className="inline-block mt-1 text-[10px] px-1.5 py-0.5 rounded bg-amber-50 text-amber-700 border border-amber-200 font-medium">
+                          {t('admin.profileIncomplete', 'Profile Incomplete')}
+                        </span>
+                      )}
                     </td>
 
                     {/* Location */}

@@ -203,7 +203,10 @@
     "autoRedirectIn": "Redirecting to login in {{seconds}} seconds...",
     "signInNow": "Sign In with New Password",
     "needSupportTitle": "Need manual recovery assistance?",
-    "needSupportDesc": "Lost access to both registered email and phone? Our support team can help."
+    "needSupportDesc": "Lost access to both registered email and phone? Our support team can help.",
+    "loginFailedTitle": "Unable to sign in",
+    "loginGuidance": "Check your credentials, or register if you are new to KaamSetu.",
+    "registerNow": "Register for KaamSetu"
   },
   "worker": {
     "dashboard": "Worker Dashboard",
@@ -292,7 +295,9 @@
     "statusBusy": "Currently Busy",
     "statusNotAvailable": "Not Available",
     "welcomeSubtitle": "Find your next opportunity on KaamSetu.",
-    "workDetails": "Work & Experience Details"
+    "workDetails": "Work & Experience Details",
+    "uploadPhoto": "Change Photo",
+    "verifyIdentity": "Verify Identity"
   },
   "employer": {
     "dashboard": "Employer Dashboard",
@@ -357,7 +362,9 @@
     "viewAction": "View",
     "viewsCol": "Views",
     "website": "Website",
-    "yrsExp": "yrs exp"
+    "yrsExp": "yrs exp",
+    "uploadLogo": "Change Logo",
+    "verifyBusiness": "Verify Business"
   },
   "jobs": {
     "expectedSalary": "Expected Salary",
@@ -839,8 +846,9 @@
     "rejectionReasonMandatory": "A mandatory rejection reason is required.",
     "revocationReasonMandatory": "A mandatory revocation reason is required.",
     "verified": "Verified",
-    "verifiedBadge": "Identity Verified",
-    "otpSentInstructions": "Enter the 6-digit verification code sent to your mobile."
+    "verifiedBadge": "Verified",
+    "otpSentInstructions": "Enter the 6-digit verification code sent to your mobile.",
+    "pendingReview": "Verification Pending Review"
   },
   "admin": {
     "verificationQueue": "Verification Review Queue",
@@ -1036,7 +1044,10 @@
     "closeModal": "Close",
     "verificationsTitle": "Trust & Verification Review",
     "verificationsSubtitle": "Review pending identity cards, skill certificates, and company documents.",
-    "passwordComplexityNote": "Password must be at least 8 characters with 1 uppercase letter and 1 digit."
+    "passwordComplexityNote": "Password must be at least 8 characters with 1 uppercase letter and 1 digit.",
+    "statusCompleted": "Completed",
+    "pendingVerifications": "Pending Verifications",
+    "profileIncomplete": "Profile Incomplete"
   },
   "payments": {
     "status": {

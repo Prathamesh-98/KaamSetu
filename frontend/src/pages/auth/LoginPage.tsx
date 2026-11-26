@@ -103,9 +103,30 @@ export default function LoginPage() {
 
             <div className="card p-6 sm:p-8 shadow-sm border border-gray-100 bg-white rounded-2xl">
               {error && (
-                <div className="alert-error mb-6 flex items-center gap-2">
-                  <AlertCircle className="w-4 h-4 flex-shrink-0" />
-                  {error}
+                <div className="mb-6 p-4 rounded-xl bg-red-50 border border-red-200 text-red-900 text-sm">
+                  <div className="flex items-start gap-2.5">
+                    <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+                    <div className="flex-1">
+                      <p className="font-semibold">{t('auth.loginFailedTitle', 'Unable to sign in')}</p>
+                      <p className="mt-1 text-red-700 text-xs leading-relaxed">
+                        {t('auth.loginGuidance', 'Check your credentials, or register if you are new to KaamSetu.')}
+                      </p>
+                      <div className="mt-3 flex flex-wrap items-center gap-3">
+                        <Link
+                          to="/register"
+                          className="inline-flex items-center text-xs font-bold bg-primary-600 hover:bg-primary-700 text-white px-3 py-1.5 rounded-lg shadow-sm transition-colors"
+                        >
+                          {t('auth.registerNow', 'Register for KaamSetu')}
+                        </Link>
+                        <Link
+                          to="/forgot-password"
+                          className="text-xs font-medium text-red-800 hover:underline"
+                        >
+                          {t('auth.forgotPassword', 'Forgot password?')}
+                        </Link>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               )}
 

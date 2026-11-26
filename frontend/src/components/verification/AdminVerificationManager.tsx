@@ -299,9 +299,16 @@ export const AdminVerificationManager: React.FC = () => {
 
                   {/* User */}
                   <td className="py-3.5 px-4">
-                    <span className="font-mono text-gray-500 bg-gray-100 px-2 py-0.5 rounded text-[11px]">
-                      {record.user_id.slice(0, 8)}...
-                    </span>
+                    <div className="font-semibold text-dark">{record.user_name || (record.metadata?.organization_name) || 'User'}</div>
+                    <div className="text-[11px] text-gray-500 font-mono">{record.user_email || record.user_id.slice(0, 8)}</div>
+                    {record.user_role && (
+                      <span className="inline-block mt-0.5 px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-700">
+                        {record.user_role}
+                      </span>
+                    )}
+                    {record.user_phone && (
+                      <div className="text-[11px] text-gray-400 mt-0.5">{record.user_phone}</div>
+                    )}
                   </td>
 
                   {/* Metadata */}

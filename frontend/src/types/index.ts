@@ -247,6 +247,7 @@ export interface AdminStats {
   total_jobs: number;
   total_applications: number;
   completed_jobs: number;
+  pending_verifications?: number;
 }
 
 export interface UnreadCountResponse {
@@ -437,6 +438,10 @@ export interface VerificationRecord {
   verified_at: string | null;
   created_at: string;
   metadata: Record<string, any> | null;
+  user_email?: string | null;
+  user_name?: string | null;
+  user_role?: string | null;
+  user_phone?: string | null;
 }
 
 export interface PhoneOTPRequestPayload {
