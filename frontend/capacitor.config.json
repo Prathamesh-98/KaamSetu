@@ -1,0 +1,9 @@
+{
+  "appId": "in.kaamsetu.app",
+  "appName": "KaamSetu",
+  "webDir": "dist",
+  "server": {
+    "hostname": "localhost",
+    "androidScheme": "https"
+  }
+}

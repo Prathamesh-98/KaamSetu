@@ -23,7 +23,7 @@ app = FastAPI(
 )
 
 # 🌐 CORS Configuration
-cors_origins = set()
+cors_origins = {"https://localhost"}  # Capacitor Android local origin
 if settings.FRONTEND_URL:
     for orig in settings.FRONTEND_URL.split(","):
         cleaned = orig.strip().rstrip("/")
