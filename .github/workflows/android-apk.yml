@@ -1,7 +1,7 @@
 name: KaamSetu Android APK
 on:
   push:
-    branches: [android-capacitor]
+    branches: [android-hardened]
   workflow_dispatch:
 permissions:
   contents: read
@@ -30,23 +30,53 @@ jobs:
         run: |
           npm ci
           npm install --no-save --package-lock=false @capacitor/core@7.0.0 @capacitor/cli@7.0.0 @capacitor/android@7.0.0
+      - name: Audit dependencies
+        run: npm audit --json > npm-audit.json || true
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dependency-audit
+          path: frontend/npm-audit.json
       - name: Build web assets
         env:
+          VITE_ANDROID_BUILD: 'true'
           VITE_API_BASE_URL: https://kaamsetu-api-staging.onrender.com
         run: npm run build
       - name: Generate Android project
         run: |
           npx cap add android
           npx cap sync android
-      - name: Compile debug APK
+      - name: Harden Android manifest
+        run: |
+          python - <<'PY'
+          import xml.etree.ElementTree as ET
+          p = 'android/app/src/main/AndroidManifest.xml'
+          ns = 'http://schemas.android.com/apk/res/android'
+          ET.register_namespace('android', ns)
+          t = ET.parse(p)
+          app = t.getroot().find('application')
+          for key in ['allowBackup','usesCleartextTraffic','debuggable']:
+              app.set('{'+ns+'}'+key, 'false')
+          t.write(p, encoding='utf-8', xml_declaration=True)
+          PY
+      - name: Compile non-debuggable test release
         run: |
           cd android
           chmod +x gradlew
-          ./gradlew assembleDebug --no-daemon
-          cp app/build/outputs/apk/debug/app-debug.apk ../KaamSetu.apk
+          ./gradlew assembleRelease --no-daemon
+          SDK="${ANDROID_HOME}/build-tools/35.0.0"
+          keytool -genkeypair -keystore "$RUNNER_TEMP/test.jks" -storepass temporary-test -keypass temporary-test -alias test -keyalg RSA -keysize 2048 -validity 365 -dname "CN=KaamSetu ephemeral test"
+          "$SDK/zipalign" -p -f 4 app/build/outputs/apk/release/app-release-unsigned.apk "$RUNNER_TEMP/aligned.apk"
+          "$SDK/apksigner" sign --ks "$RUNNER_TEMP/test.jks" --ks-pass pass:temporary-test --key-pass pass:temporary-test --out ../KaamSetu.apk "$RUNNER_TEMP/aligned.apk"
+          "$SDK/apksigner" verify --verbose --print-certs ../KaamSetu.apk
+          "$SDK/aapt" dump badging ../KaamSetu.apk > ../apk-verification.txt
+          "$SDK/aapt" dump xmltree ../KaamSetu.apk AndroidManifest.xml >> ../apk-verification.txt
+          if grep -q 'application-debuggable' ../apk-verification.txt; then exit 1; fi
+          sha256sum ../KaamSetu.apk >> ../apk-verification.txt
       - uses: actions/upload-artifact@v4
         with:
-          name: KaamSetu-Android-APK
-          path: frontend/KaamSetu.apk
+          name: KaamSetu-Hardened-Test-APK
+          path: |
+            frontend/KaamSetu.apk
+            frontend/apk-verification.txt
           if-no-files-found: error
           retention-days: 14
