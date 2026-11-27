@@ -8,12 +8,18 @@ import mrLocales from './locales/mr.json';
 import knLocales from './locales/kn.json';
 import teLocales from './locales/te.json';
 
+import mobileEn from './locales/mobile/en.json';
+import mobileHi from './locales/mobile/hi.json';
+import mobileMr from './locales/mobile/mr.json';
+import mobileKn from './locales/mobile/kn.json';
+import mobileTe from './locales/mobile/te.json';
+
 const resources = {
-  en: { translation: enLocales },
-  hi: { translation: hiLocales },
-  mr: { translation: mrLocales },
-  kn: { translation: knLocales },
-  te: { translation: teLocales },
+  en: { translation: enLocales, mobile: mobileEn },
+  hi: { translation: hiLocales, mobile: mobileHi },
+  mr: { translation: mrLocales, mobile: mobileMr },
+  kn: { translation: knLocales, mobile: mobileKn },
+  te: { translation: teLocales, mobile: mobileTe },
 };
 
 i18n
@@ -21,6 +27,8 @@ i18n
   .use(initReactI18next)
   .init({
     resources,
+    defaultNS: 'translation',
+    ns: ['translation', 'mobile'],
     fallbackLng: 'en',
     interpolation: {
       escapeValue: false, // react already safes from xss

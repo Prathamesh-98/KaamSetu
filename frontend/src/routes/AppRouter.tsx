@@ -58,6 +58,11 @@ const MessagesPage = lazy(() => import('../pages/shared/MessagesPage'));
 // Loading
 import LoadingScreen from '../components/common/LoadingScreen';
 
+// Mobile Redesign
+import { isAndroidApp } from '../mobile/utils/platform';
+import MobileAppRouter from '../mobile/routes/MobileAppRouter';
+import '../mobile/styles/mobile.css';
+
 // ─── Protected Route ──────────────────────────────────────────────────────────
 
 interface ProtectedRouteProps {
@@ -107,6 +112,10 @@ function AuthRedirect() {
 }
 
 export default function AppRouter() {
+  if (isAndroidApp()) {
+    return <MobileAppRouter />;
+  }
+
   return (
     <BrowserRouter>
       <Suspense fallback={<LoadingScreen />}>

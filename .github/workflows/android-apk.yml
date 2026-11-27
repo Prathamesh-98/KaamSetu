@@ -1,0 +1,142 @@
+name: KaamSetu Android APK
+on:
+  push:
+    branches: [android-native-ui, android-hardened, android-profile-fixes, android-comprehensive-overhaul, android-feature-parity-v2]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: android-actions/setup-android@v4
+        with:
+          packages: 'platform-tools'
+      - name: Install Android SDK
+        run: sdkmanager "platforms;android-35" "build-tools;35.0.0"
+      - name: Install dependencies
+        run: npm ci || npm install
+      - name: Audit dependencies
+        run: npm audit --json > npm-audit.json || true
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dependency-audit
+          path: frontend/npm-audit.json
+      - name: TypeScript validation
+        run: npx tsc --noEmit
+      - name: Localization validation
+        run: python scripts/validate_locales.py
+      - name: Build web assets
+        env:
+          VITE_ANDROID_BUILD: 'true'
+          VITE_API_BASE_URL: https://kaamsetu-api-staging.onrender.com
+        run: npm run build
+      - name: Generate Android project
+        run: |
+          npx cap add android
+          npx cap sync android
+      - name: Configure native Android window insets in MainActivity
+        run: |
+          cat << 'EOF' > android/app/src/main/java/in/kaamsetu/app/MainActivity.java
+          package in.kaamsetu.app;
+
+          import android.os.Bundle;
+          import androidx.core.view.ViewCompat;
+          import androidx.core.view.WindowInsetsCompat;
+          import com.getcapacitor.BridgeActivity;
+
+          public class MainActivity extends BridgeActivity {
+              @Override
+              protected void onCreate(Bundle savedInstanceState) {
+                  super.onCreate(savedInstanceState);
+                  ViewCompat.setOnApplyWindowInsetsListener(getWindow().getDecorView(), (v, insets) -> {
+                      int statusBarHeight = insets.getInsets(WindowInsetsCompat.Type.statusBars()).top;
+                      int navBarHeight = insets.getInsets(WindowInsetsCompat.Type.navigationBars()).bottom;
+                      float density = getResources().getDisplayMetrics().density;
+                      int statusBarDp = Math.round(statusBarHeight / density);
+                      int navBarDp = Math.round(navBarHeight / density);
+                      if (this.bridge != null && this.bridge.getWebView() != null) {
+                          this.bridge.getWebView().post(() -> {
+                              this.bridge.getWebView().evaluateJavascript(
+                                  "document.documentElement.style.setProperty('--app-safe-top', '" + statusBarDp + "px');" +
+                                  "document.documentElement.style.setProperty('--app-safe-bottom', '" + navBarDp + "px');",
+                                  null
+                              );
+                          });
+                      }
+                      return insets;
+                  });
+              }
+          }
+          EOF
+      - name: Apply KaamSetu branding and launcher icons
+        run: |
+          cp -rf resources/android/res/* android/app/src/main/res/
+      - name: Harden Android manifest
+        run: |
+          python - <<'PY'
+          import xml.etree.ElementTree as ET
+          p = 'android/app/src/main/AndroidManifest.xml'
+          ns = 'http://schemas.android.com/apk/res/android'
+          ET.register_namespace('android', ns)
+          t = ET.parse(p)
+          root = t.getroot()
+          existing_perms = {el.attrib.get('{'+ns+'}name') for el in root.findall('uses-permission')}
+          for perm in ['android.permission.ACCESS_COARSE_LOCATION', 'android.permission.ACCESS_FINE_LOCATION']:
+              if perm not in existing_perms:
+                  up = ET.Element('uses-permission')
+                  up.set('{'+ns+'}name', perm)
+                  root.insert(0, up)
+          app = root.find('application')
+          for key in ['allowBackup', 'usesCleartextTraffic']:
+              app.set('{'+ns+'}'+key, 'false')
+          # Do not hardcode android:debuggable in manifest, let Gradle manage release debugging
+          if '{'+ns+'}debuggable' in app.attrib:
+              del app.attrib['{'+ns+'}debuggable']
+          for act in app.findall('activity'):
+              if act.attrib.get('{'+ns+'}name', '').endswith('MainActivity'):
+                  act.set('{'+ns+'}windowSoftInputMode', 'adjustResize')
+          t.write(p, encoding='utf-8', xml_declaration=True)
+          PY
+      - name: Compile non-debuggable release APK and verify
+        run: |
+          cd android
+          chmod +x gradlew
+          ./gradlew lintRelease --no-daemon
+          ./gradlew assembleRelease --no-daemon
+          SDK="${ANDROID_HOME}/build-tools/35.0.0"
+          keytool -genkeypair -keystore "$RUNNER_TEMP/test.jks" -storepass temporary-test -keypass temporary-test -alias test -keyalg RSA -keysize 2048 -validity 365 -dname "CN=KaamSetu ephemeral test"
+          "$SDK/zipalign" -p -f 4 app/build/outputs/apk/release/app-release-unsigned.apk "$RUNNER_TEMP/aligned.apk"
+          "$SDK/apksigner" sign --ks "$RUNNER_TEMP/test.jks" --ks-pass pass:temporary-test --key-pass pass:temporary-test --out ../KaamSetu.apk "$RUNNER_TEMP/aligned.apk"
+          echo "=== APKSIGNER VERIFICATION ===" > ../apk-verification.txt
+          "$SDK/apksigner" verify --verbose --print-certs ../KaamSetu.apk >> ../apk-verification.txt
+          echo "=== AAPT BADGING DUMP ===" >> ../apk-verification.txt
+          "$SDK/aapt" dump badging ../KaamSetu.apk >> ../apk-verification.txt
+          echo "=== AAPT PERMISSIONS DUMP ===" >> ../apk-verification.txt
+          "$SDK/aapt" dump permissions ../KaamSetu.apk >> ../apk-verification.txt
+          echo "=== MANIFEST XMLTREE ===" >> ../apk-verification.txt
+          "$SDK/aapt" dump xmltree ../KaamSetu.apk AndroidManifest.xml >> ../apk-verification.txt
+          if grep -q 'application-debuggable' ../apk-verification.txt; then echo "ERROR: Release APK must not be debuggable!"; exit 1; fi
+          echo "=== SHA-256 CHECKSUM ===" >> ../apk-verification.txt
+          sha256sum ../KaamSetu.apk >> ../apk-verification.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: KaamSetu-Native-UI-Release-APK
+          path: |
+            frontend/KaamSetu.apk
+            frontend/apk-verification.txt
+            frontend/npm-audit.json
+          if-no-files-found: error
+          retention-days: 14

@@ -1,0 +1,231 @@
+/* KaamSetu Mobile Application Scoped Stylesheet */
+
+:root {
+  --mobile-primary: #1F2A6B;
+  --mobile-primary-hover: #172154;
+  --mobile-primary-light: #EEF2FF;
+  --mobile-accent: #FF9933;
+  --mobile-accent-hover: #E68525;
+  --mobile-accent-light: #FFF5EB;
+  --mobile-dark: #0B0B0B;
+  --mobile-bg: #F5F6FA;
+  --mobile-card: #FFFFFF;
+  --mobile-border: #E6E8F0;
+  --mobile-subtext: #5A657D;
+  --mobile-success: #16A34A;
+  --mobile-danger: #DC2626;
+
+  /* Safe Area Insets with fallbacks */
+  --sat: env(safe-area-inset-top, 0px);
+  --sab: env(safe-area-inset-bottom, 0px);
+  --sal: env(safe-area-inset-left, 0px);
+  --sar: env(safe-area-inset-right, 0px);
+  --app-safe-top: env(safe-area-inset-top, 0px);
+  --app-safe-bottom: env(safe-area-inset-bottom, 0px);
+  --keyboard-height: 0px;
+
+  /* Heights */
+  --mobile-header-height: 56px;
+  --mobile-bottom-nav-height: 64px;
+}
+
+/* Scoped root container for native android application */
+.mobile-app-root {
+  background-color: var(--mobile-bg);
+  color: var(--mobile-dark);
+  height: 100vh;
+  height: 100dvh;
+  max-height: 100dvh;
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  inset: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans", "Noto Sans Devanagari", "Noto Sans Kannada", "Noto Sans Telugu", sans-serif;
+  -webkit-tap-highlight-color: transparent;
+  padding-left: var(--sal);
+  padding-right: var(--sar);
+}
+
+/* Top Safe Area Header (only header handles top status bar padding cleanly) */
+.mobile-header-safe {
+  flex-shrink: 0;
+  padding-top: max(var(--app-safe-top), var(--sat), 10px);
+  background: #FFFFFF;
+  border-bottom: 1px solid var(--mobile-border);
+  position: sticky;
+  top: 0;
+  z-index: 40;
+}
+
+/* Bottom Safe Area Nav — Permanently pinned to bottom */
+.mobile-nav-safe {
+  flex-shrink: 0;
+  width: 100%;
+  background: #FFFFFF;
+  border-top: 1px solid var(--mobile-border);
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  box-shadow: 0 -3px 12px rgba(15, 23, 42, 0.08);
+  padding-bottom: max(var(--app-safe-bottom), var(--sab), 10px);
+  transform: translateZ(0);
+  will-change: transform;
+  transition: transform 0.2s ease-in-out, opacity 0.2s ease-in-out;
+}
+
+/* Hide bottom navigation during fullscreen editors, modals, or explicit hidden flag */
+body:has(.mobile-fullscreen-editor) .mobile-nav-safe,
+body:has(.mobile-modal-overlay) .mobile-nav-safe,
+.mobile-app-root:has(.mobile-fullscreen-editor) .mobile-nav-safe,
+.mobile-app-root:has(.mobile-modal-overlay) .mobile-nav-safe,
+.mobile-nav-hidden {
+  display: none !important;
+  pointer-events: none !important;
+  transform: translateY(100%) !important;
+  opacity: 0 !important;
+}
+
+/* Scrollable body inside root layout */
+.mobile-content-area {
+  flex: 1 1 0%;
+  min-height: 0;
+  height: 100%;
+  width: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+  padding-bottom: calc(var(--mobile-bottom-nav-height) + max(var(--app-safe-bottom), var(--sab), 12px) + 28px);
+}
+
+/* When a page has no top .mobile-header-safe sibling, preserve top status-bar clearance */
+.mobile-content-area-top-safe {
+  padding-top: max(var(--app-safe-top), var(--sat), 8px);
+}
+
+/* Scrollable body inside full-screen editors/subpages (no bottom nav present) */
+.mobile-subpage-scroll {
+  flex: 1 1 0%;
+  min-height: 0;
+  width: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+  padding-bottom: calc(max(var(--app-safe-bottom), var(--sab), 16px) + 16px);
+}
+
+/* Fullscreen Mobile Form/Editor (Covers fixed bottom navigation completely) */
+.mobile-fullscreen-editor {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background-color: var(--mobile-bg);
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  height: 100dvh;
+  max-height: 100dvh;
+  overflow: hidden;
+}
+
+/* Modal Overlay (always above bottom navigation) */
+.mobile-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 110;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  background-color: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  padding-bottom: var(--keyboard-height);
+}
+
+@media (min-width: 640px) {
+  .mobile-modal-overlay {
+    align-items: center;
+    padding: 1rem;
+  }
+}
+
+/* Modal Bottom Sheet / Dialog Card */
+.mobile-modal-sheet {
+  width: 100%;
+  max-width: 28rem;
+  max-height: calc(92dvh - var(--keyboard-height));
+  display: flex;
+  flex-direction: column;
+  background-color: #FFFFFF;
+  border-top-left-radius: 1.5rem;
+  border-top-right-radius: 1.5rem;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+}
+
+@media (min-width: 640px) {
+  .mobile-modal-sheet {
+    border-radius: 1.25rem;
+  }
+}
+
+/* Sticky Action Footer for Modals, Chat Composer, and Full-Screen Forms */
+.mobile-sticky-footer {
+  flex-shrink: 0;
+  background-color: #FFFFFF;
+  border-top: 1px solid var(--mobile-border);
+  padding: 0.75rem 1rem;
+  padding-bottom: max(var(--app-safe-bottom), var(--sab), 12px);
+  margin-bottom: var(--keyboard-height);
+  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.05);
+  z-index: 20;
+}
+
+/* Minimum 48dp Touch Target */
+.mobile-touch-target {
+  min-width: 48px;
+  min-height: 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Mobile Cards */
+.mobile-card {
+  background-color: #FFFFFF;
+  border-radius: 16px;
+  border: 1px solid var(--mobile-border);
+  box-shadow: 0 1px 3px rgba(11, 11, 11, 0.04), 0 2px 6px rgba(11, 11, 11, 0.02);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.mobile-card:active {
+  transform: scale(0.99);
+}
+
+/* Skeleton Loading */
+@keyframes mobilePulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.45; }
+}
+
+.mobile-skeleton {
+  background-color: #E2E8F0;
+  border-radius: 8px;
+  animation: mobilePulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Safe area scrollbar suppression for horizontal tabs */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}

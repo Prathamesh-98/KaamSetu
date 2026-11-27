@@ -549,6 +549,7 @@ class AdminStats(BaseModel):
     total_jobs: int
     total_applications: int
     completed_jobs: int
+    pending_verifications: int = 0
 
 
 class PaginatedResponse(BaseModel):
@@ -744,6 +745,10 @@ class VerificationRecordResponse(BaseModel):
     verified_at: Optional[datetime] = None
     created_at: datetime
     metadata: Optional[Dict[str, Any]] = None
+    user_email: Optional[str] = None
+    user_name: Optional[str] = None
+    user_role: Optional[str] = None
+    user_phone: Optional[str] = None
 
     model_config = {"from_attributes": True}
 
@@ -752,6 +757,47 @@ class VerificationRecordResponse(BaseModel):
         eff_status = getattr(record, "effective_status", record.status)
         v_status = eff_status.value if hasattr(eff_status, "value") else str(eff_status)
         v_type = record.verification_type.value if hasattr(record.verification_type, "value") else str(record.verification_type)
+        u = None
+        try:
+            from sqlalchemy import inspect
+            insp = inspect(record)
+            if hasattr(insp, "unloaded") and "user" in insp.unloaded:
+                u = None
+            else:
+                u = getattr(record, "user", None)
+        except Exception:
+            u = getattr(record, "user", None)
+
+        u_name = None
+        if u:
+            w_prof = None
+            e_prof = None
+            a_prof = None
+            try:
+                from sqlalchemy import inspect
+                u_insp = inspect(u)
+                if hasattr(u_insp, "unloaded"):
+                    if "worker_profile" not in u_insp.unloaded:
+                        w_prof = getattr(u, "worker_profile", None)
+                    if "employer_profile" not in u_insp.unloaded:
+                        e_prof = getattr(u, "employer_profile", None)
+                    if "admin_profile" not in u_insp.unloaded:
+                        a_prof = getattr(u, "admin_profile", None)
+                else:
+                    w_prof = getattr(u, "worker_profile", None)
+                    e_prof = getattr(u, "employer_profile", None)
+                    a_prof = getattr(u, "admin_profile", None)
+            except Exception:
+                w_prof = getattr(u, "worker_profile", None)
+                e_prof = getattr(u, "employer_profile", None)
+                a_prof = getattr(u, "admin_profile", None)
+
+            if w_prof and getattr(w_prof, "full_name", None):
+                u_name = w_prof.full_name
+            elif e_prof:
+                u_name = getattr(e_prof, "organization_name", None) or getattr(e_prof, "full_name", None)
+            elif a_prof and getattr(a_prof, "full_name", None):
+                u_name = a_prof.full_name
         return cls(
             id=record.id,
             user_id=record.user_id,
@@ -765,6 +811,10 @@ class VerificationRecordResponse(BaseModel):
             verified_at=record.verified_at,
             created_at=record.created_at,
             metadata=record.metadata_dict if hasattr(record, "metadata_dict") else None,
+            user_email=u.email if u else None,
+            user_name=u_name,
+            user_role=u.role.value if (u and hasattr(u, "role") and hasattr(u.role, "value")) else None,
+            user_phone=u.phone if u else None,
         )
 
 
