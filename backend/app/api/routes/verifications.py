@@ -4,6 +4,7 @@ Handles user-facing verification flows: Phone OTP, Worker Identity,
 Worker Skill Certificates, Employer Company Verification, Status, and
 Secure Private Document Retrieval.
 """
+import asyncio
 from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, Form, Response
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, and_, desc
@@ -207,9 +208,11 @@ async def submit_identity_verification(
     content_type = document.content_type or "application/octet-stream"
 
     try:
-        doc_uri = private_storage.store_document(file_bytes, content_type, "identity")
+        doc_uri = await asyncio.to_thread(private_storage.store_document, file_bytes, content_type, "identity")
     except ValueError as ve:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(ve))
+    except Exception:
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Private verification storage is temporarily unavailable.")
 
     # Create new PENDING record (historical resubmissions are preserved)
     record = VerificationRecord(
@@ -266,9 +269,11 @@ async def submit_skill_certificate(
     content_type = document.content_type or "application/octet-stream"
 
     try:
-        doc_uri = private_storage.store_document(file_bytes, content_type, "skills")
+        doc_uri = await asyncio.to_thread(private_storage.store_document, file_bytes, content_type, "skills")
     except ValueError as ve:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(ve))
+    except Exception:
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Private verification storage is temporarily unavailable.")
 
     record = VerificationRecord(
         user_id=current_user.id,
@@ -311,9 +316,11 @@ async def submit_company_verification(
     content_type = document.content_type or "application/octet-stream"
 
     try:
-        doc_uri = private_storage.store_document(file_bytes, content_type, "company")
+        doc_uri = await asyncio.to_thread(private_storage.store_document, file_bytes, content_type, "company")
     except ValueError as ve:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(ve))
+    except Exception:
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Private verification storage is temporarily unavailable.")
 
     # Update employer profile organization details if provided
     if organization_name and not employer_profile.organization_name:
@@ -469,10 +476,10 @@ async def get_verification_document(
         )
 
     try:
-        file_bytes, content_type, filename = private_storage.retrieve_document(record.document_url)
+        file_bytes, content_type, filename = await asyncio.to_thread(private_storage.retrieve_document, record.document_url)
     except FileNotFoundError:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Document file could not be found in storage.")
-    except Exception as e:
+    except Exception:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Failed to retrieve document.")
 
     return Response(
