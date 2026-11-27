@@ -5,6 +5,7 @@ const MobileSyncContext = createContext<MobileSyncState>({
   isOnline: true,
   isForeground: true,
   isSyncing: false,
+  wsConnected: false,
   lastSyncedAt: null,
   triggerSync: async () => {},
 });
