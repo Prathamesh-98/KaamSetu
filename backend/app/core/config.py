@@ -59,6 +59,11 @@ class Settings(BaseSettings):
     OTP_MAX_ATTEMPTS: int = 5
     PASSWORD_RESET_TOKEN_EXPIRE_MINUTES: int = 15
     PRIVATE_DOCS_DIR: str = "private_storage"
+    PRIVATE_DOCS_STORAGE_BACKEND: str = "auto"  # "auto" | "local" | "supabase"
+    PRIVATE_DOCS_ENCRYPTION_KEY: Optional[str] = None
+    SUPABASE_URL: Optional[str] = None
+    SUPABASE_SERVICE_ROLE_KEY: Optional[str] = None
+    SUPABASE_STORAGE_BUCKET: str = "verification-documents"
 
     # Email Delivery Provider (smtp, resend)
     EMAIL_PROVIDER: Optional[str] = None

@@ -20,6 +20,10 @@ settings.DATABASE_URL = TEST_DB_URL
 settings.EMAIL_PROVIDER = None
 settings.SMS_PROVIDER = None
 settings.MOCK_OTP_MODE = True
+settings.PRIVATE_DOCS_STORAGE_BACKEND = "local"
+settings.PRIVATE_DOCS_ENCRYPTION_KEY = None
+settings.SUPABASE_URL = None
+settings.SUPABASE_SERVICE_ROLE_KEY = None
 
 # Rebind engine and AsyncSessionLocal in app.db.session to test database
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
