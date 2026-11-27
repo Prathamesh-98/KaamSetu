@@ -304,6 +304,7 @@ export const MobileWorkerProfilePage: React.FC = () => {
   });
 
   const handleLogout = () => {
+    queryClient.clear();
     logout();
     navigate('/');
   };

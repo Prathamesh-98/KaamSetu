@@ -299,7 +299,10 @@ export const MobileEmployerDashboard: React.FC = () => {
             {pendingApplicants.slice(0, 4).map((app: any) => (
               <div
                 key={app.id}
-                onClick={() => navigate(`/employer/jobs/${app.job_id}/applicants`)}
+                onClick={() => {
+                  const targetJobId = app.job?.id || app.job_id;
+                  if (targetJobId) navigate(`/employer/jobs/${targetJobId}/applicants`);
+                }}
                 className="mobile-card p-3 flex items-center justify-between gap-2 cursor-pointer active:scale-[0.99]"
               >
                 <div className="min-w-0 flex-1">

@@ -236,6 +236,7 @@ export const MobileEmployerProfilePage: React.FC = () => {
   };
 
   const handleLogout = () => {
+    queryClient.clear();
     logout();
     navigate('/');
   };
