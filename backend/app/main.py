@@ -23,7 +23,14 @@ app = FastAPI(
 )
 
 # 🌐 CORS Configuration
-cors_origins = set()
+# Explicit allowlist covering deployed web frontend, custom FRONTEND_URL origins,
+# and Capacitor mobile WebView origins (removes wildcard *.onrender.com exposure).
+cors_origins = {
+    "https://kaamsetu-frontend-jxpg.onrender.com",
+    "https://localhost",
+    "http://localhost",
+    "capacitor://localhost",
+}
 if settings.FRONTEND_URL:
     for orig in settings.FRONTEND_URL.split(","):
         cleaned = orig.strip().rstrip("/")
@@ -40,8 +47,7 @@ if settings.ENVIRONMENT in ("development", "staging", "dev"):
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=list(cors_origins) if cors_origins else ["*"],
-    allow_origin_regex=r"^https?://.*\.onrender\.com$",
+    allow_origins=sorted(cors_origins),
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
