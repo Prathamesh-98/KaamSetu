@@ -23,11 +23,13 @@ export interface MobileSyncState {
 interface WsEnvelope {
   event_id?: string;
   event?: string;
+  type?: string;
   data?: Record<string, unknown>;
 }
 
 const MAX_SEEN_EVENT_IDS = 250;
 const WS_HEARTBEAT_INTERVAL_MS = 25000;
+const WS_HEARTBEAT_TIMEOUT_MS = 10000;
 const WS_CONNECTED_FALLBACK_POLL_MS = 45000;
 const EVENT_COALESCE_MS = 50;
 
@@ -297,13 +299,22 @@ export function useMobileSync(): MobileSyncState {
     let disposed = false;
     let activeSocket: WebSocket | null = null;
     let pingTimer: ReturnType<typeof setInterval> | null = null;
+    let pongTimeoutTimer: ReturnType<typeof setTimeout> | null = null;
     let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
 
-    const clearTimers = () => {
+    const clearHeartbeatTimers = () => {
       if (pingTimer) {
         clearInterval(pingTimer);
         pingTimer = null;
       }
+      if (pongTimeoutTimer) {
+        clearTimeout(pongTimeoutTimer);
+        pongTimeoutTimer = null;
+      }
+    };
+
+    const clearTimers = () => {
+      clearHeartbeatTimers();
       if (reconnectTimer) {
         clearTimeout(reconnectTimer);
         reconnectTimer = null;
@@ -345,10 +356,24 @@ export function useMobileSync(): MobileSyncState {
 
         ws.onmessage = (event) => {
           if (disposed) return;
+          if (pongTimeoutTimer) {
+            clearTimeout(pongTimeoutTimer);
+            pongTimeoutTimer = null;
+          }
+
+          const rawText = String(event.data ?? '').trim();
+          if (rawText === 'pong') {
+            return;
+          }
+
           let msg: WsEnvelope;
           try {
-            msg = JSON.parse(String(event.data)) as WsEnvelope;
+            msg = JSON.parse(rawText) as WsEnvelope;
           } catch {
+            return;
+          }
+
+          if (msg.event === 'pong' || msg.type === 'pong') {
             return;
           }
 
@@ -376,16 +401,22 @@ export function useMobileSync(): MobileSyncState {
             }
             setLastSyncedAt(new Date());
 
-            if (pingTimer) clearInterval(pingTimer);
+            clearHeartbeatTimers();
             pingTimer = setInterval(() => {
               if (ws.readyState === WebSocket.OPEN) {
                 ws.send(JSON.stringify({ type: 'ping' }));
+                if (pongTimeoutTimer) clearTimeout(pongTimeoutTimer);
+                pongTimeoutTimer = setTimeout(() => {
+                  if (!disposed && activeSocket === ws && ws.readyState === WebSocket.OPEN) {
+                    ws.close(4000);
+                  }
+                }, WS_HEARTBEAT_TIMEOUT_MS);
               }
             }, WS_HEARTBEAT_INTERVAL_MS);
             return;
           }
 
-          if (msg.event === 'pong' || !msg.event) {
+          if (!msg.event) {
             return;
           }
 
@@ -400,10 +431,7 @@ export function useMobileSync(): MobileSyncState {
         };
 
         ws.onclose = (closeEvt) => {
-          if (pingTimer) {
-            clearInterval(pingTimer);
-            pingTimer = null;
-          }
+          clearHeartbeatTimers();
           if (activeSocket === ws) {
             activeSocket = null;
           }
