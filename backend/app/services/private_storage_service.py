@@ -142,11 +142,47 @@ class SupabasePrivateBucketDriver:
             kwargs["transport"] = self.transport
         return httpx.Client(**kwargs)
 
+    @staticmethod
+    def _is_missing_resource(resp: httpx.Response, *, allow_object_missing: bool = False) -> bool:
+        """
+        Detect Supabase Storage missing bucket/object responses without suppressing genuine
+        auth (401/403), permission, or unrelated HTTP 400 validation errors.
+        Supabase Storage commonly returns HTTP 400 with embedded {"statusCode": "404", ...}.
+        """
+        if resp.status_code == 404:
+            return True
+        if resp.status_code != 400:
+            return False
+        try:
+            body = resp.json()
+        except Exception:
+            return False
+        if not isinstance(body, dict):
+            return False
+
+        embedded_status = str(body.get("statusCode") or "")
+        code = str(body.get("code") or "")
+        err = str(body.get("error") or "").lower()
+        msg = str(body.get("message") or "").lower()
+
+        if embedded_status == "404":
+            if code == "NoSuchBucket" or "bucket not found" in err or "bucket not found" in msg:
+                return True
+            if allow_object_missing and (
+                code == "NoSuchKey"
+                or err in ("not_found", "nosuchkey")
+                or "not found" in msg
+            ):
+                return True
+        if allow_object_missing and err == "not_found":
+            return True
+        return False
+
     def get_bucket_info(self) -> Optional[dict]:
         url = f"{self.base_url}/storage/v1/bucket/{self.bucket}"
         with self._client() as client:
             resp = client.get(url, headers=self._headers())
-        if resp.status_code == 404:
+        if self._is_missing_resource(resp, allow_object_missing=False):
             return None
         if resp.status_code >= 400:
             raise RuntimeError(f"Supabase bucket lookup failed ({resp.status_code}): {resp.text[:200]}")
@@ -204,9 +240,7 @@ class SupabasePrivateBucketDriver:
         url = f"{self.base_url}/storage/v1/object/{self.bucket}/{object_path.lstrip('/')}"
         with self._client() as client:
             resp = client.get(url, headers=self._headers())
-        if resp.status_code == 404:
-            raise FileNotFoundError("Requested document file does not exist in private storage.")
-        if resp.status_code == 400 and "not_found" in resp.text.lower():
+        if self._is_missing_resource(resp, allow_object_missing=True):
             raise FileNotFoundError("Requested document file does not exist in private storage.")
         if resp.status_code >= 400:
             raise RuntimeError(f"Supabase Storage download failed ({resp.status_code}): {resp.text[:200]}")
@@ -216,7 +250,7 @@ class SupabasePrivateBucketDriver:
         url = f"{self.base_url}/storage/v1/object/{self.bucket}/{object_path.lstrip('/')}"
         with self._client() as client:
             resp = client.delete(url, headers=self._headers())
-        if resp.status_code == 404:
+        if self._is_missing_resource(resp, allow_object_missing=True):
             return False
         if resp.status_code >= 400:
             raise RuntimeError(f"Supabase Storage delete failed ({resp.status_code}): {resp.text[:200]}")

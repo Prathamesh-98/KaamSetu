@@ -212,6 +212,78 @@ def test_mandatory_encryption_and_supabase_header_enforcement(tmp_path: Path, mo
     assert legacy_headers[0]["authorization"] == f"Bearer {legacy_jwt}"
 
 
+def test_supabase_400_embedded_404_missing_bucket_and_object_vs_real_errors(tmp_path: Path):
+    """
+    Regression test for actual Supabase Storage behavior where missing bucket/object
+    returns HTTP 400 with embedded statusCode='404' & NoSuchBucket/NoSuchKey,
+    while genuine 401/403/unrelated-400 errors are never suppressed.
+    """
+    bucket_store: Dict[str, bytes] = {}
+    bucket_meta: Dict[str, dict] = {}
+
+    def supabase_quirk_handler(request: httpx.Request) -> httpx.Response:
+        if request.headers.get("apikey") != "sb_secret_isolated_test_key":
+            return httpx.Response(401, json={"statusCode": "401", "error": "Unauthorized", "message": "Invalid API key"})
+        path = request.url.path
+        if path == "/storage/v1/bucket/verification-documents" and request.method == "GET":
+            if "verification-documents" not in bucket_meta:
+                return httpx.Response(
+                    400,
+                    json={"statusCode": "404", "error": "Bucket not found", "message": "Bucket not found", "code": "NoSuchBucket"},
+                )
+            return httpx.Response(200, json=bucket_meta["verification-documents"])
+        if path == "/storage/v1/bucket/unrelated-400" and request.method == "GET":
+            return httpx.Response(
+                400,
+                json={"statusCode": "400", "error": "InvalidRequest", "message": "Malformed bucket parameter"},
+            )
+        if path == "/storage/v1/bucket/forbidden-403" and request.method == "GET":
+            return httpx.Response(403, json={"statusCode": "403", "error": "Forbidden", "message": "Access denied"})
+        if path == "/storage/v1/bucket" and request.method == "POST":
+            body = json.loads(request.content.decode("utf-8"))
+            bucket_meta[body["id"]] = body
+            return httpx.Response(200, json={"name": body["name"]})
+        if path == "/storage/v1/object/verification-documents/identity/missing.jpg" and request.method in ("GET", "DELETE"):
+            return httpx.Response(
+                400,
+                json={"statusCode": "404", "error": "not_found", "message": "Object not found", "code": "NoSuchKey"},
+            )
+        return httpx.Response(500, json={"error": "unexpected"})
+
+    transport = httpx.MockTransport(supabase_quirk_handler)
+    drv = SupabasePrivateBucketDriver(
+        "https://example.supabase.co",
+        "sb_secret_isolated_test_key",
+        bucket="verification-documents",
+        transport=transport,
+    )
+
+    # 1. HTTP 400 + embedded 404 NoSuchBucket treated cleanly as missing -> proceeds to create private 6 MB bucket
+    assert drv.get_bucket_info() is None
+    created = drv.ensure_private_bucket()
+    assert created["name"] == "verification-documents"
+    info = drv.get_bucket_info()
+    assert info is not None and info["public"] is False and info["file_size_limit"] == 6 * 1024 * 1024
+
+    # 2. HTTP 400 + embedded 404 NoSuchKey treated cleanly as missing object
+    with pytest.raises(FileNotFoundError):
+        drv.download("identity/missing.jpg")
+    assert drv.delete("identity/missing.jpg") is False
+
+    # 3. Genuine 401, 403, and unrelated HTTP 400 errors are NEVER suppressed
+    bad_auth_drv = SupabasePrivateBucketDriver("https://example.supabase.co", "sb_secret_wrong", transport=transport)
+    with pytest.raises(RuntimeError, match="401"):
+        bad_auth_drv.get_bucket_info()
+
+    forbidden_drv = SupabasePrivateBucketDriver("https://example.supabase.co", "sb_secret_isolated_test_key", bucket="forbidden-403", transport=transport)
+    with pytest.raises(RuntimeError, match="403"):
+        forbidden_drv.get_bucket_info()
+
+    bad_400_drv = SupabasePrivateBucketDriver("https://example.supabase.co", "sb_secret_isolated_test_key", bucket="unrelated-400", transport=transport)
+    with pytest.raises(RuntimeError, match="400"):
+        bad_400_drv.get_bucket_info()
+
+
 @pytest.mark.anyio
 async def test_supabase_private_storage_lifecycle_and_restart_persistence(tmp_path: Path, monkeypatch):
     bucket_store: Dict[str, bytes] = {}
