@@ -1,10 +1,12 @@
 """
 Tests for improved MatchingService scoring fairness/accuracy,
-application & chat real-time notification creation, and authenticated WebSocket delivery.
+realistic synthetic worker/employer rankings, post-commit notification/WS delivery,
+and zero-URL-token WebSocket first-frame authentication.
 """
-import pytest
+import json
 from types import SimpleNamespace
 from uuid import uuid4
+import pytest
 from fastapi import WebSocketDisconnect
 from httpx import AsyncClient, ASGITransport
 from sqlalchemy import select, delete
@@ -18,7 +20,7 @@ from app.models.models import (
     JobStatus, AvailabilityStatus
 )
 from app.services.matching_service import MatchingService
-from app.services.ws_manager import ws_manager
+from app.services.ws_manager import ws_manager, queue_ws_event, MAX_CONNECTIONS_PER_USER
 from app.api.routes.ws import websocket_endpoint
 
 
@@ -68,44 +70,97 @@ def test_matching_blank_profile_no_inflation():
     assert res["score"] < 20
 
 
-def test_matching_distance_coords_and_cross_period_salary():
-    job = _fake_job()
-    close_worker = SimpleNamespace(
-        city=None,
-        state=None,
-        latitude=19.09,
-        longitude=72.88,
-        years_experience=5,
-        expected_salary=100,
-        salary_type=SalaryType.HOURLY,
+def test_matching_synthetic_worker_cohort_ranking():
+    """
+    Validates 6 realistic synthetic workers against an Electrical Supervisor job in Pune:
+      1. Ideal Local Specialist: Pune GPS (~2km), mandatory+optional skills, monthly-equivalent wage fitting daily budget, AVAILABLE -> rank #1
+      2. Strong Same-City Over-budget: Pune, all skills, slightly above budget -> below Ideal Local
+      3. Out-of-city State Peer: Nashik (same state), all skills -> mid-high score
+      4. Missing Mandatory Skill (Optional-only): has optional skill sk-2, lacks mandatory sk-1 -> penalized (33% skills)
+      5. Busy Worker in Pune: right skills/location, BUSY status -> availability=0
+      6. Blank Incomplete Profile: no city, no skills, no salary -> bottom (<20%)
+    """
+    job = _fake_job(
+        city="Pune",
+        state="Maharashtra",
+        latitude=18.5204,
+        longitude=73.8567,
+        experience_required=4,
+        salary_min=900,
+        salary_max=1100,
+        salary_type=SalaryType.DAILY,
+        work_type=WorkType.DAILY,
+        category=SimpleNamespace(name="Electrical"),
+        required_skills=[
+            SimpleNamespace(skill_id="sk-mandatory", is_mandatory=True),
+            SimpleNamespace(skill_id="sk-optional", is_mandatory=False),
+        ],
+    )
+
+    ideal = SimpleNamespace(
+        city="Pune", state="Maharashtra", latitude=18.53, longitude=73.86,
+        years_experience=5, expected_salary=25000, salary_type=SalaryType.MONTHLY,  # ~961/day <= 1100
+        preferred_work_types=["DAILY", "FULL_TIME"],
+        availability_status=AvailabilityStatus.AVAILABLE,
+        skills=[
+            SimpleNamespace(skill_id="sk-mandatory", skill=SimpleNamespace(category="Electrical")),
+            SimpleNamespace(skill_id="sk-optional", skill=SimpleNamespace(category="Electrical")),
+        ],
+    )
+    over_budget = SimpleNamespace(
+        city="Pune", state="Maharashtra", latitude=18.53, longitude=73.86,
+        years_experience=5, expected_salary=1800, salary_type=SalaryType.DAILY,
         preferred_work_types=["DAILY"],
         availability_status=AvailabilityStatus.AVAILABLE,
-        skills=[SimpleNamespace(skill_id="sk-1", skill=SimpleNamespace(category="Electrical"))],
+        skills=ideal.skills,
     )
-    far_worker = SimpleNamespace(
-        city="Delhi",
-        state="Delhi",
-        latitude=28.6139,
-        longitude=77.2090,
-        years_experience=5,
-        expected_salary=100,
-        salary_type=SalaryType.HOURLY,
+    state_peer = SimpleNamespace(
+        city="Nashik", state="Maharashtra", latitude=19.9975, longitude=73.7898,
+        years_experience=5, expected_salary=1000, salary_type=SalaryType.DAILY,
         preferred_work_types=["DAILY"],
         availability_status=AvailabilityStatus.AVAILABLE,
-        skills=[SimpleNamespace(skill_id="sk-1", skill=SimpleNamespace(category="Electrical"))],
+        skills=ideal.skills,
     )
-    close_res = MatchingService.calculate_match(close_worker, job)
-    far_res = MatchingService.calculate_match(far_worker, job)
-    assert close_res["factors"]["location"] == 100
-    assert close_res["factors"]["salary"] == 100
-    assert close_res["factors"]["category"] == 100
-    assert close_res["score"] == 100
-    assert far_res["factors"]["location"] == 10
-    assert close_res["score"] > far_res["score"]
+    missing_mandatory = SimpleNamespace(
+        city="Pune", state="Maharashtra", latitude=18.53, longitude=73.86,
+        years_experience=5, expected_salary=950, salary_type=SalaryType.DAILY,
+        preferred_work_types=["DAILY"],
+        availability_status=AvailabilityStatus.AVAILABLE,
+        skills=[SimpleNamespace(skill_id="sk-optional", skill=SimpleNamespace(category="Electrical"))],
+    )
+    busy_worker = SimpleNamespace(
+        city="Pune", state="Maharashtra", latitude=18.53, longitude=73.86,
+        years_experience=5, expected_salary=950, salary_type=SalaryType.DAILY,
+        preferred_work_types=["DAILY"],
+        availability_status=AvailabilityStatus.BUSY,
+        skills=ideal.skills,
+    )
+    blank = SimpleNamespace(
+        city=None, state=None, latitude=None, longitude=None,
+        years_experience=0, expected_salary=None, salary_type=None,
+        preferred_work_types=None, availability_status=AvailabilityStatus.UNAVAILABLE, skills=[],
+    )
+
+    s_ideal = MatchingService.calculate_match(ideal, job)
+    s_over = MatchingService.calculate_match(over_budget, job)
+    s_state = MatchingService.calculate_match(state_peer, job)
+    s_miss = MatchingService.calculate_match(missing_mandatory, job)
+    s_busy = MatchingService.calculate_match(busy_worker, job)
+    s_blank = MatchingService.calculate_match(blank, job)
+
+    assert s_ideal["score"] == 100
+    assert s_ideal["factors"]["salary"] == 100
+    assert s_ideal["factors"]["category"] == 100
+    assert s_over["factors"]["salary"] == 0
+    assert s_state["factors"]["location"] == 10
+    assert s_miss["factors"]["skills"] == 33  # mandatory weight 2x vs optional 1x -> 1/3
+    assert s_busy["factors"]["availability"] == 0
+    assert s_blank["score"] < 20
+    assert s_ideal["score"] > s_busy["score"] > s_over["score"] > s_miss["score"] > s_blank["score"]
 
 
 @pytest.mark.anyio
-async def test_application_notifications_created():
+async def test_application_notifications_and_rollback_safety():
     created_user_ids = []
     created_job_ids = []
     try:
@@ -135,36 +190,30 @@ async def test_application_notifications_created():
             await db.flush()
 
             active_job = Job(
-                employer_id=emp.id,
-                category_id=cat.id,
-                title="WS Parity Job",
-                description="Test job",
-                work_type=WorkType.DAILY,
-                salary_type=SalaryType.DAILY,
-                city="Pune",
-                state="Maharashtra",
-                status=JobStatus.ACTIVE,
+                employer_id=emp.id, category_id=cat.id, title="WS Parity Job", description="Test job",
+                work_type=WorkType.DAILY, salary_type=SalaryType.DAILY, city="Pune", state="Maharashtra", status=JobStatus.ACTIVE,
             )
             closed_job = Job(
-                employer_id=emp.id,
-                category_id=cat.id,
-                title="Closed Job",
-                description="Should reject match",
-                work_type=WorkType.DAILY,
-                salary_type=SalaryType.DAILY,
-                city="Pune",
-                state="Maharashtra",
-                status=JobStatus.CLOSED,
+                employer_id=emp.id, category_id=cat.id, title="Closed Job", description="Should reject match",
+                work_type=WorkType.DAILY, salary_type=SalaryType.DAILY, city="Pune", state="Maharashtra", status=JobStatus.CLOSED,
             )
             db.add_all([active_job, closed_job])
             await db.flush()
+            emp_uid = emp_u.id
+            wrk_uid = wrk_u.id
+            active_id = str(active_job.id)
+            closed_id = str(closed_job.id)
             created_job_ids.extend([active_job.id, closed_job.id])
             await db.commit()
 
-            emp_token = create_access_token({"sub": str(emp_u.id)})
-            wrk_token = create_access_token({"sub": str(wrk_u.id)})
-            active_id = str(active_job.id)
-            closed_id = str(closed_job.id)
+            # Verify rollback drops pending WS events within an active DB transaction
+            await db.execute(select(User.id).limit(1))
+            queue_ws_event(db, wrk_uid, "ghost:event", {"should": "not_fire"})
+            await db.rollback()
+            assert "pending_ws_events" not in db.sync_session.info
+
+            emp_token = create_access_token({"sub": str(emp_uid)})
+            wrk_token = create_access_token({"sub": str(wrk_uid)})
 
         async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
             res_closed = await client.get(f"/api/jobs/{closed_id}/match", headers={"Authorization": f"Bearer {wrk_token}"})
@@ -205,8 +254,8 @@ async def test_application_notifications_created():
 
 
 @pytest.mark.anyio
-async def test_websocket_auth_and_heartbeat():
-    """Verify /api/ws authenticates active JWT, emits notifications, and rejects forged tokens."""
+async def test_websocket_first_frame_auth_cap_and_event_ids():
+    """Verify /api/ws uses first-frame JSON auth (zero URL JWT), enforces connection cap, and assigns unique event_ids."""
     created_uid = None
 
     class FakeWebSocket:
@@ -247,28 +296,35 @@ async def test_websocket_auth_and_heartbeat():
             await db.commit()
             created_uid = u.id
 
-        # 1. Invalid token closed with 4401
-        bad_ws = FakeWebSocket([])
-        await websocket_endpoint(bad_ws, token="forged.jwt.token")
-        assert bad_ws.accepted is False
+        # 1. Invalid auth frame rejected with 4401
+        bad_ws = FakeWebSocket([json.dumps({"type": "auth", "token": "forged.jwt"})])
+        await websocket_endpoint(bad_ws)
+        assert bad_ws.accepted is True
         assert bad_ws.closed_code == 4401
 
-        # 2. Valid token connects, handles ping/pong, and receives emitted events
+        # 2. Valid first-frame auth connects, emits connected event w/ event_id, and handles ping/pong
         token = create_access_token({"sub": str(created_uid)})
-        good_ws = FakeWebSocket(["ping"])
-        await websocket_endpoint(good_ws, token=token)
-        assert good_ws.accepted is True
+        good_ws = FakeWebSocket([json.dumps({"type": "auth", "token": token}), "ping"])
+        await websocket_endpoint(good_ws)
         assert good_ws.sent_json[0]["event"] == "connected"
+        assert good_ws.sent_json[0]["event_id"]
         assert good_ws.sent_text == ["pong"]
 
-        # 3. Direct ws_manager event push works and prunes disconnected socket safely
-        live_ws = FakeWebSocket([])
-        await ws_manager.connect(created_uid, live_ws)
-        assert ws_manager.active_count(created_uid) == 1
+        # 3. Connection cap per user evicts oldest socket safely and deduplicates event_ids
+        sockets = []
+        for _ in range(MAX_CONNECTIONS_PER_USER + 1):
+            s = FakeWebSocket([])
+            await ws_manager.register(created_uid, s)
+            sockets.append(s)
+        assert ws_manager.active_count(created_uid) == MAX_CONNECTIONS_PER_USER
+        assert sockets[0].closed_code == 4000
+
         await ws_manager.emit_to_user(created_uid, "notification:created", {"title": "Hi"})
-        assert live_ws.sent_json[-1] == {"event": "notification:created", "data": {"title": "Hi"}}
-        ws_manager.disconnect(created_uid, live_ws)
-        assert ws_manager.active_count(created_uid) == 0
+        await ws_manager.emit_to_user(created_uid, "notification:created", {"title": "Hi 2"})
+        ids = [m["event_id"] for m in sockets[-1].sent_json]
+        assert len(ids) == 2 and ids[0] != ids[1]
+        for s in sockets:
+            ws_manager.disconnect(created_uid, s)
     finally:
         if created_uid:
             async with AsyncSessionLocal() as db:

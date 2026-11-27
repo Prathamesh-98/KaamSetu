@@ -284,7 +284,7 @@ async def send_message(
 
     try:
         from app.services.notification_service import create_notification
-        from app.services.ws_manager import ws_manager
+        from app.services.ws_manager import queue_ws_event
         recipient_user_id = None
         if current_user.role == UserRole.WORKER:
             emp_r = await db.execute(select(EmployerProfile).where(EmployerProfile.id == conv.employer_id))
@@ -304,7 +304,8 @@ async def send_message(
                 reference_id=conversation_id,
                 reference_type="CHAT",
             )
-            await ws_manager.emit_to_user(
+            queue_ws_event(
+                db,
                 recipient_user_id,
                 "message:created",
                 {"conversation_id": str(conversation_id), "message_id": str(msg.id)},

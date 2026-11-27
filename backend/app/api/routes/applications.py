@@ -11,7 +11,7 @@ from app.models.models import (
     ApplicationStatus, JobStatus, JobRequiredSkill, UserRole, WorkerSkill
 )
 from app.services.notification_service import create_notification
-from app.services.ws_manager import ws_manager
+from app.services.ws_manager import queue_ws_event
 from app.schemas.schemas import (
     ApplicationCreate, ApplicationStatusUpdate, ApplicationResponse,
     JobListResponse, WorkerProfileResponse, WorkerSkillResponse
@@ -97,13 +97,16 @@ async def apply_to_job(
             reference_id=application.id,
             reference_type="APPLICATION",
         )
-        await ws_manager.emit_to_user(
+        queue_ws_event(
+            db,
             job.employer.user_id,
             "application:created",
             {"application_id": str(application.id), "job_id": str(job_id)},
         )
     except Exception:
         pass
+
+    await db.commit()
 
     result = await db.execute(
         select(JobApplication)
@@ -241,7 +244,8 @@ async def update_application_status(
                 reference_id=application.id,
                 reference_type="APPLICATION",
             )
-            await ws_manager.emit_to_user(
+            queue_ws_event(
+                db,
                 worker_user_id,
                 "application:updated",
                 {"application_id": str(application.id), "status": payload.status.value},
@@ -305,5 +309,12 @@ async def withdraw_application(
                     reference_id=application.id,
                     reference_type="APPLICATION",
                 )
+                queue_ws_event(
+                    db,
+                    emp.user_id,
+                    "application:withdrawn",
+                    {"application_id": str(application.id), "job_id": str(job.id)},
+                )
         except Exception:
             pass
+    await db.commit()

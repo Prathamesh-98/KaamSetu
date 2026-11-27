@@ -1,6 +1,6 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.models.models import Notification
-from app.services.ws_manager import ws_manager
+from app.services.ws_manager import queue_ws_event
 from uuid import UUID
 from typing import Optional
 
@@ -25,20 +25,18 @@ async def create_notification(
     db.add(notification)
     await db.flush()
 
-    try:
-        await ws_manager.emit_to_user(
-            user_id,
-            "notification:created",
-            {
-                "id": str(notification.id),
-                "type": type,
-                "title": title,
-                "body": body,
-                "reference_id": str(reference_id) if reference_id else None,
-                "reference_type": reference_type,
-            },
-        )
-    except Exception:
-        pass
+    queue_ws_event(
+        db,
+        user_id,
+        "notification:created",
+        {
+            "id": str(notification.id),
+            "type": type,
+            "title": title,
+            "body": body,
+            "reference_id": str(reference_id) if reference_id else None,
+            "reference_type": reference_type,
+        },
+    )
 
     return notification

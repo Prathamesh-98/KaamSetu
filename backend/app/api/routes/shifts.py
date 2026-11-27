@@ -13,18 +13,21 @@ def ensure_utc(dt: datetime) -> datetime:
 
 async def _notify_booking_counterpart(db, booking, user_role, action):
     try:
+        from app.services.ws_manager import queue_ws_event
         if str(user_role).upper() == "WORKER":
             from app.models.models import EmployerProfile
             emp_res = await db.execute(select(EmployerProfile).where(EmployerProfile.id == booking.employer_id))
             emp = emp_res.scalar_one_or_none()
             if emp:
                 await create_notification(db, emp.user_id, f"SHIFT_{action.upper()}", f"Shift {action}", f"A shift was {action.lower()}.", booking.id, "SHIFT_BOOKING")
+                queue_ws_event(db, emp.user_id, "shift:updated", {"booking_id": str(booking.id), "action": action.upper()})
         else:
             from app.models.models import WorkerProfile
             work_res = await db.execute(select(WorkerProfile).where(WorkerProfile.id == booking.worker_id))
             worker = work_res.scalar_one_or_none()
             if worker:
                 await create_notification(db, worker.user_id, f"SHIFT_{action.upper()}", f"Shift {action}", f"A shift was {action.lower()}.", booking.id, "SHIFT_BOOKING")
+                queue_ws_event(db, worker.user_id, "shift:updated", {"booking_id": str(booking.id), "action": action.upper()})
     except Exception:
         pass
 
@@ -224,6 +227,7 @@ async def request_shift(
 
     # 6. Notify worker safely
     try:
+        from app.services.ws_manager import queue_ws_event
         emp_name = employer.organization_name or employer.full_name or "An employer"
         await create_notification(
             db=db,
@@ -234,6 +238,7 @@ async def request_shift(
             reference_id=booking.id,
             reference_type="SHIFT_BOOKING"
         )
+        queue_ws_event(db, worker.user_id, "shift:updated", {"booking_id": str(booking.id), "action": "REQUESTED"})
     except Exception:
         pass
 
