@@ -5,7 +5,43 @@ Loads all settings from environment variables using pydantic-settings.
 from pydantic_settings import BaseSettings
 from typing import Optional
 from pydantic import model_validator, field_validator
+import base64
 import os
+
+
+_PLACEHOLDER_PREFIXES = (
+    "your-",
+    "change-this",
+    "replace-",
+    "placeholder",
+    "example",
+)
+
+
+def validate_private_docs_encryption_secret(secret: Optional[str]) -> str:
+    """Validate PRIVATE_DOCS_ENCRYPTION_KEY (32-byte base64 or >=32-char high-entropy passphrase)."""
+    if not secret or not secret.strip():
+        raise ValueError(
+            "PRIVATE_DOCS_ENCRYPTION_KEY is mandatory when production Supabase private document storage is enabled."
+        )
+    raw = secret.strip()
+    lower = raw.lower()
+    if any(p in lower for p in _PLACEHOLDER_PREFIXES):
+        raise ValueError("PRIVATE_DOCS_ENCRYPTION_KEY must not use a placeholder value.")
+
+    try:
+        padded = raw + "=" * (-len(raw) % 4)
+        decoded = base64.urlsafe_b64decode(padded.encode("ascii"))
+        if len(decoded) == 32 and len(set(decoded)) >= 8:
+            return raw
+    except Exception:
+        pass
+
+    if len(raw) < 32 or len(set(raw)) < 8:
+        raise ValueError(
+            "PRIVATE_DOCS_ENCRYPTION_KEY must decode to 32 random bytes (base64) or be a high-entropy passphrase >= 32 characters."
+        )
+    return raw
 
 
 class Settings(BaseSettings):
@@ -100,6 +136,22 @@ class Settings(BaseSettings):
             if self.DEBUG:
                 # Force DEBUG to False in production
                 self.DEBUG = False
+
+            # Mandatory encryption & credential validation when Supabase private storage is enabled
+            # in production (enforced unconditionally regardless of STRICT_CONFIG_VALIDATION).
+            storage_mode = (self.PRIVATE_DOCS_STORAGE_BACKEND or "auto").strip().lower()
+            supabase_enabled = (
+                storage_mode == "supabase"
+                or (storage_mode == "auto" and bool((self.SUPABASE_URL or "").strip() or (self.SUPABASE_SERVICE_ROLE_KEY or "").strip()))
+            )
+            if supabase_enabled:
+                supa_url = (self.SUPABASE_URL or "").strip()
+                supa_key = (self.SUPABASE_SERVICE_ROLE_KEY or "").strip()
+                if not supa_url.startswith("https://"):
+                    raise ValueError("SUPABASE_URL must be an https:// URL when production Supabase document storage is enabled.")
+                if not supa_key or supa_key.startswith("sb_publishable_") or any(p in supa_key.lower() for p in _PLACEHOLDER_PREFIXES):
+                    raise ValueError("A valid backend-only SUPABASE_SERVICE_ROLE_KEY (service_role or sb_secret_) is required in production.")
+                validate_private_docs_encryption_secret(self.PRIVATE_DOCS_ENCRYPTION_KEY)
 
             if self.STRICT_CONFIG_VALIDATION:
                 if self.MOCK_OTP_MODE:
