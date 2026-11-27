@@ -3,7 +3,9 @@ Tests for improved MatchingService scoring fairness/accuracy,
 realistic synthetic worker/employer rankings, post-commit notification/WS delivery,
 and zero-URL-token WebSocket first-frame authentication.
 """
+import asyncio
 import json
+from datetime import timedelta
 from types import SimpleNamespace
 from uuid import uuid4
 import pytest
@@ -20,7 +22,9 @@ from app.models.models import (
     JobStatus, AvailabilityStatus
 )
 from app.services.matching_service import MatchingService
-from app.services.ws_manager import ws_manager, queue_ws_event, MAX_CONNECTIONS_PER_USER
+from app.services.ws_manager import (
+    ws_manager, queue_ws_event, MAX_CONNECTIONS_PER_USER, MAX_TOTAL_CONNECTIONS
+)
 from app.api.routes.ws import websocket_endpoint
 
 
@@ -135,6 +139,13 @@ def test_matching_synthetic_worker_cohort_ranking():
         availability_status=AvailabilityStatus.BUSY,
         skills=ideal.skills,
     )
+    unavailable_worker = SimpleNamespace(
+        city="Pune", state="Maharashtra", latitude=18.53, longitude=73.86,
+        years_experience=5, expected_salary=950, salary_type=SalaryType.DAILY,
+        preferred_work_types=["DAILY"],
+        availability_status=AvailabilityStatus.UNAVAILABLE,
+        skills=ideal.skills,
+    )
     blank = SimpleNamespace(
         city=None, state=None, latitude=None, longitude=None,
         years_experience=0, expected_salary=None, salary_type=None,
@@ -146,6 +157,7 @@ def test_matching_synthetic_worker_cohort_ranking():
     s_state = MatchingService.calculate_match(state_peer, job)
     s_miss = MatchingService.calculate_match(missing_mandatory, job)
     s_busy = MatchingService.calculate_match(busy_worker, job)
+    s_unavail = MatchingService.calculate_match(unavailable_worker, job)
     s_blank = MatchingService.calculate_match(blank, job)
 
     assert s_ideal["score"] == 100
@@ -154,9 +166,21 @@ def test_matching_synthetic_worker_cohort_ranking():
     assert s_over["factors"]["salary"] == 0
     assert s_state["factors"]["location"] == 10
     assert s_miss["factors"]["skills"] == 33  # mandatory weight 2x vs optional 1x -> 1/3
-    assert s_busy["factors"]["availability"] == 0
+    assert s_miss["score"] <= 35  # missing mandatory skill eligibility cap
+    assert s_busy["factors"]["availability"] == 25
+    assert s_busy["score"] == 75
+    assert s_unavail["factors"]["availability"] == 0
+    assert s_unavail["score"] == 40
     assert s_blank["score"] < 20
-    assert s_ideal["score"] > s_busy["score"] > s_over["score"] > s_miss["score"] > s_blank["score"]
+    assert (
+        s_ideal["score"]
+        > s_over["score"]
+        > s_state["score"]
+        > s_busy["score"]
+        > s_unavail["score"]
+        >= s_miss["score"]
+        > s_blank["score"]
+    )
 
 
 @pytest.mark.anyio
@@ -296,21 +320,57 @@ async def test_websocket_first_frame_auth_cap_and_event_ids():
             await db.commit()
             created_uid = u.id
 
+        class SlowSocket(FakeWebSocket):
+            async def receive_text(self):
+                if self.incoming:
+                    return self.incoming.pop(0)
+                await asyncio.sleep(2.0)
+                raise WebSocketDisconnect()
+
         # 1. Invalid auth frame rejected with 4401
         bad_ws = FakeWebSocket([json.dumps({"type": "auth", "token": "forged.jwt"})])
         await websocket_endpoint(bad_ws)
         assert bad_ws.accepted is True
         assert bad_ws.closed_code == 4401
 
-        # 2. Valid first-frame auth connects, emits connected event w/ event_id, and handles ping/pong
-        token = create_access_token({"sub": str(created_uid)})
-        good_ws = FakeWebSocket([json.dumps({"type": "auth", "token": token}), "ping"])
+        # 2. Expired JWT rejected with 4401
+        expired_token = create_access_token(
+            {"sub": str(created_uid), "token_version": 1},
+            expires_delta=timedelta(seconds=-5),
+        )
+        exp_ws = FakeWebSocket([json.dumps({"type": "auth", "token": expired_token})])
+        await websocket_endpoint(exp_ws)
+        assert exp_ws.closed_code == 4401
+
+        # 3. Revoked JWT (token_version mismatch) rejected with 4401
+        revoked_token = create_access_token({"sub": str(created_uid), "token_version": 99})
+        rev_ws = FakeWebSocket([json.dumps({"type": "auth", "token": revoked_token})])
+        await websocket_endpoint(rev_ws)
+        assert rev_ws.closed_code == 4401
+
+        # 4. Valid first-frame auth connects, handles both JSON ping->pong and legacy text ping->pong
+        token = create_access_token({"sub": str(created_uid), "token_version": 1})
+        good_ws = FakeWebSocket([
+            json.dumps({"type": "auth", "token": token}),
+            json.dumps({"type": "ping"}),
+            "ping",
+        ])
         await websocket_endpoint(good_ws)
         assert good_ws.sent_json[0]["event"] == "connected"
         assert good_ws.sent_json[0]["event_id"]
+        assert good_ws.sent_json[1] == {"event": "pong", "data": {}}
         assert good_ws.sent_text == ["pong"]
 
-        # 3. Connection cap per user evicts oldest socket safely and deduplicates event_ids
+        # 5. Mid-session expiring JWT closes cleanly with 4401
+        short_token = create_access_token(
+            {"sub": str(created_uid), "token_version": 1},
+            expires_delta=timedelta(milliseconds=150),
+        )
+        short_ws = SlowSocket([json.dumps({"type": "auth", "token": short_token})])
+        await websocket_endpoint(short_ws)
+        assert short_ws.closed_code == 4401
+
+        # 6. Connection cap per user evicts oldest socket safely and deduplicates event_ids
         sockets = []
         for _ in range(MAX_CONNECTIONS_PER_USER + 1):
             s = FakeWebSocket([])
@@ -325,6 +385,19 @@ async def test_websocket_first_frame_auth_cap_and_event_ids():
         assert len(ids) == 2 and ids[0] != ids[1]
         for s in sockets:
             ws_manager.disconnect(created_uid, s)
+
+        # 7. Server global connection limit (MAX_TOTAL_CONNECTIONS) rejects excess with 4503
+        original_conns = ws_manager._connections
+        try:
+            ws_manager._connections = {
+                f"dummy-{i}": [FakeWebSocket([])] for i in range(MAX_TOTAL_CONNECTIONS)
+            }
+            overflow_ws = FakeWebSocket([])
+            with pytest.raises(RuntimeError):
+                await ws_manager.register(created_uid, overflow_ws)
+            assert overflow_ws.closed_code == 4503
+        finally:
+            ws_manager._connections = original_conns
     finally:
         if created_uid:
             async with AsyncSessionLocal() as db:

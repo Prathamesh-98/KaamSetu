@@ -420,10 +420,21 @@ async def get_job_candidates(
         raise HTTPException(status_code=400, detail="Job is closed or cancelled")
 
     # Smart priority ordering for bounded candidate pool evaluation:
-    # Prioritize workers with matching required skills (weight 35%),
-    # workers in the same city/state (weight 20%), and available workers (weight 5%).
+    # Prioritize mandatory skill eligibility and availability first, then optional skills,
+    # city/state proximity, ratings, and experience.
     order_clauses = []
-    req_skill_ids = [rs.skill_id for rs in (job.required_skills or [])]
+    req_skills = job.required_skills or []
+    mandatory_skill_ids = [rs.skill_id for rs in req_skills if getattr(rs, "is_mandatory", False)]
+    req_skill_ids = [rs.skill_id for rs in req_skills]
+
+    if mandatory_skill_ids:
+        for m_skill_id in mandatory_skill_ids:
+            has_mandatory = WorkerProfile.skills.any(WorkerSkill.skill_id == m_skill_id)
+            order_clauses.append(case((has_mandatory, 0), else_=1))
+
+    is_available = WorkerProfile.availability_status == AvailabilityStatus.AVAILABLE
+    order_clauses.append(case((is_available, 0), else_=1))
+
     if req_skill_ids:
         has_skill = WorkerProfile.skills.any(WorkerSkill.skill_id.in_(req_skill_ids))
         order_clauses.append(case((has_skill, 0), else_=1))
@@ -436,8 +447,6 @@ async def get_job_candidates(
         loc_state = func.lower(WorkerProfile.state) == func.lower(job.state)
         order_clauses.append(case((loc_state, 0), else_=1))
 
-    is_available = WorkerProfile.availability_status == AvailabilityStatus.AVAILABLE
-    order_clauses.append(case((is_available, 0), else_=1))
     order_clauses.append(WorkerProfile.average_rating.desc())
     order_clauses.append(WorkerProfile.years_experience.desc())
     order_clauses.append(WorkerProfile.created_at.desc())

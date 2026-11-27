@@ -81,6 +81,27 @@ class MatchingService:
             + (factors["category"] / 100 * MatchingService.WEIGHTS["category"])
         )
 
+        # Enforce mandatory skill eligibility ceiling: workers missing mandatory
+        # skills should remain below 50% and rank after qualified candidates.
+        required = job.required_skills or []
+        mandatory_reqs = [req for req in required if getattr(req, "is_mandatory", False)]
+        if mandatory_reqs:
+            worker_skill_ids = {ws.skill_id for ws in (worker.skills or [])}
+            matched_mandatory = sum(1 for req in mandatory_reqs if req.skill_id in worker_skill_ids)
+            if matched_mandatory == 0:
+                final_score = min(final_score, 35.0)
+            elif matched_mandatory < len(mandatory_reqs):
+                partial_cap = 35.0 + 14.0 * (matched_mandatory / len(mandatory_reqs))
+                final_score = min(final_score, partial_cap)
+
+        # Enforce availability ceiling so UNAVAILABLE / BUSY workers do not
+        # outrank eligible AVAILABLE candidates.
+        avail_status = getattr(worker, "availability_status", None)
+        if avail_status == AvailabilityStatus.UNAVAILABLE:
+            final_score = min(final_score, 40.0)
+        elif avail_status == AvailabilityStatus.BUSY:
+            final_score = min(final_score, 75.0)
+
         return {
             "job_id": str(job.id),
             "score": int(round(final_score)),
@@ -218,7 +239,7 @@ class MatchingService:
         if worker.availability_status == AvailabilityStatus.AVAILABLE:
             return 100, {"key": "matching.availability.available", "args": {}}
         elif worker.availability_status == AvailabilityStatus.BUSY:
-            return 0, {"key": "matching.availability.busy", "args": {}}
+            return 25, {"key": "matching.availability.busy", "args": {}}
         else:
             return 0, {"key": "matching.availability.unavailable", "args": {}}
 

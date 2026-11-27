@@ -1,6 +1,7 @@
 """KaamSetu - Authenticated WebSocket Real-Time Event Endpoint"""
 import asyncio
 import json
+import time
 from uuid import UUID, uuid4
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 from sqlalchemy import select
@@ -39,6 +40,7 @@ async def websocket_endpoint(websocket: WebSocket):
             return
         payload = decode_access_token(token)
         user_id = UUID(str(payload["sub"]))
+        token_exp = payload.get("exp")
     except asyncio.TimeoutError:
         try:
             await websocket.close(code=4408)
@@ -60,6 +62,14 @@ async def websocket_endpoint(websocket: WebSocket):
         if not user:
             await websocket.close(code=4401)
             return
+        token_ver = payload.get("token_version")
+        if token_ver is None:
+            token_ver = payload.get("ver")
+        user_ver = getattr(user, "token_version", 1) or 1
+        effective_token_ver = 1 if token_ver is None else token_ver
+        if effective_token_ver != user_ver:
+            await websocket.close(code=4401)
+            return
 
     try:
         await ws_manager.register(user_id, websocket)
@@ -74,15 +84,36 @@ async def websocket_endpoint(websocket: WebSocket):
 
     try:
         while True:
+            read_timeout = IDLE_READ_TIMEOUT_SECONDS
+            if token_exp is not None:
+                remaining = float(token_exp) - time.time()
+                if remaining <= 0:
+                    try:
+                        await websocket.close(code=4401)
+                    except Exception:
+                        pass
+                    ws_manager.disconnect(user_id, websocket)
+                    return
+                read_timeout = min(read_timeout, max(0.05, remaining))
+
             msg = await asyncio.wait_for(
                 websocket.receive_text(),
-                timeout=IDLE_READ_TIMEOUT_SECONDS,
+                timeout=read_timeout,
             )
             if msg == "ping":
                 await websocket.send_text("pong")
+                continue
+            try:
+                ctrl = json.loads(msg)
+            except Exception:
+                ctrl = None
+            if isinstance(ctrl, dict) and ctrl.get("type") == "ping":
+                await websocket.send_json({"event": "pong", "data": {}})
     except asyncio.TimeoutError:
+        expired = token_exp is not None and time.time() >= float(token_exp)
+        close_code = 4401 if expired else 4000
         try:
-            await websocket.close(code=4000)
+            await websocket.close(code=close_code)
         except Exception:
             pass
         ws_manager.disconnect(user_id, websocket)
