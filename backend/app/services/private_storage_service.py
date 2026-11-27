@@ -12,6 +12,7 @@ Supports:
 """
 import base64
 import hashlib
+import json
 import logging
 import mimetypes
 import os
@@ -25,7 +26,7 @@ from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 from cryptography.hazmat.primitives.kdf.hkdf import HKDF
 
-from app.core.config import settings
+from app.core.config import settings, validate_private_docs_encryption_secret
 
 logger = logging.getLogger(__name__)
 
@@ -64,10 +65,10 @@ _SAFE_FILENAME_RE = re.compile(r"^[A-Za-z0-9._-]+$")
 
 def _derive_aes_key(secret: str) -> bytes:
     """
-    Derive a 32-byte AES-256 key from either a URL-safe/standard base64 32-byte
-    secret or an arbitrary high-entropy passphrase via HKDF-SHA256.
+    Validate and derive a 32-byte AES-256 key from either a URL-safe/standard base64
+    32-byte secret or a high-entropy passphrase (>=32 chars) via HKDF-SHA256.
     """
-    raw = secret.strip()
+    raw = validate_private_docs_encryption_secret(secret)
     try:
         decoded = base64.urlsafe_b64decode(raw + "=" * (-len(raw) % 4))
         if len(decoded) == 32:
@@ -83,6 +84,30 @@ def _derive_aes_key(secret: str) -> bytes:
     return hkdf.derive(raw.encode("utf-8"))
 
 
+def _validate_backend_service_key(service_key: str) -> str:
+    """
+    Validate backend Supabase Storage key type. Rejects client publishable/anon keys
+    to prevent misconfiguration.
+    """
+    key = service_key.strip()
+    if not key:
+        raise RuntimeError("SUPABASE_SERVICE_ROLE_KEY is missing.")
+    if key.startswith("sb_publishable_"):
+        raise RuntimeError("SUPABASE_SERVICE_ROLE_KEY cannot be a client publishable key (sb_publishable_*).")
+    if key.count(".") == 2:
+        try:
+            payload_b64 = key.split(".")[1]
+            payload_raw = base64.urlsafe_b64decode(payload_b64 + "=" * (-len(payload_b64) % 4))
+            claims = json.loads(payload_raw.decode("utf-8"))
+            if isinstance(claims, dict) and claims.get("role") == "anon":
+                raise RuntimeError("SUPABASE_SERVICE_ROLE_KEY cannot be an anon JWT key.")
+        except RuntimeError:
+            raise
+        except Exception:
+            pass
+    return key
+
+
 class SupabasePrivateBucketDriver:
     """Thin REST client for Supabase Storage private buckets (backend-only)."""
 
@@ -95,16 +120,18 @@ class SupabasePrivateBucketDriver:
         transport: Optional[httpx.BaseTransport] = None,
     ):
         self.base_url = supabase_url.strip().rstrip("/")
-        self.service_key = service_key.strip()
+        self.service_key = _validate_backend_service_key(service_key)
         self.bucket = bucket.strip()
         self.timeout = timeout
         self.transport = transport
 
     def _headers(self, extra: Optional[dict] = None) -> dict:
-        headers = {
-            "apikey": self.service_key,
-            "Authorization": f"Bearer {self.service_key}",
-        }
+        headers = {"apikey": self.service_key}
+        # Per Supabase docs: modern opaque `sb_secret_*` keys are NOT JWTs and must
+        # only be sent in `apikey` (never as `Authorization: Bearer <non-JWT>`).
+        # Legacy `service_role` JWTs (3 dot-separated segments) require `Authorization: Bearer`.
+        if not self.service_key.startswith("sb_secret_") and self.service_key.count(".") == 2:
+            headers["Authorization"] = f"Bearer {self.service_key}"
         if extra:
             headers.update(extra)
         return headers
@@ -115,11 +142,47 @@ class SupabasePrivateBucketDriver:
             kwargs["transport"] = self.transport
         return httpx.Client(**kwargs)
 
+    @staticmethod
+    def _is_missing_resource(resp: httpx.Response, *, allow_object_missing: bool = False) -> bool:
+        """
+        Detect Supabase Storage missing bucket/object responses without suppressing genuine
+        auth (401/403), permission, or unrelated HTTP 400 validation errors.
+        Supabase Storage commonly returns HTTP 400 with embedded {"statusCode": "404", ...}.
+        """
+        if resp.status_code == 404:
+            return True
+        if resp.status_code != 400:
+            return False
+        try:
+            body = resp.json()
+        except Exception:
+            return False
+        if not isinstance(body, dict):
+            return False
+
+        embedded_status = str(body.get("statusCode") or "")
+        code = str(body.get("code") or "")
+        err = str(body.get("error") or "").lower()
+        msg = str(body.get("message") or "").lower()
+
+        if embedded_status == "404":
+            if code == "NoSuchBucket" or "bucket not found" in err or "bucket not found" in msg:
+                return True
+            if allow_object_missing and (
+                code == "NoSuchKey"
+                or err in ("not_found", "nosuchkey")
+                or "not found" in msg
+            ):
+                return True
+        if allow_object_missing and err == "not_found":
+            return True
+        return False
+
     def get_bucket_info(self) -> Optional[dict]:
         url = f"{self.base_url}/storage/v1/bucket/{self.bucket}"
         with self._client() as client:
             resp = client.get(url, headers=self._headers())
-        if resp.status_code == 404:
+        if self._is_missing_resource(resp, allow_object_missing=False):
             return None
         if resp.status_code >= 400:
             raise RuntimeError(f"Supabase bucket lookup failed ({resp.status_code}): {resp.text[:200]}")
@@ -177,9 +240,7 @@ class SupabasePrivateBucketDriver:
         url = f"{self.base_url}/storage/v1/object/{self.bucket}/{object_path.lstrip('/')}"
         with self._client() as client:
             resp = client.get(url, headers=self._headers())
-        if resp.status_code == 404:
-            raise FileNotFoundError("Requested document file does not exist in private storage.")
-        if resp.status_code == 400 and "not_found" in resp.text.lower():
+        if self._is_missing_resource(resp, allow_object_missing=True):
             raise FileNotFoundError("Requested document file does not exist in private storage.")
         if resp.status_code >= 400:
             raise RuntimeError(f"Supabase Storage download failed ({resp.status_code}): {resp.text[:200]}")
@@ -189,7 +250,7 @@ class SupabasePrivateBucketDriver:
         url = f"{self.base_url}/storage/v1/object/{self.bucket}/{object_path.lstrip('/')}"
         with self._client() as client:
             resp = client.delete(url, headers=self._headers())
-        if resp.status_code == 404:
+        if self._is_missing_resource(resp, allow_object_missing=True):
             return False
         if resp.status_code >= 400:
             raise RuntimeError(f"Supabase Storage delete failed ({resp.status_code}): {resp.text[:200]}")
@@ -347,9 +408,16 @@ class PrivateDocumentStorage:
 
         return normalized_mime
 
+    def _is_production_env(self) -> bool:
+        return (getattr(settings, "ENVIRONMENT", "") or "").strip().lower() in ("production", "prod")
+
     def _encrypt_if_configured(self, plaintext: bytes, aad: bytes) -> Tuple[bytes, bool]:
         secret = self._get_encryption_secret()
         if not secret:
+            if self._is_production_env() and self._resolve_backend_mode() == "supabase":
+                raise RuntimeError(
+                    "PRIVATE_DOCS_ENCRYPTION_KEY is mandatory when production Supabase private storage is enabled."
+                )
             return plaintext, False
         key = _derive_aes_key(secret)
         nonce = os.urandom(ENVELOPE_NONCE_LEN)
