@@ -13,18 +13,21 @@ def ensure_utc(dt: datetime) -> datetime:
 
 async def _notify_booking_counterpart(db, booking, user_role, action):
     try:
+        from app.services.ws_manager import queue_ws_event
         if str(user_role).upper() == "WORKER":
             from app.models.models import EmployerProfile
             emp_res = await db.execute(select(EmployerProfile).where(EmployerProfile.id == booking.employer_id))
             emp = emp_res.scalar_one_or_none()
             if emp:
                 await create_notification(db, emp.user_id, f"SHIFT_{action.upper()}", f"Shift {action}", f"A shift was {action.lower()}.", booking.id, "SHIFT_BOOKING")
+                queue_ws_event(db, emp.user_id, "shift:updated", {"booking_id": str(booking.id), "action": action.upper()})
         else:
             from app.models.models import WorkerProfile
             work_res = await db.execute(select(WorkerProfile).where(WorkerProfile.id == booking.worker_id))
             worker = work_res.scalar_one_or_none()
             if worker:
                 await create_notification(db, worker.user_id, f"SHIFT_{action.upper()}", f"Shift {action}", f"A shift was {action.lower()}.", booking.id, "SHIFT_BOOKING")
+                queue_ws_event(db, worker.user_id, "shift:updated", {"booking_id": str(booking.id), "action": action.upper()})
     except Exception:
         pass
 
@@ -106,11 +109,27 @@ async def update_availability(
         raise HTTPException(status_code=404, detail="Availability not found")
         
     for key, value in data.model_dump(exclude_unset=True).items():
-        setattr(avail, key, value)
-        
-    if avail.start_time >= avail.end_time:
+        if key in ("start_time", "end_time") and value is not None:
+            setattr(avail, key, ensure_utc(value))
+        else:
+            setattr(avail, key, value)
+
+    start_utc = ensure_utc(avail.start_time)
+    end_utc = ensure_utc(avail.end_time)
+    if start_utc >= end_utc:
         raise HTTPException(status_code=400, detail="Start time must precede end time")
-        
+
+    conflict = await db.execute(
+        select(WorkerAvailability).where(
+            WorkerAvailability.worker_id == profile.id,
+            WorkerAvailability.id != avail_id,
+            WorkerAvailability.start_time < end_utc,
+            WorkerAvailability.end_time > start_utc,
+        )
+    )
+    if conflict.scalar_one_or_none():
+        raise HTTPException(status_code=400, detail="Availability timeslot overlaps with an existing one")
+
     await db.commit()
     await db.refresh(avail)
     return avail
@@ -208,6 +227,7 @@ async def request_shift(
 
     # 6. Notify worker safely
     try:
+        from app.services.ws_manager import queue_ws_event
         emp_name = employer.organization_name or employer.full_name or "An employer"
         await create_notification(
             db=db,
@@ -218,6 +238,7 @@ async def request_shift(
             reference_id=booking.id,
             reference_type="SHIFT_BOOKING"
         )
+        queue_ws_event(db, worker.user_id, "shift:updated", {"booking_id": str(booking.id), "action": "REQUESTED"})
     except Exception:
         pass
 

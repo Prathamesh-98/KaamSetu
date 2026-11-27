@@ -104,6 +104,7 @@ async def list_jobs(
     work_type: Optional[WorkType] = Query(None),
     salary_min: Optional[float] = Query(None),
     salary_max: Optional[float] = Query(None),
+    salary_type: Optional[SalaryType] = Query(None),
     is_urgent: Optional[bool] = Query(None),
     skill_id: Optional[UUID] = Query(None),
     experience_max: Optional[int] = Query(None),
@@ -154,6 +155,8 @@ async def list_jobs(
         filters.append(Job.state.ilike(f"%{state}%"))
     if work_type:
         filters.append(Job.work_type == work_type)
+    if salary_type:
+        filters.append(Job.salary_type == salary_type)
     if salary_min is not None:
         filters.append(
             or_(Job.salary_max >= salary_min, Job.salary_min >= salary_min)
@@ -378,6 +381,8 @@ async def get_job_match(
     job = job_result.scalar_one_or_none()
     if not job:
         raise HTTPException(status_code=404, detail="Job not found")
+    if job.status != JobStatus.ACTIVE:
+        raise HTTPException(status_code=400, detail="Job is not active for matching")
 
     # Load worker profile with skills
     worker_result = await db.execute(
@@ -411,12 +416,25 @@ async def get_job_candidates(
     job = job_result.scalar_one_or_none()
     if not job:
         raise HTTPException(status_code=404, detail="Job not found or not owned by employer")
+    if job.status in (JobStatus.CLOSED, JobStatus.CANCELLED):
+        raise HTTPException(status_code=400, detail="Job is closed or cancelled")
 
     # Smart priority ordering for bounded candidate pool evaluation:
-    # Prioritize workers with matching required skills (weight 35%),
-    # workers in the same city/state (weight 20%), and available workers (weight 5%).
+    # Prioritize mandatory skill eligibility and availability first, then optional skills,
+    # city/state proximity, ratings, and experience.
     order_clauses = []
-    req_skill_ids = [rs.skill_id for rs in (job.required_skills or [])]
+    req_skills = job.required_skills or []
+    mandatory_skill_ids = [rs.skill_id for rs in req_skills if getattr(rs, "is_mandatory", False)]
+    req_skill_ids = [rs.skill_id for rs in req_skills]
+
+    if mandatory_skill_ids:
+        for m_skill_id in mandatory_skill_ids:
+            has_mandatory = WorkerProfile.skills.any(WorkerSkill.skill_id == m_skill_id)
+            order_clauses.append(case((has_mandatory, 0), else_=1))
+
+    is_available = WorkerProfile.availability_status == AvailabilityStatus.AVAILABLE
+    order_clauses.append(case((is_available, 0), else_=1))
+
     if req_skill_ids:
         has_skill = WorkerProfile.skills.any(WorkerSkill.skill_id.in_(req_skill_ids))
         order_clauses.append(case((has_skill, 0), else_=1))
@@ -429,8 +447,6 @@ async def get_job_candidates(
         loc_state = func.lower(WorkerProfile.state) == func.lower(job.state)
         order_clauses.append(case((loc_state, 0), else_=1))
 
-    is_available = WorkerProfile.availability_status == AvailabilityStatus.AVAILABLE
-    order_clauses.append(case((is_available, 0), else_=1))
     order_clauses.append(WorkerProfile.average_rating.desc())
     order_clauses.append(WorkerProfile.years_experience.desc())
     order_clauses.append(WorkerProfile.created_at.desc())
