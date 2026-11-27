@@ -13,12 +13,17 @@ import MobileSplashScreen from '../components/MobileSplashScreen';
 import MobileHomePage from '../pages/MobileHomePage';
 import MobileLoginPage from '../pages/MobileLoginPage';
 import MobileRegisterPage from '../pages/MobileRegisterPage';
+import MobileForgotPasswordPage from '../pages/MobileForgotPasswordPage';
 import MobileNotificationsPage from '../pages/shared/MobileNotificationsPage';
 import MobileMessagesPage from '../pages/shared/MobileMessagesPage';
 
 // Worker Mobile Pages
 import MobileWorkerDashboard from '../pages/worker/MobileWorkerDashboard';
 import MobileFindJobsPage from '../pages/worker/MobileFindJobsPage';
+import MobileJobDetailsPage from '../pages/worker/MobileJobDetailsPage';
+import MobileSavedJobsPage from '../pages/worker/MobileSavedJobsPage';
+import MobileMyApplicationsPage from '../pages/worker/MobileMyApplicationsPage';
+import MobileMyAvailabilityPage from '../pages/worker/MobileMyAvailabilityPage';
 import MobileWorkerProfilePage from '../pages/worker/MobileWorkerProfilePage';
 import MobileWorkerShiftsPage from '../pages/worker/MobileWorkerShiftsPage';
 import MobileWorkerVerificationCenter from '../components/MobileWorkerVerificationCenter';
@@ -28,20 +33,12 @@ import MobileEmployerDashboard from '../pages/employer/MobileEmployerDashboard';
 import MobileHireWorkersPage from '../pages/employer/MobileHireWorkersPage';
 import MobileMyJobsPage from '../pages/employer/MobileMyJobsPage';
 import MobilePostJobPage from '../pages/employer/MobilePostJobPage';
+import MobileJobApplicantsPage from '../pages/employer/MobileJobApplicantsPage';
+import MobileSavedWorkersPage from '../pages/employer/MobileSavedWorkersPage';
+import MobileEmployerWorkerDetailPage from '../pages/employer/MobileEmployerWorkerDetailPage';
+import MobileEmployerShiftBookingsPage from '../pages/employer/MobileEmployerShiftBookingsPage';
 import MobileEmployerProfilePage from '../pages/employer/MobileEmployerProfilePage';
 import MobileEmployerVerificationCenter from '../components/MobileEmployerVerificationCenter';
-
-// Shared existing sub-pages (lazy loaded)
-const ForgotPasswordPage = lazy(() => import('../../pages/auth/ForgotPasswordPage'));
-const SavedJobsPage = lazy(() => import('../../pages/worker/SavedJobsPage'));
-const MyApplications = lazy(() => import('../../pages/worker/MyApplications'));
-const MyAvailabilityPage = lazy(() => import('../../pages/worker/MyAvailabilityPage'));
-const JobApplicantsPage = lazy(() => import('../../pages/employer/JobApplicantsPage'));
-const EmployerWorkerDetailPage = lazy(() => import('../../pages/employer/EmployerWorkerDetailPage'));
-const SavedWorkersPage = lazy(() => import('../../pages/employer/SavedWorkersPage'));
-const EmployerShiftBookingsPage = lazy(() =>
-  import('../../pages/employer/EmployerShiftBookingsPage').then((m) => ({ default: m.EmployerShiftBookingsPage }))
-);
 
 // Admin Pages (preserved)
 const AdminDashboard = lazy(() => import('../../pages/admin/AdminDashboard'));
@@ -130,7 +127,7 @@ export const MobileAppRouter: React.FC = () => {
                 </>
               }
             />
-            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+            <Route path="/forgot-password" element={<MobileForgotPasswordPage />} />
             <Route path="/notifications" element={<MobileNotificationsPage />} />
 
             {/* Worker Mobile Routes */}
@@ -143,11 +140,11 @@ export const MobileAppRouter: React.FC = () => {
             >
               <Route path="/worker/dashboard" element={<MobileWorkerDashboard />} />
               <Route path="/worker/jobs" element={<MobileFindJobsPage />} />
-              <Route path="/worker/jobs/:id" element={<MobileFindJobsPage />} />
-              <Route path="/worker/saved-jobs" element={<SavedJobsPage />} />
-              <Route path="/worker/applications" element={<MyApplications />} />
+              <Route path="/worker/jobs/:id" element={<MobileJobDetailsPage />} />
+              <Route path="/worker/saved-jobs" element={<MobileSavedJobsPage />} />
+              <Route path="/worker/applications" element={<MobileMyApplicationsPage />} />
               <Route path="/worker/shifts" element={<MobileWorkerShiftsPage />} />
-              <Route path="/worker/availability" element={<MyAvailabilityPage />} />
+              <Route path="/worker/availability" element={<MobileMyAvailabilityPage />} />
               <Route path="/worker/profile" element={<MobileWorkerProfilePage />} />
               <Route path="/worker/verification" element={<MobileWorkerVerificationCenter />} />
               <Route path="/worker/messages" element={<MobileMessagesPage />} />
@@ -164,14 +161,15 @@ export const MobileAppRouter: React.FC = () => {
               <Route path="/employer/dashboard" element={<MobileEmployerDashboard />} />
               <Route path="/employer/candidates" element={<MobileHireWorkersPage />} />
               <Route path="/employer/post-job" element={<MobilePostJobPage />} />
+              <Route path="/employer/jobs/:id/edit" element={<MobilePostJobPage />} />
               <Route path="/employer/jobs" element={<MobileMyJobsPage />} />
-              <Route path="/employer/jobs/:id/applicants" element={<JobApplicantsPage />} />
+              <Route path="/employer/jobs/:id/applicants" element={<MobileJobApplicantsPage />} />
               <Route path="/employer/jobs/:id/candidates" element={<MobileHireWorkersPage />} />
-              <Route path="/employer/workers/:id" element={<EmployerWorkerDetailPage />} />
-              <Route path="/employer/saved-workers" element={<SavedWorkersPage />} />
+              <Route path="/employer/workers/:id" element={<MobileEmployerWorkerDetailPage />} />
+              <Route path="/employer/saved-workers" element={<MobileSavedWorkersPage />} />
               <Route path="/employer/profile" element={<MobileEmployerProfilePage />} />
               <Route path="/employer/verification" element={<MobileEmployerVerificationCenter />} />
-              <Route path="/employer/shifts" element={<EmployerShiftBookingsPage />} />
+              <Route path="/employer/shifts" element={<MobileEmployerShiftBookingsPage />} />
               <Route path="/employer/messages" element={<MobileMessagesPage />} />
             </Route>
 

@@ -1,4 +1,4 @@
-/* KaamSetu Mobile Application Scoped Stylesheet (Material Design 3 Inspired) */
+/* KaamSetu Mobile Application Scoped Stylesheet */
 
 :root {
   --mobile-primary: #1F2A6B;
@@ -22,6 +22,7 @@
   --sar: env(safe-area-inset-right, 0px);
   --app-safe-top: env(safe-area-inset-top, 0px);
   --app-safe-bottom: env(safe-area-inset-bottom, 0px);
+  --keyboard-height: 0px;
 
   /* Heights */
   --mobile-header-height: 56px;
@@ -42,13 +43,13 @@
   flex-direction: column;
   position: fixed;
   inset: 0;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans", "Noto Sans Devanagari", "Noto Sans Kannada", "Noto Sans Telugu", sans-serif;
   -webkit-tap-highlight-color: transparent;
   padding-left: var(--sal);
   padding-right: var(--sar);
 }
 
-/* Top Safe Area Header */
+/* Top Safe Area Header (only header handles top status bar padding cleanly) */
 .mobile-header-safe {
   flex-shrink: 0;
   padding-top: max(var(--app-safe-top), var(--sat), 10px);
@@ -89,7 +90,7 @@ body:has(.mobile-modal-overlay) .mobile-nav-safe,
   opacity: 0 !important;
 }
 
-/* Content padding: only content area scrolls; content never hidden behind nav */
+/* Scrollable body inside root layout */
 .mobile-content-area {
   flex: 1 1 0%;
   min-height: 0;
@@ -99,8 +100,24 @@ body:has(.mobile-modal-overlay) .mobile-nav-safe,
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior-y: contain;
-  padding-top: max(var(--app-safe-top), var(--sat), 0px);
-  padding-bottom: calc(var(--mobile-bottom-nav-height) + max(var(--app-safe-bottom), var(--sab), 12px) + 24px);
+  padding-bottom: calc(var(--mobile-bottom-nav-height) + max(var(--app-safe-bottom), var(--sab), 12px) + 28px);
+}
+
+/* When a page has no top .mobile-header-safe sibling, preserve top status-bar clearance */
+.mobile-content-area-top-safe {
+  padding-top: max(var(--app-safe-top), var(--sat), 8px);
+}
+
+/* Scrollable body inside full-screen editors/subpages (no bottom nav present) */
+.mobile-subpage-scroll {
+  flex: 1 1 0%;
+  min-height: 0;
+  width: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+  padding-bottom: calc(max(var(--app-safe-bottom), var(--sab), 16px) + 16px);
 }
 
 /* Fullscreen Mobile Form/Editor (Covers fixed bottom navigation completely) */
@@ -113,6 +130,7 @@ body:has(.mobile-modal-overlay) .mobile-nav-safe,
   flex-direction: column;
   height: 100vh;
   height: 100dvh;
+  max-height: 100dvh;
   overflow: hidden;
 }
 
@@ -120,13 +138,14 @@ body:has(.mobile-modal-overlay) .mobile-nav-safe,
 .mobile-modal-overlay {
   position: fixed;
   inset: 0;
-  z-index: 100;
+  z-index: 110;
   display: flex;
   align-items: flex-end;
   justify-content: center;
   background-color: rgba(0, 0, 0, 0.65);
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
+  padding-bottom: var(--keyboard-height);
 }
 
 @media (min-width: 640px) {
@@ -140,8 +159,7 @@ body:has(.mobile-modal-overlay) .mobile-nav-safe,
 .mobile-modal-sheet {
   width: 100%;
   max-width: 28rem;
-  max-height: 90vh;
-  max-height: 90dvh;
+  max-height: calc(92dvh - var(--keyboard-height));
   display: flex;
   flex-direction: column;
   background-color: #FFFFFF;
@@ -157,12 +175,14 @@ body:has(.mobile-modal-overlay) .mobile-nav-safe,
   }
 }
 
-/* Sticky Action Footer for Modals and Forms */
+/* Sticky Action Footer for Modals, Chat Composer, and Full-Screen Forms */
 .mobile-sticky-footer {
+  flex-shrink: 0;
   background-color: #FFFFFF;
   border-top: 1px solid var(--mobile-border);
-  padding: 0.875rem 1rem;
+  padding: 0.75rem 1rem;
   padding-bottom: max(var(--app-safe-bottom), var(--sab), 12px);
+  margin-bottom: var(--keyboard-height);
   box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.05);
   z-index: 20;
 }
@@ -189,55 +209,6 @@ body:has(.mobile-modal-overlay) .mobile-nav-safe,
   transform: scale(0.99);
 }
 
-/* Mobile Buttons */
-.mobile-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 600;
-  border-radius: 12px;
-  padding: 12px 18px;
-  min-height: 48px;
-  font-size: 15px;
-  transition: all 0.15s ease;
-  user-select: none;
-  border: none;
-  cursor: pointer;
-}
-
-.mobile-btn:active {
-  transform: scale(0.98);
-}
-
-.mobile-btn-primary {
-  background-color: var(--mobile-primary);
-  color: #FFFFFF;
-}
-
-.mobile-btn-primary:active {
-  background-color: var(--mobile-primary-hover);
-}
-
-.mobile-btn-accent {
-  background-color: var(--mobile-accent);
-  color: #FFFFFF;
-}
-
-.mobile-btn-accent:active {
-  background-color: var(--mobile-accent-hover);
-}
-
-.mobile-btn-outline {
-  background-color: #FFFFFF;
-  color: var(--mobile-primary);
-  border: 1.5px solid var(--mobile-primary);
-}
-
-.mobile-btn-ghost {
-  background-color: transparent;
-  color: var(--mobile-subtext);
-}
-
 /* Skeleton Loading */
 @keyframes mobilePulse {
   0%, 100% { opacity: 1; }
@@ -248,4 +219,13 @@ body:has(.mobile-modal-overlay) .mobile-nav-safe,
   background-color: #E2E8F0;
   border-radius: 8px;
   animation: mobilePulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Safe area scrollbar suppression for horizontal tabs */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }

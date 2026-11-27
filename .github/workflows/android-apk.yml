@@ -1,7 +1,7 @@
 name: KaamSetu Android APK
 on:
   push:
-    branches: [android-native-ui, android-hardened, android-profile-fixes, android-comprehensive-overhaul]
+    branches: [android-native-ui, android-hardened, android-profile-fixes, android-comprehensive-overhaul, android-feature-parity-v2]
   workflow_dispatch:
 permissions:
   contents: read
@@ -92,12 +92,22 @@ jobs:
           ns = 'http://schemas.android.com/apk/res/android'
           ET.register_namespace('android', ns)
           t = ET.parse(p)
-          app = t.getroot().find('application')
+          root = t.getroot()
+          existing_perms = {el.attrib.get('{'+ns+'}name') for el in root.findall('uses-permission')}
+          for perm in ['android.permission.ACCESS_COARSE_LOCATION', 'android.permission.ACCESS_FINE_LOCATION']:
+              if perm not in existing_perms:
+                  up = ET.Element('uses-permission')
+                  up.set('{'+ns+'}name', perm)
+                  root.insert(0, up)
+          app = root.find('application')
           for key in ['allowBackup', 'usesCleartextTraffic']:
               app.set('{'+ns+'}'+key, 'false')
           # Do not hardcode android:debuggable in manifest, let Gradle manage release debugging
           if '{'+ns+'}debuggable' in app.attrib:
               del app.attrib['{'+ns+'}debuggable']
+          for act in app.findall('activity'):
+              if act.attrib.get('{'+ns+'}name', '').endswith('MainActivity'):
+                  act.set('{'+ns+'}windowSoftInputMode', 'adjustResize')
           t.write(p, encoding='utf-8', xml_declaration=True)
           PY
       - name: Compile non-debuggable release APK and verify

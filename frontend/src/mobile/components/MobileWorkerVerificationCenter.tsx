@@ -1,5 +1,6 @@
 // KaamSetu — Mobile Worker Trust & Verification Center
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
@@ -8,6 +9,7 @@ import {
 } from 'lucide-react';
 import { verificationsApi, workerApi } from '../../api/services';
 import { extractErrorMessage } from '../../api/client';
+import { MobileSecureDocumentModal } from './ui/MobileSecureDocumentModal';
 import type { WorkerProfile, VerificationRecord } from '../../types';
 
 interface MobileWorkerVerificationCenterProps {
@@ -20,7 +22,9 @@ const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024; // 5MB
 
 export const MobileWorkerVerificationCenter: React.FC<MobileWorkerVerificationCenterProps> = ({ profile: initialProfile, onClose }) => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const [viewingDocRecord, setViewingDocRecord] = useState<VerificationRecord | null>(null);
 
   // Active section tabs
   const [activeTab, setActiveTab] = useState<'overview' | 'phone' | 'identity' | 'skills' | 'history'>('overview');
@@ -232,7 +236,7 @@ export const MobileWorkerVerificationCenter: React.FC<MobileWorkerVerificationCe
         <div className="flex h-14 items-center justify-between px-3">
           <button
             type="button"
-            onClick={onClose}
+            onClick={() => (onClose ? onClose() : navigate(-1))}
             className="mobile-touch-target rounded-full p-2 text-white/80 hover:text-white hover:bg-white/10 active:scale-95 transition-transform"
             aria-label="Back"
           >
@@ -723,9 +727,17 @@ export const MobileWorkerVerificationCenter: React.FC<MobileWorkerVerificationCe
           <div className="space-y-4">
             {/* Existing Certificates List */}
             <div className="rounded-2xl bg-white p-4 border border-slate-200 shadow-xs space-y-3">
-              <h2 className="text-sm font-extrabold text-slate-900">
-                {t('verification.mySkillCertificates', 'My Skill Certificates')}
-              </h2>
+              <div className="flex items-center justify-between gap-2">
+                <h2 className="text-sm font-extrabold text-slate-900">
+                  {t('verification.mySkillCertificates', 'My Skill Certificates')}
+                </h2>
+                {statusSummary?.skills_status && statusSummary.skills_status.length > 0 && (
+                  <span className="rounded-full bg-indigo-50 px-2.5 py-0.5 text-[10px] font-extrabold text-indigo-800 uppercase">
+                    {statusSummary.skills_status.filter((s) => s.status === 'VERIFIED').length}/
+                    {statusSummary.skills_status.length} ✓
+                  </span>
+                )}
+              </div>
 
               {skillSuccess && (
                 <div className="flex items-center gap-2 rounded-xl bg-emerald-50 p-3 text-xs text-emerald-800 border border-emerald-200">
@@ -787,7 +799,8 @@ export const MobileWorkerVerificationCenter: React.FC<MobileWorkerVerificationCe
                     setSkillError(t('verification.titleRequired', 'Please enter a certificate title.'));
                     return;
                   }
-                  const resolvedSkillId = selectedSkillId || (workerSkills.length > 0 ? workerSkills[0].id : 'skill-general');
+                  const firstSkillId = workerSkills[0]?.skill?.id || workerSkills[0]?.id;
+                  const resolvedSkillId = selectedSkillId || firstSkillId || 'skill-general';
                   submitSkillMutation.mutate({
                     file: skillFile,
                     skillId: resolvedSkillId,
@@ -805,15 +818,18 @@ export const MobileWorkerVerificationCenter: React.FC<MobileWorkerVerificationCe
                       {t('verification.associateSkill', 'Associate with Skill')} *
                     </label>
                     <select
-                      value={selectedSkillId}
+                      value={selectedSkillId || workerSkills[0]?.skill?.id || workerSkills[0]?.id || ''}
                       onChange={(e) => setSelectedSkillId(e.target.value)}
                       className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-xs font-semibold focus:border-indigo-900 focus:outline-none"
                     >
-                      {workerSkills.map((ws: any) => (
-                        <option key={ws.id} value={ws.id}>
-                          {ws.skill?.name || ws.skill_id}
-                        </option>
-                      ))}
+                      {workerSkills.map((ws) => {
+                        const actualSkillId = ws.skill?.id || ws.id;
+                        return (
+                          <option key={ws.id} value={actualSkillId}>
+                            {ws.skill?.name || ws.id}
+                          </option>
+                        );
+                      })}
                     </select>
                   </div>
                 )}
@@ -923,8 +939,20 @@ export const MobileWorkerVerificationCenter: React.FC<MobileWorkerVerificationCe
                       </div>
                     )}
 
-                    <div className="text-[10px] text-slate-400">
-                      {new Date(rec.created_at).toLocaleString()}
+                    <div className="flex items-center justify-between pt-1">
+                      <span className="text-[10px] text-slate-400">
+                        {new Date(rec.created_at).toLocaleString()}
+                      </span>
+                      {(rec as any).has_document !== false && rec.verification_type !== 'PHONE' && (
+                        <button
+                          type="button"
+                          onClick={() => setViewingDocRecord(rec)}
+                          className="inline-flex items-center gap-1 rounded-lg bg-indigo-50 px-2.5 py-1 text-[11px] font-bold text-indigo-800 active:scale-95"
+                        >
+                          <Eye className="h-3.5 w-3.5" />
+                          {t('verification.viewDocument', 'View Document')}
+                        </button>
+                      )}
                     </div>
                   </div>
                 ))}
@@ -938,6 +966,14 @@ export const MobileWorkerVerificationCenter: React.FC<MobileWorkerVerificationCe
           </div>
         )}
       </div>
+
+      {viewingDocRecord && (
+        <MobileSecureDocumentModal
+          recordId={viewingDocRecord.id}
+          documentType={viewingDocRecord.document_type || viewingDocRecord.verification_type}
+          onClose={() => setViewingDocRecord(null)}
+        />
+      )}
     </div>
   );
 };

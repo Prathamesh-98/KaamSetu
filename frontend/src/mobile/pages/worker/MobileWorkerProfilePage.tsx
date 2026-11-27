@@ -19,6 +19,7 @@ import MobileLanguageModal from '../../components/MobileLanguageModal';
 import MobileWorkerVerificationCenter from '../../components/MobileWorkerVerificationCenter';
 import { useStatusBar } from '../../hooks/useStatusBar';
 import { INDIAN_STATES } from '../../../utils/constants';
+import { invalidateProfileSync } from '../../sync/queryKeys';
 
 const SALARY_TYPES: { value: SalaryType; label: string }[] = [
   { value: 'HOURLY', label: 'Per Hour' },
@@ -106,39 +107,33 @@ export const MobileWorkerProfilePage: React.FC = () => {
     enabled: skillModalOpen && hasProfile,
   });
 
-  // Identity verification form state
-  const [idDocType, setIdDocType] = useState('DRIVING_LICENSE');
-  const [idFile, setIdFile] = useState<File | null>(null);
-  const [idNotes, setIdNotes] = useState('');
-  const [idError, setIdError] = useState('');
-  const [isSubmittingId, setIsSubmittingId] = useState(false);
+  const [pendingPhotoUrl, setPendingPhotoUrl] = useState<string | null>(null);
 
   // ── Profile Photo Upload ──────────────────────────────────────────────────
   const handlePhotoSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (!hasProfile) {
-      toast.error('Please create your profile first before uploading a photo');
-      handleOpenEdit();
-      return;
-    }
-
     if (!file.type.startsWith('image/')) {
-      toast.error('Please select an image file (JPEG, PNG, WebP)');
+      toast.error(t('worker.invalidImageType', 'Please select an image file (JPEG, PNG, WebP)'));
       return;
     }
     if (file.size > 5 * 1024 * 1024) {
-      toast.error('Image file size must be under 5MB');
+      toast.error(t('worker.imageTooLarge', 'Image file size must be under 5MB'));
       return;
     }
 
     setIsUploadingPhoto(true);
     try {
       const uploadRes = await uploadApi.uploadImage(file, 'kaamsetu/workers');
-      await workerApi.updateProfile({ profile_image_url: uploadRes.url });
-      await queryClient.invalidateQueries({ queryKey: ['worker-profile', user?.id] });
-      toast.success('Profile photo updated successfully!');
+      if (hasProfile) {
+        await workerApi.updateProfile({ profile_image_url: uploadRes.url });
+        await invalidateProfileSync(queryClient, 'WORKER', user?.id);
+        toast.success(t('worker.photoUpdated', 'Profile photo updated successfully!'));
+      } else {
+        setPendingPhotoUrl(uploadRes.url);
+        toast.success(t('worker.photoStaged', 'Photo uploaded! Complete profile below to save.'));
+      }
     } catch (err) {
       toast.error(extractErrorMessage(err) || 'Failed to upload photo');
     } finally {
@@ -240,13 +235,17 @@ export const MobileWorkerProfilePage: React.FC = () => {
 
       if (!hasProfile) {
         await workerApi.createProfile(payload);
-        toast.success('Worker profile created successfully!');
+        if (pendingPhotoUrl) {
+          await workerApi.updateProfile({ profile_image_url: pendingPhotoUrl });
+          setPendingPhotoUrl(null);
+        }
+        toast.success(t('worker.profileCreated', 'Worker profile created successfully!'));
       } else {
         await workerApi.updateProfile(payload);
-        toast.success('Profile updated successfully!');
+        toast.success(t('worker.profileUpdated', 'Profile updated successfully!'));
       }
 
-      await queryClient.invalidateQueries({ queryKey: ['worker-profile', user?.id] });
+      await invalidateProfileSync(queryClient, 'WORKER', user?.id);
       setEditModalOpen(false);
     } catch (err) {
       const msg = extractErrorMessage(err) || (hasProfile ? 'Failed to update profile' : 'Failed to create profile');
@@ -260,14 +259,21 @@ export const MobileWorkerProfilePage: React.FC = () => {
   // ── Toggle Availability ────────────────────────────────────────────────────
   const handleToggleAvailability = async () => {
     if (!workerProfile) return;
-    const current = workerProfile.availability_status;
-    const nextStatus: AvailabilityStatus = current === 'AVAILABLE' ? 'BUSY' : 'AVAILABLE';
+    const order: AvailabilityStatus[] = ['AVAILABLE', 'BUSY', 'UNAVAILABLE'];
+    const currentIdx = order.indexOf(workerProfile.availability_status || 'AVAILABLE');
+    const nextStatus: AvailabilityStatus = order[(currentIdx + 1) % order.length];
     try {
       await workerApi.updateProfile({ availability_status: nextStatus });
-      await queryClient.invalidateQueries({ queryKey: ['worker-profile', user?.id] });
-      toast.success(`Status changed to ${nextStatus === 'AVAILABLE' ? 'Available' : 'Busy'}`);
+      await invalidateProfileSync(queryClient, 'WORKER', user?.id);
+      const label =
+        nextStatus === 'AVAILABLE'
+          ? t('worker.available', 'Available')
+          : nextStatus === 'BUSY'
+          ? t('worker.busy', 'Busy')
+          : t('worker.unavailable', 'Unavailable');
+      toast.success(`${t('mobile:dashboard.availabilityStatus', 'Availability')}: ${label}`);
     } catch (err) {
-      toast.error('Failed to change status');
+      toast.error(t('worker.statusChangeError', 'Failed to change status'));
     }
   };
 
@@ -276,8 +282,8 @@ export const MobileWorkerProfilePage: React.FC = () => {
     mutationFn: ({ skillId, proficiency, years }: { skillId: string; proficiency: string; years: number }) =>
       workerApi.addSkill(skillId, proficiency, years),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['worker-profile', user?.id] });
-      toast.success('Skill added successfully!');
+      invalidateProfileSync(queryClient, 'WORKER', user?.id);
+      toast.success(t('worker.skillAdded', 'Skill added successfully!'));
       setSkillModalOpen(false);
       setSkillSearch('');
     },
@@ -289,37 +295,13 @@ export const MobileWorkerProfilePage: React.FC = () => {
   const removeSkillMutation = useMutation({
     mutationFn: (skillId: string) => workerApi.removeSkill(skillId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['worker-profile', user?.id] });
-      toast.success('Skill removed');
+      invalidateProfileSync(queryClient, 'WORKER', user?.id);
+      toast.success(t('worker.skillRemoved', 'Skill removed'));
     },
     onError: (err) => {
       toast.error(extractErrorMessage(err) || 'Failed to remove skill');
     },
   });
-
-  // ── Submit Identity Verification ──────────────────────────────────────────
-  const handleSubmitIdentity = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!idFile) {
-      setIdError('Please select a government ID document');
-      return;
-    }
-    setIsSubmittingId(true);
-    setIdError('');
-    try {
-      await verificationsApi.submitIdentity(idFile, idDocType, idNotes.trim() || undefined);
-      await queryClient.invalidateQueries({ queryKey: ['worker-verification-status'] });
-      await queryClient.invalidateQueries({ queryKey: ['worker-verification-history'] });
-      toast.success('Identity document submitted for review!');
-      setVerificationModalOpen(false);
-      setIdFile(null);
-      setIdNotes('');
-    } catch (err) {
-      setIdError(extractErrorMessage(err) || 'Failed to submit verification document');
-    } finally {
-      setIsSubmittingId(false);
-    }
-  };
 
   const handleLogout = () => {
     logout();
@@ -381,9 +363,9 @@ export const MobileWorkerProfilePage: React.FC = () => {
         {/* Profile Avatar with Camera Button */}
         <div className="relative mb-3">
           <div className="flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-tr from-indigo-900 to-[#2E3C8A] text-2xl font-black text-white shadow-md overflow-hidden">
-            {workerProfile?.profile_image_url ? (
+            {(workerProfile?.profile_image_url || pendingPhotoUrl) ? (
               <img
-                src={workerProfile.profile_image_url}
+                src={workerProfile?.profile_image_url || pendingPhotoUrl || ''}
                 alt="Profile"
                 className="h-full w-full object-cover"
               />
@@ -438,13 +420,27 @@ export const MobileWorkerProfilePage: React.FC = () => {
             className={`flex flex-col items-center justify-center p-2 rounded-xl text-center border transition-colors active:scale-98 ${
               workerProfile?.availability_status === 'AVAILABLE'
                 ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
+                : workerProfile?.availability_status === 'BUSY'
+                ? 'bg-amber-50 text-amber-800 border-amber-200'
                 : 'bg-slate-50 text-slate-600 border-slate-200'
             }`}
           >
             <span className="text-[10px] uppercase font-bold text-slate-400">{t('worker.status', 'Status')}</span>
             <span className="text-xs font-extrabold mt-0.5 flex items-center gap-1">
-              <span className={`h-2 w-2 rounded-full ${workerProfile?.availability_status === 'AVAILABLE' ? 'bg-emerald-500' : 'bg-slate-400'}`} />
-              {workerProfile?.availability_status === 'AVAILABLE' ? t('worker.available', 'Available') : t('worker.busy', 'Busy')}
+              <span
+                className={`h-2 w-2 rounded-full ${
+                  workerProfile?.availability_status === 'AVAILABLE'
+                    ? 'bg-emerald-500'
+                    : workerProfile?.availability_status === 'BUSY'
+                    ? 'bg-amber-500'
+                    : 'bg-slate-400'
+                }`}
+              />
+              {workerProfile?.availability_status === 'AVAILABLE'
+                ? t('worker.available', 'Available')
+                : workerProfile?.availability_status === 'BUSY'
+                ? t('worker.busy', 'Busy')
+                : t('worker.unavailable', 'Unavailable')}
             </span>
           </button>
 
@@ -636,6 +632,20 @@ export const MobileWorkerProfilePage: React.FC = () => {
               <Calendar className="h-4 w-4" />
             </div>
             <span>{t('worker.shifts', 'Shifts & Work History')}</span>
+          </div>
+          <ChevronRight className="h-4 w-4 text-slate-400" />
+        </button>
+
+        <button
+          type="button"
+          onClick={() => navigate('/worker/availability')}
+          className="flex w-full items-center justify-between p-3.5 text-left text-xs font-semibold text-slate-800 hover:bg-slate-50 active:bg-slate-100"
+        >
+          <div className="flex items-center gap-3">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-cyan-50 text-cyan-700">
+              <Clock className="h-4 w-4" />
+            </div>
+            <span>{t('mobile:availability.title', 'My Availability')}</span>
           </div>
           <ChevronRight className="h-4 w-4 text-slate-400" />
         </button>

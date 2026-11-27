@@ -16,6 +16,8 @@ import MobileLanguageModal from '../../components/MobileLanguageModal';
 import MobileEmployerVerificationCenter from '../../components/MobileEmployerVerificationCenter';
 import { useStatusBar } from '../../hooks/useStatusBar';
 import { INDIAN_STATES } from '../../../utils/constants';
+import { invalidateProfileSync } from '../../sync/queryKeys';
+import { Star } from 'lucide-react';
 
 const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'];
 const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024; // 5MB
@@ -36,6 +38,7 @@ export const MobileEmployerProfilePage: React.FC = () => {
 
   // Logo upload state
   const [isUploadingLogo, setIsUploadingLogo] = useState(false);
+  const [pendingLogoUrl, setPendingLogoUrl] = useState<string | null>(null);
 
   // Profile data query
   const { data: profile, isLoading: isProfileLoading } = useQuery({
@@ -89,12 +92,6 @@ export const MobileEmployerProfilePage: React.FC = () => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (!hasProfile) {
-      toast.error('Please create your company profile first before uploading a logo');
-      handleOpenEdit();
-      return;
-    }
-
     if (!file.type.startsWith('image/')) {
       toast.error('Please select an image file (JPEG, PNG, WebP)');
       return;
@@ -107,9 +104,14 @@ export const MobileEmployerProfilePage: React.FC = () => {
     setIsUploadingLogo(true);
     try {
       const uploadRes = await uploadApi.uploadImage(file, 'kaamsetu/employers');
-      await employerApi.updateProfile({ profile_image_url: uploadRes.url });
-      await queryClient.invalidateQueries({ queryKey: ['employer-profile', user?.id] });
-      toast.success('Company logo updated successfully!');
+      if (hasProfile) {
+        await employerApi.updateProfile({ profile_image_url: uploadRes.url });
+        await invalidateProfileSync(queryClient, 'EMPLOYER', user?.id);
+        toast.success('Company logo updated successfully!');
+      } else {
+        setPendingLogoUrl(uploadRes.url);
+        toast.success('Logo uploaded! Complete company profile below to save.');
+      }
     } catch (err) {
       toast.error(extractErrorMessage(err) || 'Failed to upload logo');
     } finally {
@@ -173,13 +175,17 @@ export const MobileEmployerProfilePage: React.FC = () => {
 
       if (!hasProfile) {
         await employerApi.createProfile(payload);
+        if (pendingLogoUrl) {
+          await employerApi.updateProfile({ profile_image_url: pendingLogoUrl });
+          setPendingLogoUrl(null);
+        }
         toast.success('Company profile created successfully!');
       } else {
         await employerApi.updateProfile(payload);
         toast.success('Company profile updated successfully!');
       }
 
-      await queryClient.invalidateQueries({ queryKey: ['employer-profile', user?.id] });
+      await invalidateProfileSync(queryClient, 'EMPLOYER', user?.id);
       setEditModalOpen(false);
     } catch (err) {
       const msg = extractErrorMessage(err) || (hasProfile ? 'Failed to update company profile' : 'Failed to create company profile');
@@ -287,9 +293,9 @@ export const MobileEmployerProfilePage: React.FC = () => {
         {/* Company Avatar / Logo with Camera Button */}
         <div className="relative mb-3">
           <div className="flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-tr from-indigo-900 to-[#2E3C8A] text-2xl font-black text-white shadow-md overflow-hidden">
-            {employerProfile?.profile_image_url ? (
+            {(employerProfile?.profile_image_url || pendingLogoUrl) ? (
               <img
-                src={employerProfile.profile_image_url}
+                src={employerProfile?.profile_image_url || pendingLogoUrl || ''}
                 alt="Logo"
                 className="h-full w-full object-cover"
               />
@@ -333,6 +339,12 @@ export const MobileEmployerProfilePage: React.FC = () => {
             {employerProfile.organization_type}
           </span>
         )}
+
+        <div className="mt-2 flex items-center gap-1.5 rounded-full bg-amber-50 px-3 py-1 text-xs font-bold text-amber-800 border border-amber-100">
+          <Star className="h-3.5 w-3.5 fill-amber-500 text-amber-500" />
+          <span>{employerProfile?.average_rating ? employerProfile.average_rating.toFixed(1) : '5.0'}</span>
+          <span className="text-amber-600/70 font-normal">({employerProfile?.total_ratings || 0} reviews)</span>
+        </div>
       </div>
 
       {/* 2. Trust & Verification Status Banner */}

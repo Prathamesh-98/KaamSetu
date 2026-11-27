@@ -1,5 +1,6 @@
 // KaamSetu — Mobile Employer Company Verification Center
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
@@ -8,6 +9,7 @@ import {
 } from 'lucide-react';
 import { verificationsApi, employerApi } from '../../api/services';
 import { extractErrorMessage } from '../../api/client';
+import { MobileSecureDocumentModal } from './ui/MobileSecureDocumentModal';
 import type { EmployerProfile, VerificationRecord } from '../../types';
 
 interface MobileEmployerVerificationCenterProps {
@@ -20,7 +22,9 @@ const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024; // 5MB
 
 export const MobileEmployerVerificationCenter: React.FC<MobileEmployerVerificationCenterProps> = ({ profile: initialProfile, onClose }) => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const [viewingDocRecord, setViewingDocRecord] = useState<VerificationRecord | null>(null);
 
   const [activeTab, setActiveTab] = useState<'overview' | 'company' | 'history'>('overview');
 
@@ -104,7 +108,7 @@ export const MobileEmployerVerificationCenter: React.FC<MobileEmployerVerificati
         <div className="flex h-14 items-center justify-between px-3">
           <button
             type="button"
-            onClick={onClose}
+            onClick={() => (onClose ? onClose() : navigate(-1))}
             className="mobile-touch-target rounded-full p-2 text-white/80 hover:text-white hover:bg-white/10 active:scale-95 transition-transform"
             aria-label="Back"
           >
@@ -470,8 +474,20 @@ export const MobileEmployerVerificationCenter: React.FC<MobileEmployerVerificati
                       </div>
                     )}
 
-                    <div className="text-[10px] text-slate-400">
-                      {new Date(rec.created_at).toLocaleString()}
+                    <div className="flex items-center justify-between pt-1">
+                      <span className="text-[10px] text-slate-400">
+                        {new Date(rec.created_at).toLocaleString()}
+                      </span>
+                      {(rec as any).has_document !== false && rec.verification_type !== 'PHONE' && (
+                        <button
+                          type="button"
+                          onClick={() => setViewingDocRecord(rec)}
+                          className="inline-flex items-center gap-1 rounded-lg bg-indigo-50 px-2.5 py-1 text-[11px] font-bold text-indigo-800 active:scale-95"
+                        >
+                          <Eye className="h-3.5 w-3.5" />
+                          {t('verification.viewDocument', 'View Document')}
+                        </button>
+                      )}
                     </div>
                   </div>
                 ))}
@@ -485,6 +501,14 @@ export const MobileEmployerVerificationCenter: React.FC<MobileEmployerVerificati
           </div>
         )}
       </div>
+
+      {viewingDocRecord && (
+        <MobileSecureDocumentModal
+          recordId={viewingDocRecord.id}
+          documentType={viewingDocRecord.document_type || viewingDocRecord.verification_type}
+          onClose={() => setViewingDocRecord(null)}
+        />
+      )}
     </div>
   );
 };
