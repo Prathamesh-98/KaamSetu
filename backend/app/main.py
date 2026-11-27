@@ -6,7 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 import os
 from app.core.config import settings
-from app.api.routes import auth, workers, employers, jobs, applications, admin, notifications, upload, chat, ratings, shifts, verifications
+from app.api.routes import auth, workers, employers, jobs, applications, admin, notifications, upload, chat, ratings, shifts, verifications, ws
 
 # Environment-aware docs
 docs_url = "/docs" if settings.ENVIRONMENT != "production" else None
@@ -67,6 +67,7 @@ app.include_router(upload.router, prefix=API_PREFIX)
 app.include_router(chat.router, prefix=API_PREFIX + "/chat", tags=["Chat"])
 app.include_router(ratings.router, prefix=API_PREFIX)
 app.include_router(verifications.router, prefix=API_PREFIX)
+app.include_router(ws.router, prefix=API_PREFIX)
 
 
 @app.get("/", tags=["Health"])

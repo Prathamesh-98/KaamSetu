@@ -11,6 +11,7 @@ from app.models.models import (
     ApplicationStatus, JobStatus, JobRequiredSkill, UserRole, WorkerSkill
 )
 from app.services.notification_service import create_notification
+from app.services.ws_manager import ws_manager
 from app.schemas.schemas import (
     ApplicationCreate, ApplicationStatusUpdate, ApplicationResponse,
     JobListResponse, WorkerProfileResponse, WorkerSkillResponse
@@ -85,6 +86,24 @@ async def apply_to_job(
     )
     job.applications_count = count_res.scalar_one()
     await db.flush()
+
+    try:
+        await create_notification(
+            db=db,
+            user_id=job.employer.user_id,
+            type="NEW_APPLICATION",
+            title="New Job Application",
+            body=f"{worker_profile.full_name} applied for '{job.title}'.",
+            reference_id=application.id,
+            reference_type="APPLICATION",
+        )
+        await ws_manager.emit_to_user(
+            job.employer.user_id,
+            "application:created",
+            {"application_id": str(application.id), "job_id": str(job_id)},
+        )
+    except Exception:
+        pass
 
     result = await db.execute(
         select(JobApplication)
@@ -209,6 +228,27 @@ async def update_application_status(
     if payload.employer_notes:
         application.employer_notes = payload.employer_notes
     await db.flush()
+
+    try:
+        worker_user_id = application.worker.user_id if application.worker else None
+        if worker_user_id:
+            await create_notification(
+                db=db,
+                user_id=worker_user_id,
+                type=f"APPLICATION_{payload.status.value}",
+                title="Application Status Updated",
+                body=f"Your application for '{application.job.title}' is now {payload.status.value}.",
+                reference_id=application.id,
+                reference_type="APPLICATION",
+            )
+            await ws_manager.emit_to_user(
+                worker_user_id,
+                "application:updated",
+                {"application_id": str(application.id), "status": payload.status.value},
+            )
+    except Exception:
+        pass
+
     await db.commit()
 
     result = await db.execute(
@@ -252,3 +292,18 @@ async def withdraw_application(
         )
         job.applications_count = count_res.scalar_one()
         await db.flush()
+        try:
+            emp_res = await db.execute(select(EmployerProfile).where(EmployerProfile.id == job.employer_id))
+            emp = emp_res.scalar_one_or_none()
+            if emp:
+                await create_notification(
+                    db=db,
+                    user_id=emp.user_id,
+                    type="APPLICATION_WITHDRAWN",
+                    title="Application Withdrawn",
+                    body=f"{worker_profile.full_name} withdrew their application for '{job.title}'.",
+                    reference_id=application.id,
+                    reference_type="APPLICATION",
+                )
+        except Exception:
+            pass

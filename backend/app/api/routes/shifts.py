@@ -106,11 +106,27 @@ async def update_availability(
         raise HTTPException(status_code=404, detail="Availability not found")
         
     for key, value in data.model_dump(exclude_unset=True).items():
-        setattr(avail, key, value)
-        
-    if avail.start_time >= avail.end_time:
+        if key in ("start_time", "end_time") and value is not None:
+            setattr(avail, key, ensure_utc(value))
+        else:
+            setattr(avail, key, value)
+
+    start_utc = ensure_utc(avail.start_time)
+    end_utc = ensure_utc(avail.end_time)
+    if start_utc >= end_utc:
         raise HTTPException(status_code=400, detail="Start time must precede end time")
-        
+
+    conflict = await db.execute(
+        select(WorkerAvailability).where(
+            WorkerAvailability.worker_id == profile.id,
+            WorkerAvailability.id != avail_id,
+            WorkerAvailability.start_time < end_utc,
+            WorkerAvailability.end_time > start_utc,
+        )
+    )
+    if conflict.scalar_one_or_none():
+        raise HTTPException(status_code=400, detail="Availability timeslot overlaps with an existing one")
+
     await db.commit()
     await db.refresh(avail)
     return avail

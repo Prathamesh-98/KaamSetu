@@ -280,6 +280,38 @@ async def send_message(
     )
     db.add(msg)
     conv.last_message_at = func.now()
+    await db.flush()
+
+    try:
+        from app.services.notification_service import create_notification
+        from app.services.ws_manager import ws_manager
+        recipient_user_id = None
+        if current_user.role == UserRole.WORKER:
+            emp_r = await db.execute(select(EmployerProfile).where(EmployerProfile.id == conv.employer_id))
+            emp_obj = emp_r.scalar_one_or_none()
+            recipient_user_id = emp_obj.user_id if emp_obj else None
+        else:
+            wrk_r = await db.execute(select(WorkerProfile).where(WorkerProfile.id == conv.worker_id))
+            wrk_obj = wrk_r.scalar_one_or_none()
+            recipient_user_id = wrk_obj.user_id if wrk_obj else None
+        if recipient_user_id:
+            await create_notification(
+                db=db,
+                user_id=recipient_user_id,
+                type="NEW_MESSAGE",
+                title="New Message",
+                body=payload.content.strip()[:120],
+                reference_id=conversation_id,
+                reference_type="CHAT",
+            )
+            await ws_manager.emit_to_user(
+                recipient_user_id,
+                "message:created",
+                {"conversation_id": str(conversation_id), "message_id": str(msg.id)},
+            )
+    except Exception:
+        pass
+
     await db.commit()
     await db.refresh(msg)
     

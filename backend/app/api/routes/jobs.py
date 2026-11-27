@@ -104,6 +104,7 @@ async def list_jobs(
     work_type: Optional[WorkType] = Query(None),
     salary_min: Optional[float] = Query(None),
     salary_max: Optional[float] = Query(None),
+    salary_type: Optional[SalaryType] = Query(None),
     is_urgent: Optional[bool] = Query(None),
     skill_id: Optional[UUID] = Query(None),
     experience_max: Optional[int] = Query(None),
@@ -154,6 +155,8 @@ async def list_jobs(
         filters.append(Job.state.ilike(f"%{state}%"))
     if work_type:
         filters.append(Job.work_type == work_type)
+    if salary_type:
+        filters.append(Job.salary_type == salary_type)
     if salary_min is not None:
         filters.append(
             or_(Job.salary_max >= salary_min, Job.salary_min >= salary_min)
@@ -378,6 +381,8 @@ async def get_job_match(
     job = job_result.scalar_one_or_none()
     if not job:
         raise HTTPException(status_code=404, detail="Job not found")
+    if job.status != JobStatus.ACTIVE:
+        raise HTTPException(status_code=400, detail="Job is not active for matching")
 
     # Load worker profile with skills
     worker_result = await db.execute(
@@ -411,6 +416,8 @@ async def get_job_candidates(
     job = job_result.scalar_one_or_none()
     if not job:
         raise HTTPException(status_code=404, detail="Job not found or not owned by employer")
+    if job.status in (JobStatus.CLOSED, JobStatus.CANCELLED):
+        raise HTTPException(status_code=400, detail="Job is closed or cancelled")
 
     # Smart priority ordering for bounded candidate pool evaluation:
     # Prioritize workers with matching required skills (weight 35%),
